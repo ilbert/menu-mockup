@@ -104,7 +104,13 @@
       .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
       .toLowerCase().trim().replace(/\s+/g,' ');
 
-    function getIconForFirstLevel(name) {
+    
+    const OFFERS_ITEMS = [
+        { name: "Ofertas del momento", children: [] },
+        { name: "Más vendidos", children: [] },
+        { name: "Promociones", children: [] }
+    ];
+function getIconForFirstLevel(name) {
       return ICON_MAP[norm(name)] || '';
     }
 
@@ -156,7 +162,7 @@
             });
         });
         menuTree = root.sort((a,b) => a.name.localeCompare(b.name));
-        render(menuTree, 0, null);
+        renderRootMenu();
     }
 
     function toggleMenu() {
@@ -182,6 +188,46 @@
           .replace(/\s*>\s*/g,'/')
           .replace(/\/+/g,'/')
           .replace(/^-+|-+$/g,'');
+    }
+
+    function renderRootMenu(){
+        const container = document.getElementById('columns-container');
+        container.innerHTML = '';
+        const colDiv = document.createElement('div');
+        colDiv.className = 'column';
+
+        const h = document.createElement('div');
+        h.className = 'column-header';
+        h.textContent = 'CATEGORÍAS';
+        colDiv.appendChild(h);
+
+        const ul = document.createElement('ul');
+
+        const rootItems = [
+            { name: 'Todas las categorías', children: menuTree },
+            { name: 'Ofertas', children: OFFERS_ITEMS }
+        ];
+
+        rootItems.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'item';
+            li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>${CHEVRON_SVG}`;
+            li.onclick = () => {
+                Array.from(ul.children).forEach(el => el.classList.remove('active'));
+                li.classList.add('active');
+
+                if (item.name === 'Todas las categorías'){
+                    render(menuTree, 0, null);
+                } else {
+                    // Offers behave as a simple list in first column; if later you add nesting, it will work
+                    render(OFFERS_ITEMS, 0, null);
+                }
+            };
+            ul.appendChild(li);
+        });
+
+        colDiv.appendChild(ul);
+        container.appendChild(colDiv);
     }
 
     function render(items, level, parentItem=null) {
