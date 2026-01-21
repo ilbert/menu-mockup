@@ -17,6 +17,8 @@
         .item:hover { background: #f7f9fc; color: var(--brand); }
         .item.active { background: #e6f2fa; color: var(--brand); font-weight: bold; border-left: 5px solid var(--brand); }
         .item .label { display:flex; align-items:center; gap:10px; min-width:0; }
+        .icon { width: 22px; height: 22px; display:inline-grid; place-items:center; font-size: 18px; flex:0 0 auto; }
+
         .item .text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .chevron { width: 22px; height: 22px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; }
         .chevron svg { width: 18px; height: 18px; stroke: var(--brand); stroke-width: 2.6; fill: none; }
@@ -51,6 +53,32 @@
     let menuTree = [];
 
     const CHEVRON_SVG = `<span class="chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
+
+    const ICON_MAP = {
+      'aparatologia y equipos': '📁',
+      'ayudas tecnicas para personas mayores': '🧓',
+      'camillas': '🛏️',
+      'cuidado personal y salud': '🧴',
+      'desechables y consumibles': '🧻',
+      'diagnostico': '🩺',
+      'electrodomesticos y hogar': '🏠',
+      'esterilizacion y autoclaves': '🧼',
+      'instrumental': '🧰',
+      'material medico': '📦',
+      'mobiliario': '🪑',
+      'ofertas y campanas': '🏷️',
+      'sillas de ruedas': '🦽',
+      'vestuario y seguridad': '🦺'
+    };
+
+    const norm = (s) => String(s||'')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase().trim().replace(/\s+/g,' ');
+
+    function getIconForFirstLevel(name) {
+      return ICON_MAP[norm(name)] || '';
+    }
+
 
     async function loadData() {
         const status = document.getElementById('status');
@@ -124,7 +152,8 @@
             const hasChild = item.children && item.children.length > 0;
             const li = document.createElement('li');
             li.className = 'item';
-            li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>${hasChild ? CHEVRON_SVG : ''}`;
+            const icon = (level === 0) ? getIconForFirstLevel(item.name) : '';
+            li.innerHTML = `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ``}<span class="text">${item.name}</span></span>${hasChild ? CHEVRON_SVG : ''}`;
             li.onclick = () => {
                 Array.from(ul.children).forEach(el => el.classList.remove('active'));
                 li.classList.add('active');
