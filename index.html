@@ -66,6 +66,18 @@
         .close-btn:focus-visible{ outline:none; box-shadow:none; }
         .close-btn .chevron{ background: transparent !important; }
 
+    
+        /* Back button: chevron only (no square) */
+        .back-only{
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            width: auto !important;
+            height: auto !important;
+            border-radius: 0 !important;
+        }
+
     </style>
 </head>
 <body>
@@ -257,7 +269,7 @@ function getIconForFirstLevel(name) {
         bar.style.gap = '10px';
 
         const back = document.createElement('button');
-        back.className = 'close-btn';
+        back.className = 'close-btn back-only';
         back.innerHTML = BACK_CHEVRON_SVG;
                 back.onclick = () => renderRootMenu();
 
@@ -297,7 +309,7 @@ function getIconForFirstLevel(name) {
             bar.style.gap = '10px';
 
             const back = document.createElement('button');
-            back.className = 'close-btn';
+            back.className = 'close-btn back-only';
             back.innerHTML = BACK_CHEVRON_SVG;
                         back.onclick = () => renderRootMenu();
 
