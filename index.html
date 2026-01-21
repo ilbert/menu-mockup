@@ -54,6 +54,18 @@
             .column{ flex-basis: 86vw; }
         }
 
+    
+        /* Fix: remove grey inner highlight on back button */
+        .close-btn{
+            -webkit-appearance: none;
+            appearance: none;
+            background: #fff;
+        }
+        .close-btn:active{ background:#fff; }
+        .close-btn:focus{ outline:none; box-shadow:none; }
+        .close-btn:focus-visible{ outline:none; box-shadow:none; }
+        .close-btn .chevron{ background: transparent !important; }
+
     </style>
 </head>
 <body>
