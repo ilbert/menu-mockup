@@ -198,7 +198,7 @@ function getIconForFirstLevel(name) {
 
         const h = document.createElement('div');
         h.className = 'column-header';
-        h.textContent = 'CATEGORÍAS';
+        h.textContent = '';
         colDiv.appendChild(h);
 
         const ul = document.createElement('ul');
@@ -220,12 +220,51 @@ function getIconForFirstLevel(name) {
                     render(menuTree, 0, null);
                 } else {
                     // Offers behave as a simple list in first column; if later you add nesting, it will work
-                    render(OFFERS_ITEMS, 0, null);
+                    renderOffers();
                 }
             };
             ul.appendChild(li);
         });
 
+        colDiv.appendChild(ul);
+        container.appendChild(colDiv);
+    }
+
+    function renderOffers(){
+        const container = document.getElementById('columns-container');
+        container.querySelectorAll('.column').forEach((col, idx) => { if (idx >= 0) col.remove(); });
+        const colDiv = document.createElement('div');
+        colDiv.className = 'column';
+
+        const bar = document.createElement('div');
+        bar.className = 'column-header';
+        bar.style.display = 'flex';
+        bar.style.alignItems = 'center';
+        bar.style.gap = '10px';
+
+        const back = document.createElement('button');
+        back.className = 'close-btn';
+        back.textContent = '‹';
+        back.style.width = '34px';
+        back.style.height = '34px';
+        back.style.borderRadius = '10px';
+        back.onclick = () => renderRootMenu();
+
+        const title = document.createElement('div');
+        title.textContent = 'Ofertas';
+
+        bar.appendChild(back);
+        bar.appendChild(title);
+        colDiv.appendChild(bar);
+
+        const ul = document.createElement('ul');
+        OFFERS_ITEMS.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'item';
+            li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>`;
+            li.onclick = () => {};
+            ul.appendChild(li);
+        });
         colDiv.appendChild(ul);
         container.appendChild(colDiv);
     }
@@ -240,10 +279,26 @@ function getIconForFirstLevel(name) {
         colDiv.className = 'column';
 
         if (level === 0) {
-            const h = document.createElement('div');
-            h.className = 'column-header';
-            h.textContent = 'Todas las categorías';
-            colDiv.appendChild(h);
+            const bar = document.createElement('div');
+            bar.className = 'column-header';
+            bar.style.display = 'flex';
+            bar.style.alignItems = 'center';
+            bar.style.gap = '10px';
+
+            const back = document.createElement('button');
+            back.className = 'close-btn';
+            back.textContent = '‹';
+            back.style.width = '34px';
+            back.style.height = '34px';
+            back.style.borderRadius = '10px';
+            back.onclick = () => renderRootMenu();
+
+            const title = document.createElement('div');
+            title.textContent = 'Todas las categorías';
+
+            bar.appendChild(back);
+            bar.appendChild(title);
+            colDiv.appendChild(bar);
         } else if (parentItem) {
             const h = document.createElement('div');
             h.className = 'column-header';
