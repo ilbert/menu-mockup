@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <title>Menú prueba</title>
+    <title>Menu Mockup - Conexión Directa</title>
     <style>
         :root { --brand: #034ca8; --border: #e6e8eb; --panel-width: 280px; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f6f9; overflow: hidden; }
@@ -16,6 +16,11 @@
         .item { padding: 14px 20px; display: flex; justify-content: space-between; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f9f9f9; }
         .item:hover { background: #f7f9fc; color: var(--brand); }
         .item.active { background: #e6f2fa; color: var(--brand); font-weight: bold; border-left: 5px solid var(--brand); }
+        .item .label { display:flex; align-items:center; gap:10px; min-width:0; }
+        .item .text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .chevron { width: 22px; height: 22px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; }
+        .chevron svg { width: 18px; height: 18px; stroke: var(--brand); stroke-width: 2.6; fill: none; }
+
         #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
         #status { padding: 10px; text-align: center; font-size: 12px; background: #fff3cd; }
     </style>
@@ -24,7 +29,7 @@
 
 <header>
     <button class="hamburger" onclick="toggleMenu()">☰</button>
-    <div style="margin-left:15px; font-weight:900; color:var(--brand);">Menú prueba</div>
+    <div style="margin-left:15px; font-weight:900; color:var(--brand);">MENU MOCKUP</div>
 </header>
 
 <div id="overlay" onclick="toggleMenu()"></div>
@@ -44,6 +49,8 @@
     const DATA_URL = DATA_URL_BASE + '&_=' + Date.now();
 
     let menuTree = [];
+
+    const CHEVRON_SVG = `<span class="chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
     async function loadData() {
         const status = document.getElementById('status');
@@ -117,7 +124,7 @@
             const hasChild = item.children && item.children.length > 0;
             const li = document.createElement('li');
             li.className = 'item';
-            li.innerHTML = `<span>${item.name}</span> ${hasChild ? '▶' : ''}`;
+            li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>${hasChild ? CHEVRON_SVG : ''}`;
             li.onclick = () => {
                 Array.from(ul.children).forEach(el => el.classList.remove('active'));
                 li.classList.add('active');
