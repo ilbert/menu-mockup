@@ -79,10 +79,7 @@
         }
 
     
-        .divider{
-            border-top:1px solid #e5e7eb;
-            margin:8px 0;
-        }
+        .divider{ border-top:1px solid #e5e7eb; margin:8px 0; list-style:none; }
         .tag{
             font-size:12px;
             font-weight:700;
@@ -148,11 +145,16 @@
 
     
     const OFFERS_ITEMS = [
-        { name: "Sillas de ruedas eléctricas", tag: "trending", children: [] },
-        { name: "Camillas plegables", tag: "new", children: [] },
-        { divider: true },
-        { name: "Electroterapia", children: [] },
-        { name: "Diagnóstico profesional", children: [] }
+        { name: "Ofertas del momento", children: [] },
+        { name: "Más vendidos", children: [] },
+        { name: "Promociones", children: [] }
+    ];
+
+    const FEATURED_CATS = [
+        { name: "Camillas", tag: "trending" },
+        { name: "Sillas de ruedas", tag: "new" },
+        { name: "Diagnóstico", tag: null },
+        { name: "Mobiliario", tag: null }
     ];
 function getIconForFirstLevel(name) {
       return ICON_MAP[norm(name)] || '';
@@ -237,32 +239,57 @@ function getIconForFirstLevel(name) {
     function renderRootMenu(){
         const container = document.getElementById('columns-container');
         container.innerHTML = '';
+
         const colDiv = document.createElement('div');
         colDiv.className = 'column';
 
-        const h = document.createElement('div');
-        h.className = 'column-header';
-        h.textContent = '';
-        colDiv.appendChild(h);
-
+        // (Sin título extra aquí: ya tienes el header superior del drawer)
         const ul = document.createElement('ul');
 
         const rootItems = [
-            { name: 'Todas las categorías', children: menuTree },
-            { name: 'Ofertas', children: OFFERS_ITEMS }
+            { name: 'Todas las categorías', children: menuTree, type: 'all' },
+            { name: 'Ofertas', children: OFFERS_ITEMS, type: 'offers' }
         ];
 
         rootItems.forEach(item => {
             const li = document.createElement('li');
             li.className = 'item';
-            li.innerHTML = `<span class="label"><span class="text">${item.name}</span>${item.tag ? `<span class=\"tag ${item.tag}\">${item.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}</span>${CHEVRON_SVG}`;
+            li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>${CHEVRON_SVG}`;
             li.onclick = () => {
                 Array.from(ul.children).forEach(el => el.classList.remove('active'));
                 li.classList.add('active');
 
-                if (item.name === 'Todas las categorías'){
+                if (item.type === 'all'){
                     render(menuTree, 0, null);
                 } else {
+                    renderOffers();
+                }
+            };
+            ul.appendChild(li);
+
+            // Divider + featured cats right after "Ofertas"
+            if (item.type === 'offers'){
+                const divLi = document.createElement('li');
+                divLi.className = 'divider';
+                ul.appendChild(divLi);
+
+                FEATURED_CATS.forEach(fc => {
+                    const fli = document.createElement('li');
+                    fli.className = 'item';
+                    fli.innerHTML =
+                        `<span class="label"><span class="text">${fc.name}</span>` +
+                        `${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}` +
+                        `</span>`;
+                    // (mock navigation) click just closes
+                    fli.onclick = () => { /* could navigate */ };
+                    ul.appendChild(fli);
+                });
+            }
+        });
+
+        colDiv.appendChild(ul);
+        container.appendChild(colDiv);
+    } else {
                     // Offers behave as a simple list in first column; if later you add nesting, it will work
                     renderOffers();
                 }
@@ -302,7 +329,7 @@ function getIconForFirstLevel(name) {
         OFFERS_ITEMS.forEach(item => {
             const li = document.createElement('li');
             li.className = 'item';
-            li.innerHTML = `<span class="label"><span class="text">${item.name}</span>${item.tag ? `<span class=\"tag ${item.tag}\">${item.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}</span>`;
+            li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>`;
             li.onclick = () => {};
             ul.appendChild(li);
         });
@@ -354,19 +381,13 @@ function getIconForFirstLevel(name) {
         const ul = document.createElement('ul');
 
         items.forEach(item => {
-            if (item.divider){
-                const d = document.createElement('div');
-                d.className = 'divider';
-                ul.appendChild(d);
-                return;
-            }
             const hasChild = item.children && item.children.length > 0;
             const li = document.createElement('li');
             li.className = 'item';
 
             const icon = (level === 0) ? getIconForFirstLevel(item.name) : '';
             li.innerHTML =
-                `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ``}<span class="text">${item.name}</span>${item.tag ? `<span class=\"tag ${item.tag}\">${item.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}</span>` +
+                `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ``}<span class="text">${item.name}</span></span>` +
                 `${hasChild ? CHEVRON_SVG : ''}`;
 
             li.onclick = () => {
