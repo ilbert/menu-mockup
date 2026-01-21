@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Menú Quirumed - Conexión Directa</title>
+    <style>
+        :root { --brand: #034ca8; --border: #e6e8eb; --panel-width: 280px; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f6f9; overflow: hidden; }
+        header { background: #fff; height: 60px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--border); }
+        .hamburger { width: 42px; height: 42px; border: 1px solid var(--border); background: #fff; cursor: pointer; border-radius: 8px; font-size: 20px; color: var(--brand); }
+        #drawer { position: fixed; inset: 0 auto 0 0; background: #fff; z-index: 1001; display: none; flex-direction: column; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+        .drawer-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--brand); }
+        #columns-container { display: flex; flex: 1; overflow-x: auto; background: #fff; }
+        .column { width: var(--panel-width); min-width: var(--panel-width); border-right: 1px solid var(--border); overflow-y: auto; height: 100%; }
+        ul { list-style: none; padding: 0; margin: 0; }
+        .item { padding: 14px 20px; display: flex; justify-content: space-between; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f9f9f9; }
+        .item:hover { background: #f7f9fc; color: var(--brand); }
+        .item.active { background: #e6f2fa; color: var(--brand); font-weight: bold; border-left: 5px solid var(--brand); }
+        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
+        #status { padding: 10px; text-align: center; font-size: 12px; background: #fff3cd; }
+    </style>
+</head>
+<body>
+
+<header>
+    <button class="hamburger" onclick="toggleMenu()">☰</button>
+    <div style="margin-left:15px; font-weight:900; color:var(--brand);">QUIRUMED LIVE</div>
+</header>
+
+<div id="overlay" onclick="toggleMenu()"></div>
+
+<aside id="drawer">
+    <div class="drawer-header">
+        <span>CATEGORÍAS</span>
+        <button onclick="toggleMenu()" style="border:none; background:none; cursor:pointer;">✕</button>
+    </div>
+    <div id="status">Cargando categorías desde Google Sheets...</div>
+    <div id="columns-container"></div>
+</aside>
+
+<script>
+    // URL DE EXPORTACIÓN DIRECTA (Ya configurada con tu ID)
+    const DATA_URL_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTB17XxLBUzcUlZZeEh-UPryJijWIBOlec4xgD3BZ9JnF_zy3zKPdlMZpfLpr8bEygm2z5fLhp-ZxFk/pub?gid=0&single=true&output=csv';
+    const DATA_URL = DATA_URL_BASE + '&_=' + Date.now();
+
+    let menuTree = [];
+
+    async function loadData() {
+        const status = document.getElementById('status');
+
+        // ⚠️ Si abres este HTML como archivo (file://), el navegador suele bloquear fetch().
+        if (location.protocol === 'file:') {
+            status.style.display = 'block';
+            status.textContent = '⚠️ Abre este archivo desde un servidor (GitHub Pages / localhost). No funciona con file://';
+            return;
+        }
+
+        try {
+            const response = await fetch(DATA_URL);
+            if (!response.ok) throw new Error("No se pudo leer el archivo");
+            const csvText = await response.text();
+            if (csvText.trim().startsWith('<')) {
+                throw new Error('Sheets devolvió HTML (revisa que esté publicado como CSV y sea accesible)');
+            }
+
+            buildTree(csvText);
+            status.style.display = 'none';
+        } catch (e) {
+            status.innerHTML = "⚠ Error: El navegador bloquea la conexión local. <br><small>Prueba a subir este HTML a un hosting o usa Chrome con seguridad desactivada.</small>";
+            console.error(e);
+        }
+    }
+
+    function buildTree(csv) {
+        const root = [];
+        const lines = csv.split(/\r?\n/);
+        lines.forEach(line => {
+            const cleanLine = line.replace(/"/g, '').trim();
+            if (!cleanLine.includes('>')) return;
+            const parts = cleanLine.split('>').map(p => p.trim());
+            let current = root;
+            parts.forEach(name => {
+                if(!name) return;
+                let node = current.find(n => n.name === name);
+                if (!node) {
+                    node = { name: name, children: [] };
+                    current.push(node);
+                }
+                current = node.children;
+            });
+        });
+        menuTree = root.sort((a,b) => a.name.localeCompare(b.name));
+        render(menuTree, 0);
+    }
+
+    function toggleMenu() {
+        const d = document.getElementById('drawer');
+        const o = document.getElementById('overlay');
+        const isOpening = d.style.display !== 'flex';
+        if (isOpening) {
+            d.style.display = 'flex';
+            o.style.display = 'block';
+            if (menuTree.length === 0) loadData();
+        } else {
+            d.style.display = 'none';
+            o.style.display = 'none';
+        }
+    }
+
+    function render(items, level) {
+        const container = document.getElementById('columns-container');
+        container.querySelectorAll('.column').forEach((col, idx) => { if (idx >= level) col.remove(); });
+        const colDiv = document.createElement('div');
+        colDiv.className = 'column';
+        const ul = document.createElement('ul');
+        items.forEach(item => {
+            const hasChild = item.children && item.children.length > 0;
+            const li = document.createElement('li');
+            li.className = 'item';
+            li.innerHTML = `<span>${item.name}</span> ${hasChild ? '▶' : ''}`;
+            li.onclick = () => {
+                Array.from(ul.children).forEach(el => el.classList.remove('active'));
+                li.classList.add('active');
+                if (hasChild) render(item.children, level + 1);
+            };
+            ul.appendChild(li);
+        });
+        colDiv.appendChild(ul);
+        container.appendChild(colDiv);
+    }
+</script>
+</body>
+</html>
