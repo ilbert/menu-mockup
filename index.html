@@ -78,6 +78,22 @@
             border-radius: 0 !important;
         }
 
+    
+        .divider{
+            border-top:1px solid #e5e7eb;
+            margin:8px 0;
+        }
+        .tag{
+            font-size:12px;
+            font-weight:700;
+            padding:2px 8px;
+            border-radius:999px;
+            margin-left:8px;
+            white-space:nowrap;
+        }
+        .tag.new{ background:#e6f2fa; color:var(--brand); }
+        .tag.trending{ background:#eafaf1; color:#0a8f4e; }
+
     </style>
 </head>
 <body>
@@ -132,9 +148,11 @@
 
     
     const OFFERS_ITEMS = [
-        { name: "Ofertas del momento", children: [] },
-        { name: "Más vendidos", children: [] },
-        { name: "Promociones", children: [] }
+        { name: "Sillas de ruedas eléctricas", tag: "trending", children: [] },
+        { name: "Camillas plegables", tag: "new", children: [] },
+        { divider: true },
+        { name: "Electroterapia", children: [] },
+        { name: "Diagnóstico profesional", children: [] }
     ];
 function getIconForFirstLevel(name) {
       return ICON_MAP[norm(name)] || '';
@@ -237,7 +255,7 @@ function getIconForFirstLevel(name) {
         rootItems.forEach(item => {
             const li = document.createElement('li');
             li.className = 'item';
-            li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>${CHEVRON_SVG}`;
+            li.innerHTML = `<span class="label"><span class="text">${item.name}</span>${item.tag ? `<span class=\"tag ${item.tag}\">${item.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}</span>${CHEVRON_SVG}`;
             li.onclick = () => {
                 Array.from(ul.children).forEach(el => el.classList.remove('active'));
                 li.classList.add('active');
@@ -284,7 +302,7 @@ function getIconForFirstLevel(name) {
         OFFERS_ITEMS.forEach(item => {
             const li = document.createElement('li');
             li.className = 'item';
-            li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>`;
+            li.innerHTML = `<span class="label"><span class="text">${item.name}</span>${item.tag ? `<span class=\"tag ${item.tag}\">${item.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}</span>`;
             li.onclick = () => {};
             ul.appendChild(li);
         });
@@ -336,13 +354,19 @@ function getIconForFirstLevel(name) {
         const ul = document.createElement('ul');
 
         items.forEach(item => {
+            if (item.divider){
+                const d = document.createElement('div');
+                d.className = 'divider';
+                ul.appendChild(d);
+                return;
+            }
             const hasChild = item.children && item.children.length > 0;
             const li = document.createElement('li');
             li.className = 'item';
 
             const icon = (level === 0) ? getIconForFirstLevel(item.name) : '';
             li.innerHTML =
-                `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ``}<span class="text">${item.name}</span></span>` +
+                `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ``}<span class="text">${item.name}</span>${item.tag ? `<span class=\"tag ${item.tag}\">${item.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}</span>` +
                 `${hasChild ? CHEVRON_SVG : ''}`;
 
             li.onclick = () => {
