@@ -1,169 +1,268 @@
 <!doctype html>
-<html lang="es">
+<html lang="fr">
 <head>
-    <meta charset="utf-8" />
-    <title>Menu Mockup - Conexión Directa</title>
-    <style>
-        :root { --brand: #034ca8; --border: #e6e8eb; --panel-width: 280px; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f6f9; overflow: hidden; }
-        header { background: #fff; height: 60px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--border); }
-        .hamburger { width: 42px; height: 42px; border: 1px solid var(--border); background: #fff; cursor: pointer; border-radius: 8px; font-size: 20px; color: var(--brand); }
-        #drawer { position: fixed; inset: 0 auto 0 0; background: #fff; z-index: 1001; display: none; flex-direction: column; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
-        .drawer-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--brand); }
-        #columns-container { display: flex; flex: 1; overflow-x: auto; background: #fff; }
-        .column { width: var(--panel-width); min-width: var(--panel-width); border-right: 1px solid var(--border); overflow-y: auto; height: 100%; }
-        ul { list-style: none; padding: 0; margin: 0; }
-        .item { padding: 14px 20px; display: flex; justify-content: space-between; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f9f9f9; }
-        .item:hover { background: #f7f9fc; color: var(--brand); }
-        .item.active { background: #e6f2fa; color: var(--brand); font-weight: bold; border-left: 5px solid var(--brand); }
-        .item .label { display:flex; align-items:center; gap:10px; min-width:0; }
-        .icon { width: 22px; height: 22px; display:inline-grid; place-items:center; font-size: 18px; flex:0 0 auto; }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mockup Menu (book panels)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1b1f24;
+    --muted: #667085;
+    --border: #e6e8eb;
+    --shadow: 0 10px 30px rgba(0,0,0,.12);
+    --brand: #034ca8;
+    --hover: #f2f4f7;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: var(--text); background: #f6f7f9; }
+  header {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 14px 18px; display: flex; align-items: center; gap: 12px;
+  }
+  .hamburger {
+    width: 42px; height: 42px; border: 1px solid var(--border); border-radius: 12px;
+    background: #fff; display: grid; place-items: center; cursor: pointer;
+  }
+  .brand { font-weight: 800; color: var(--brand); }
 
-        .item .text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .chevron { width: 22px; height: 22px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; }
-        .chevron svg { width: 18px; height: 18px; stroke: var(--brand); stroke-width: 2.6; fill: none; }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.35);
+    opacity: 0; pointer-events: none; transition: opacity .18s ease;
+    z-index: 10;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
 
-        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
-        #status { padding: 10px; text-align: center; font-size: 12px; background: #fff3cd; }
-    </style>
+  .drawer {
+    position: fixed; inset: 0 auto 0 0; width: min(520px, 92vw);
+    background: #fff; box-shadow: var(--shadow);
+    transform: translateX(-105%); transition: transform .22s ease;
+    z-index: 11; display: flex; flex-direction: column;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-top {
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .drawer-title { font-weight: 800; }
+  .close {
+    width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 12px;
+    background: #fff; cursor: pointer;
+  }
+  .search {
+    padding: 10px 12px; border-bottom: 1px solid var(--border); background: #fff;
+  }
+  .search input {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 12px; outline: none;
+  }
+
+  .panels { flex: 1; overflow: hidden; position: relative; background: #fff; }
+  .panel {
+    position: absolute; inset: 0; overflow: auto; background: #fff;
+    transform: translateX(105%); transition: transform .22s ease;
+  }
+  .panel.active { transform: translateX(0); }
+  .panel.behind { transform: translateX(-30%); }
+
+  .panel-header {
+    padding: 18px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .back {
+    width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 12px;
+    background: #fff; cursor: pointer; display: grid; place-items: center;
+  }
+  .title {
+    font-size: 22px; font-weight: 900; letter-spacing: .2px;
+  }
+  .section-title {
+    padding: 14px 16px 8px; color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase;
+  }
+
+  ul.menu { list-style: none; margin: 0; padding: 0; }
+  .item {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    padding: 12px 16px; text-decoration: none; color: inherit; cursor: pointer;
+  }
+  .item:hover { background: var(--hover); }
+  .label { display: flex; align-items: center; gap: 10px; font-weight: 520; }
+  .dot { width: 8px; height: 8px; border-radius: 99px; background: #cbd6ea; }
+  .chev { color: var(--muted); font-size: 18px; line-height: 1; }
+</style>
 </head>
 <body>
-
 <header>
-    <button class="hamburger" onclick="toggleMenu()">☰</button>
-    <div style="margin-left:15px; font-weight:900; color:var(--brand);">MENU MOCKUP</div>
+  <button class="hamburger" id="openMenu" aria-label="Ouvrir le menu">☰</button>
+  <div class="brand">Mockup Menu</div>
 </header>
 
-<div id="overlay" onclick="toggleMenu()"></div>
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-label="Menu catégories">
+  <div class="drawer-top">
+    <div class="drawer-title">Menú</div>
+    <button class="close" id="closeMenu" aria-label="Fermer">✕</button>
+  </div>
+  <div class="search">
+    <input id="searchInput" type="search" placeholder="Rechercher une catégorie…" />
+  </div>
 
-<aside id="drawer">
-    <div class="drawer-header">
-        <span>CATEGORÍAS</span>
-        <button onclick="toggleMenu()" style="border:none; background:none; cursor:pointer;">✕</button>
+  <div class="panels">
+    <div class="panel active" id="panel0">
+      <div class="panel-header">
+        <div class="title">Toutes les catégories</div>
+      </div>
+      <div class="section-title">Catégories</div>
+      <ul class="menu" id="mobileLvl"></ul>
     </div>
-    <div id="status">Cargando categorías desde Google Sheets...</div>
-    <div id="columns-container"></div>
+    <div class="panel" id="panel1"></div>
+    <div class="panel" id="panel2"></div>
+  </div>
 </aside>
 
 <script>
-    // URL DE EXPORTACIÓN DIRECTA (Ya configurada con tu ID)
-    const DATA_URL_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTB17XxLBUzcUlZZeEh-UPryJijWIBOlec4xgD3BZ9JnF_zy3zKPdlMZpfLpr8bEygm2z5fLhp-ZxFk/pub?gid=0&single=true&output=csv';
-    const DATA_URL = DATA_URL_BASE + '&_=' + Date.now();
+  const MENU_DATA = [{"name": "Aparatología  y equipos", "slug": "aparatologia-y-equipos", "children": [{"name": "Aparatología de Fototerapia y Láser", "slug": "aparatologia-de-fototerapia-y-laser", "children": [{"name": "Fototerapia", "slug": "fototerapia", "children": []}, {"name": "Laser para eliminar tatuajes", "slug": "laser-para-eliminar-tatuajes", "children": []}, {"name": "Laserlipólisis", "slug": "laserlipolisis", "children": []}, {"name": "Laserterapia", "slug": "laserterapia", "children": []}, {"name": "Máquinas depilación láser IPL", "slug": "maquinas-depilacion-laser-ipl", "children": []}]}, {"name": "Aparatología de Remodelación Corporal", "slug": "aparatologia-de-remodelacion-corporal", "children": [{"name": "Cavitación", "slug": "cavitacion", "children": []}, {"name": "Criolipólisis", "slug": "criolipolisis", "children": []}, {"name": "HIFU ultrasonidos focalizados", "slug": "hifu-ultrasonidos-focalizados", "children": []}, {"name": "Vacumterapia", "slug": "vacumterapia", "children": []}]}, {"name": "Electromedicina", "slug": "electromedicina", "children": [{"name": "aparatos magnetoterapia profesionales", "slug": "aparatos-magnetoterapia-profesionales", "children": []}, {"name": "Ecógrafos", "slug": "ecografos", "children": []}, {"name": "Ecógrafos veterinaria", "slug": "ecografos-veterinaria", "children": []}, {"name": "lamparas de infrarrojos", "slug": "lamparas-de-infrarrojos", "children": []}, {"name": "Monitores multiparámetros veterinaria", "slug": "monitores-multiparametros-veterinaria", "children": []}, {"name": "Terapia combinada", "slug": "terapia-combinada", "children": []}]}, {"name": "Electroterapia", "slug": "electroterapia", "children": [{"name": "EPTE", "slug": "epte", "children": []}, {"name": "Iontoforesis / Corriente galvánica", "slug": "iontoforesis-corriente-galvanica", "children": []}, {"name": "Magnetoterapia", "slug": "magnetoterapia", "children": []}]}, {"name": "Equipos de bronceado", "slug": "equipos-de-bronceado", "children": []}, {"name": "Equipos de Limpieza y Exfoliación Facial", "slug": "equipos-de-limpieza-y-exfoliacion-facial", "children": [{"name": "Equipos exfoliantes", "slug": "equipos-exfoliantes", "children": []}, {"name": "Equipos para limpieza facial", "slug": "equipos-para-limpieza-facial", "children": []}, {"name": "Vaporizadores faciales de ozono", "slug": "vaporizadores-faciales-de-ozono", "children": []}]}, {"name": "material dental", "slug": "material-dental", "children": []}, {"name": "Mesoterapia", "slug": "mesoterapia", "children": []}, {"name": "micromotores dentales", "slug": "micromotores-dentales", "children": []}, {"name": "Máquinas de anestesia", "slug": "maquinas-de-anestesia", "children": [{"name": "Máquinas anestesia veterinaria", "slug": "maquinas-anestesia-veterinaria", "children": []}]}, {"name": "Máquinas y accesorios para tatuajes", "slug": "maquinas-y-accesorios-para-tatuajes", "children": [{"name": "Accesorios para tintas y cápsulas", "slug": "accesorios-para-tintas-y-capsulas", "children": []}, {"name": "Máquinas tatuaje", "slug": "maquinas-tatuaje", "children": []}]}, {"name": "Presoterapia", "slug": "presoterapia", "children": [{"name": "Accesorios presoterapia", "slug": "accesorios-presoterapia", "children": []}]}, {"name": "Radiofrecuencia", "slug": "radiofrecuencia", "children": []}, {"name": "Termoterapia", "slug": "termoterapia", "children": [{"name": "Calentadores de toallas", "slug": "calentadores-de-toallas", "children": []}, {"name": "Equipos termoterapia", "slug": "equipos-termoterapia", "children": []}, {"name": "Saunas", "slug": "saunas", "children": []}]}, {"name": "Ultrasonidos", "slug": "ultrasonidos", "children": []}]}, {"name": "Ayudas técnicas para personas mayores", "slug": "ayudas-tecnicas-para-personas-mayores", "children": [{"name": "Andadores", "slug": "andadores", "children": []}, {"name": "Ayudas para la movilidad", "slug": "ayudas-para-la-movilidad", "children": [{"name": "Ayudas técnicas para el baño", "slug": "ayudas-tecnicas-para-el-bano", "children": []}, {"name": "Ayudas técnicas para el hogar", "slug": "ayudas-tecnicas-para-el-hogar", "children": []}, {"name": "Muletas y bastones", "slug": "muletas-y-bastones", "children": []}, {"name": "Scooters movilidad reducida", "slug": "scooters-movilidad-reducida", "children": []}, {"name": "Sillas sube escaleras", "slug": "sillas-sube-escaleras", "children": []}]}, {"name": "Bolsas y compresas de frío y calor", "slug": "bolsas-y-compresas-de-frio-y-calor", "children": []}, {"name": "Calzado ortopédico", "slug": "calzado-ortopedico", "children": []}, {"name": "Cojines antiescaras", "slug": "cojines-antiescaras", "children": []}, {"name": "Cojines de posicionamiento", "slug": "cojines-de-posicionamiento", "children": []}, {"name": "Grúas para personas", "slug": "gruas-para-personas", "children": []}, {"name": "Incontinencia", "slug": "incontinencia", "children": []}, {"name": "Inmovilizadores, collarines y férulas", "slug": "inmovilizadores-collarines-y-ferulas", "children": []}, {"name": "Prendas de compresión", "slug": "prendas-de-compresion", "children": []}, {"name": "Sujeción cama y silla de ruedas", "slug": "sujecion-cama-y-silla-de-ruedas", "children": []}, {"name": "Transferencia", "slug": "transferencia", "children": []}]}, {"name": "Camillas", "slug": "camillas", "children": [{"name": "Accesorios para camillas", "slug": "accesorios-para-camillas", "children": [{"name": "Cojines de masaje", "slug": "cojines-de-masaje", "children": []}, {"name": "Mochilas carros para camillas", "slug": "mochilas-carros-para-camillas", "children": []}, {"name": "Sabanas toallas para camillas", "slug": "sabanas-toallas-para-camillas", "children": []}]}, {"name": "Camillas 3 cuerpos", "slug": "camillas-3-cuerpos", "children": []}, {"name": "Camillas bobath", "slug": "camillas-bobath", "children": []}, {"name": "Camillas de emergencias", "slug": "camillas-de-emergencias", "children": [{"name": "Camas de campaña", "slug": "camas-de-campana", "children": [{"name": "Camas de campaña", "slug": "camas-de-campana", "children": []}]}, {"name": "Camillas de cuchara", "slug": "camillas-de-cuchara", "children": [{"name": "Camillas de cuchara", "slug": "camillas-de-cuchara", "children": []}]}, {"name": "Camillas para ambulancia", "slug": "camillas-para-ambulancia", "children": [{"name": "Camillas para ambulancia", "slug": "camillas-para-ambulancia", "children": []}]}, {"name": "Camillas tipo nido", "slug": "camillas-tipo-nido", "children": [{"name": "Camillas tipo nido", "slug": "camillas-tipo-nido", "children": []}]}, {"name": "Camillas traslado emergencia lona", "slug": "camillas-traslado-emergencia-lona", "children": []}, {"name": "Tableros espinales", "slug": "tableros-espinales", "children": []}]}, {"name": "Camillas de masaje", "slug": "camillas-de-masaje", "children": []}, {"name": "Camillas de masaje eléctricas", "slug": "camillas-de-masaje-electricas", "children": []}, {"name": "Camillas de masaje hidráulicas", "slug": "camillas-de-masaje-hidraulicas", "children": []}, {"name": "Camillas de masaje plegables", "slug": "camillas-de-masaje-plegables", "children": []}, {"name": "Camillas de spa", "slug": "camillas-de-spa", "children": []}, {"name": "Camillas de tatuaje", "slug": "camillas-de-tatuaje", "children": []}, {"name": "Camillas eléctricas", "slug": "camillas-electricas", "children": []}, {"name": "Camillas fijas", "slug": "camillas-fijas", "children": []}, {"name": "Camillas ginecoñógicas", "slug": "camillas-gineconogicas", "children": []}, {"name": "Camillas hidráulicas", "slug": "camillas-hidraulicas", "children": []}, {"name": "Camillas médicas", "slug": "camillas-medicas", "children": []}, {"name": "Camillas para fisioterapia", "slug": "camillas-para-fisioterapia", "children": [{"name": "Camilla eléctrica fisioterapia", "slug": "camilla-electrica-fisioterapia", "children": [{"name": "Camilla eléctrica fisioterapia", "slug": "camilla-electrica-fisioterapia", "children": []}]}, {"name": "Camilla fijas fisioterapia", "slug": "camilla-fijas-fisioterapia", "children": [{"name": "Camilla fijas fisioterapia", "slug": "camilla-fijas-fisioterapia", "children": []}]}, {"name": "Camilla plegables fisioterapia", "slug": "camilla-plegables-fisioterapia", "children": [{"name": "Camilla plegables fisioterapia", "slug": "camilla-plegables-fisioterapia", "children": []}]}, {"name": "Camillas hidráulicas fisioterapia", "slug": "camillas-hidraulicas-fisioterapia", "children": [{"name": "Camillas hidráulicas fisioterapia", "slug": "camillas-hidraulicas-fisioterapia", "children": []}]}]}, {"name": "Camillas plegables", "slug": "camillas-plegables", "children": [{"name": "Camillas plegables aluminio", "slug": "camillas-plegables-aluminio", "children": []}, {"name": "Camillas plegables madera", "slug": "camillas-plegables-madera", "children": []}]}, {"name": "Sabanas toallas para camillas", "slug": "sabanas-toallas-para-camillas", "children": []}]}, {"name": "Cuidado personal y salud", "slug": "cuidado-personal-y-salud", "children": [{"name": "Accesorios personales", "slug": "accesorios-personales", "children": []}, {"name": "Climatización y Purificación", "slug": "climatizacion-y-purificacion", "children": [{"name": "Aire acondicionado", "slug": "aire-acondicionado", "children": []}, {"name": "Calefactores", "slug": "calefactores", "children": []}, {"name": "Humificadores", "slug": "humificadores", "children": []}, {"name": "Purificadores", "slug": "purificadores", "children": []}, {"name": "Radiadores", "slug": "radiadores", "children": []}, {"name": "Ventiladores", "slug": "ventiladores", "children": []}]}, {"name": "Cosmética y cuidado personal", "slug": "cosmetica-y-cuidado-personal", "children": [{"name": "Cosmética", "slug": "cosmetica", "children": [{"name": "Cosmética corporal", "slug": "cosmetica-corporal", "children": [{"name": "Aceites corporales", "slug": "aceites-corporales", "children": []}, {"name": "Cosmética corporal", "slug": "cosmetica-corporal", "children": []}, {"name": "Cremas de manos", "slug": "cremas-de-manos", "children": []}, {"name": "Cremas hidratantes corporales", "slug": "cremas-hidratantes-corporales", "children": []}, {"name": "Cremas para tatuaje", "slug": "cremas-para-tatuaje", "children": []}, {"name": "Cremas salud(salud)?", "slug": "cremas-salud-salud", "children": []}, {"name": "Exfoliantes corporales", "slug": "exfoliantes-corporales", "children": []}, {"name": "Tratamientos corporales", "slug": "tratamientos-corporales", "children": []}]}, {"name": "Cosmética facial", "slug": "cosmetica-facial", "children": [{"name": "Aceites faciales", "slug": "aceites-faciales", "children": []}, {"name": "Bálsamos labiales", "slug": "balsamos-labiales", "children": []}, {"name": "Contorno ojos", "slug": "contorno-ojos", "children": []}, {"name": "Cremas antiedad", "slug": "cremas-antiedad", "children": []}, {"name": "Cremas faciales", "slug": "cremas-faciales", "children": []}, {"name": "Desmaquillantes", "slug": "desmaquillantes", "children": []}, {"name": "Equipos exfoliantes", "slug": "equipos-exfoliantes", "children": []}, {"name": "Exfoliantes faciales", "slug": "exfoliantes-faciales", "children": []}, {"name": "Limpieza facial", "slug": "limpieza-facial", "children": []}, {"name": "Mascarillas faciales", "slug": "mascarillas-faciales", "children": []}, {"name": "Mascarillas y envolturas", "slug": "mascarillas-y-envolturas", "children": []}, {"name": "Serums faciales", "slug": "serums-faciales", "children": []}, {"name": "Tónicos faciales", "slug": "tonicos-faciales", "children": []}]}, {"name": "Cosmética masculina", "slug": "cosmetica-masculina", "children": [{"name": "Antibolsas y ojeras", "slug": "antibolsas-y-ojeras", "children": []}, {"name": "Antiedad", "slug": "antiedad", "children": []}, {"name": "Cuidado corporal", "slug": "cuidado-corporal", "children": []}, {"name": "Exfoliantes", "slug": "exfoliantes", "children": []}, {"name": "Hidratación", "slug": "hidratacion", "children": []}, {"name": "Serums y aceites", "slug": "serums-y-aceites", "children": []}]}, {"name": "Principios activos", "slug": "principios-activos", "children": []}]}, {"name": "Higiene personal", "slug": "higiene-personal", "children": [{"name": "Afeitado", "slug": "afeitado", "children": [{"name": "Afeitadoras faciales", "slug": "afeitadoras-faciales", "children": []}, {"name": "Afeitadoras multifunción", "slug": "afeitadoras-multifuncion", "children": []}, {"name": "Barberos", "slug": "barberos", "children": []}, {"name": "Cuchillas desechables(revisar url para segmentar)", "slug": "cuchillas-desechables-revisar-url-para-segmentar", "children": []}]}, {"name": "Afeitado y depilación", "slug": "afeitado-y-depilacion", "children": []}, {"name": "Aparatos belleza facial", "slug": "aparatos-belleza-facial", "children": []}, {"name": "Baño y ducha", "slug": "bano-y-ducha", "children": []}, {"name": "Depilación en casa", "slug": "depilacion-en-casa", "children": [{"name": "Ceras, tiras y bandas", "slug": "ceras-tiras-y-bandas", "children": []}, {"name": "Cremas depilatorias", "slug": "cremas-depilatorias", "children": []}, {"name": "Depilación", "slug": "depilacion", "children": []}, {"name": "Depilación con cera", "slug": "depilacion-con-cera", "children": []}, {"name": "Depiladoras y accesorios", "slug": "depiladoras-y-accesorios", "children": []}, {"name": "Pinzas", "slug": "pinzas", "children": []}, {"name": "Rasuradoras", "slug": "rasuradoras", "children": []}]}, {"name": "Desodorantes", "slug": "desodorantes", "children": []}, {"name": "Higiene bucal", "slug": "higiene-bucal", "children": [{"name": "Cepillos de dientes", "slug": "cepillos-de-dientes", "children": []}, {"name": "Enjuagues bucales", "slug": "enjuagues-bucales", "children": []}, {"name": "Pasta de dientes", "slug": "pasta-de-dientes", "children": []}]}, {"name": "Higiene íntima", "slug": "higiene-intima", "children": []}, {"name": "Otros higiene personal", "slug": "otros-higiene-personal", "children": []}]}, {"name": "Maquillaje", "slug": "maquillaje", "children": [{"name": "Brochas, pinceles y otros", "slug": "brochas-pinceles-y-otros", "children": []}, {"name": "Cara", "slug": "cara", "children": [{"name": "Bases de maquillaje", "slug": "bases-de-maquillaje", "children": []}, {"name": "Coloretes", "slug": "coloretes", "children": []}, {"name": "Iluminadores y correctores de maquillaje", "slug": "iluminadores-y-correctores-de-maquillaje", "children": []}, {"name": "Polvos de maquillaje", "slug": "polvos-de-maquillaje", "children": []}]}, {"name": "Labios", "slug": "labios", "children": [{"name": "Perfiladores de labios", "slug": "perfiladores-de-labios", "children": []}, {"name": "Pintalabios", "slug": "pintalabios", "children": []}]}, {"name": "Maletines maquillaje", "slug": "maletines-maquillaje", "children": []}, {"name": "Ojos", "slug": "ojos", "children": [{"name": "Cejas", "slug": "cejas", "children": []}, {"name": "Delineadores de ojos", "slug": "delineadores-de-ojos", "children": []}, {"name": "Máscaras de pestañas", "slug": "mascaras-de-pestanas", "children": []}, {"name": "Sombras de ojos", "slug": "sombras-de-ojos", "children": []}]}, {"name": "Uñas", "slug": "unas", "children": [{"name": "Accesorios uñas", "slug": "accesorios-unas", "children": []}, {"name": "Esmaltes de uñas", "slug": "esmaltes-de-unas", "children": []}, {"name": "Lámparas LED uñas", "slug": "lamparas-led-unas", "children": []}, {"name": "Torno de uñas", "slug": "torno-de-unas", "children": []}]}]}]}, {"name": "Cremas aceites geles para masajes y spa", "slug": "cremas-aceites-geles-para-masajes-y-spa", "children": [{"name": "Aceites de masaje y aromaterapia", "slug": "aceites-de-masaje-y-aromaterapia", "children": []}, {"name": "Cremas para masaje", "slug": "cremas-para-masaje", "children": []}, {"name": "Geles frío y calor para masaje y fisioterapia", "slug": "geles-frio-y-calor-para-masaje-y-fisioterapia", "children": []}, {"name": "Leches y emulsiones para masaje", "slug": "leches-y-emulsiones-para-masaje", "children": []}, {"name": "Mascarillas y envolturas", "slug": "mascarillas-y-envolturas", "children": []}, {"name": "Mascarillas y envolturas spa", "slug": "mascarillas-y-envolturas-spa", "children": []}]}, {"name": "Cuidado de mascotas", "slug": "cuidado-de-mascotas", "children": [{"name": "Gatos", "slug": "gatos", "children": [{"name": "Areneros para gatos", "slug": "areneros-para-gatos", "children": []}, {"name": "Cama para gatos", "slug": "cama-para-gatos", "children": []}, {"name": "Comederos y bebederos para gatos", "slug": "comederos-y-bebederos-para-gatos", "children": []}, {"name": "Comida para Gatos", "slug": "comida-para-gatos", "children": []}, {"name": "Gatera puerta", "slug": "gatera-puerta", "children": []}, {"name": "Juguetes para gatos", "slug": "juguetes-para-gatos", "children": []}, {"name": "Rascadores para gatos", "slug": "rascadores-para-gatos", "children": []}]}, {"name": "Higiene mascotas", "slug": "higiene-mascotas", "children": [{"name": "Acondicionadores perros", "slug": "acondicionadores-perros", "children": []}, {"name": "Bolsas y dispensadores", "slug": "bolsas-y-dispensadores", "children": []}, {"name": "Cepillos para mascotas", "slug": "cepillos-para-mascotas", "children": []}, {"name": "Champús perros", "slug": "champus-perros", "children": []}, {"name": "Colonias para perros", "slug": "colonias-para-perros", "children": []}, {"name": "Cortapelos mascotas", "slug": "cortapelos-mascotas", "children": []}, {"name": "Cortauñas para mascota", "slug": "cortaunas-para-mascota", "children": []}, {"name": "Limpieza de ojos y oídos para mascotas", "slug": "limpieza-de-ojos-y-oidos-para-mascotas", "children": []}, {"name": "Pañales para perros", "slug": "panales-para-perros", "children": []}, {"name": "Tijeras profesionales peluquería canina", "slug": "tijeras-profesionales-peluqueria-canina", "children": []}]}, {"name": "Perro", "slug": "perro", "children": [{"name": "Accesorios para perros", "slug": "accesorios-para-perros", "children": []}, {"name": "Arneses, correas y collares para perro", "slug": "arneses-correas-y-collares-para-perro", "children": []}, {"name": "Cama para perros", "slug": "cama-para-perros", "children": []}, {"name": "Comederos y bebederos para perros", "slug": "comederos-y-bebederos-para-perros", "children": []}, {"name": "Comida húmeda", "slug": "comida-humeda", "children": []}, {"name": "Juguetes para perros", "slug": "juguetes-para-perros", "children": []}, {"name": "Pienso para perros", "slug": "pienso-para-perros", "children": []}, {"name": "Ropa para perro", "slug": "ropa-para-perro", "children": []}, {"name": "Snacks para perros", "slug": "snacks-para-perros", "children": []}, {"name": "Transportines para perros", "slug": "transportines-para-perros", "children": []}]}, {"name": "pájaros", "slug": "pajaros", "children": [{"name": "comida para pájaros", "slug": "comida-para-pajaros", "children": []}, {"name": "Jaula para pájaros", "slug": "jaula-para-pajaros", "children": []}]}, {"name": "roedores", "slug": "roedores", "children": [{"name": "comida para roedores", "slug": "comida-para-roedores", "children": []}, {"name": "jaulas para roedores", "slug": "jaulas-para-roedores", "children": []}]}]}, {"name": "Cuidado del bebé", "slug": "cuidado-del-bebe", "children": [{"name": "Angelsounds - Detectores fetales", "slug": "angelsounds-detectores-fetales", "children": []}, {"name": "Aspiradores nasales", "slug": "aspiradores-nasales", "children": []}, {"name": "Básculas para bebés", "slug": "basculas-para-bebes", "children": []}, {"name": "Cuidado del bebé(belleza)", "slug": "cuidado-del-bebe-belleza", "children": []}, {"name": "Nebulizadores bebés", "slug": "nebulizadores-bebes", "children": []}, {"name": "Pañales y toallitas", "slug": "panales-y-toallitas", "children": []}, {"name": "Seguridad del bebe", "slug": "seguridad-del-bebe", "children": []}]}, {"name": "Cuidado Solar", "slug": "cuidado-solar", "children": [{"name": "Bronceadores", "slug": "bronceadores", "children": []}, {"name": "Cremas after sun", "slug": "cremas-after-sun", "children": []}, {"name": "Protectores solares", "slug": "protectores-solares", "children": []}]}, {"name": "Cuidado Visual", "slug": "cuidado-visual", "children": [{"name": "Gafas de lectura", "slug": "gafas-de-lectura", "children": []}, {"name": "Gafas de sol", "slug": "gafas-de-sol", "children": []}, {"name": "Gafas graduadas", "slug": "gafas-graduadas", "children": []}, {"name": "Gafas infantiles", "slug": "gafas-infantiles", "children": []}, {"name": "Gafas luz azul", "slug": "gafas-luz-azul", "children": []}, {"name": "Monturas de gafas", "slug": "monturas-de-gafas", "children": []}]}, {"name": "Deporte y aire libre", "slug": "deporte-y-aire-libre", "children": [{"name": "Básculas fitness", "slug": "basculas-fitness", "children": []}, {"name": "Electroestimuladores fitness", "slug": "electroestimuladores-fitness", "children": []}, {"name": "Entrenamiento funcional", "slug": "entrenamiento-funcional", "children": [{"name": "Balones pilates, fitness, yoga", "slug": "balones-pilates-fitness-yoga", "children": []}, {"name": "Cintas y tubos elásticos", "slug": "cintas-y-tubos-elasticos", "children": []}, {"name": "Colchonetas yoga, pilates y fitness", "slug": "colchonetas-yoga-pilates-y-fitness", "children": []}, {"name": "Fitballs", "slug": "fitballs", "children": []}, {"name": "Pedaliers", "slug": "pedaliers", "children": []}, {"name": "Propiocepción equilibrio y coordinación", "slug": "propiocepcion-equilibrio-y-coordinacion", "children": []}, {"name": "Terapia de manos y pies", "slug": "terapia-de-manos-y-pies", "children": []}]}, {"name": "Equipos de cardio", "slug": "equipos-de-cardio", "children": [{"name": "Bicicletas elípticas", "slug": "bicicletas-elipticas", "children": []}, {"name": "Bicicletas estáticas", "slug": "bicicletas-estaticas", "children": []}, {"name": "Cintas de correr", "slug": "cintas-de-correr", "children": []}, {"name": "Tablas de Inversión", "slug": "tablas-de-inversion", "children": []}]}, {"name": "Musculación y tonificación", "slug": "musculacion-y-tonificacion", "children": [{"name": "Musculación en casa", "slug": "musculacion-en-casa", "children": []}, {"name": "Plataformas vibratorias", "slug": "plataformas-vibratorias", "children": []}]}]}, {"name": "Equipos de Rehabilitación y Terapia en Casa", "slug": "equipos-de-rehabilitacion-y-terapia-en-casa", "children": [{"name": "Audífonos y amplificadores", "slug": "audifonos-y-amplificadores", "children": []}, {"name": "Automasajeadores", "slug": "automasajeadores", "children": []}, {"name": "Camillas de jade automasaje", "slug": "camillas-de-jade-automasaje", "children": []}, {"name": "electroestimulador", "slug": "electroestimulador", "children": []}, {"name": "Electroestimuladores fisioterapia y rehabilitación", "slug": "electroestimuladores-fisioterapia-y-rehabilitacion", "children": [{"name": "Electroestimuladores fisioterapia y rehabilitación", "slug": "electroestimuladores-fisioterapia-y-rehabilitacion", "children": []}, {"name": "electroestimuladores profesionales", "slug": "electroestimuladores-profesionales", "children": []}]}, {"name": "Máquinas de oxígeno para casa", "slug": "maquinas-de-oxigeno-para-casa", "children": []}, {"name": "Nebulizadores", "slug": "nebulizadores", "children": []}, {"name": "Suelo pélvico", "slug": "suelo-pelvico", "children": []}]}, {"name": "Equipos de rehabilitación y terapia en casa", "slug": "equipos-de-rehabilitacion-y-terapia-en-casa", "children": [{"name": "Masajes relajación y terapias alternativas", "slug": "masajes-relajacion-y-terapias-alternativas", "children": [{"name": "accesorios de masaje y terapias", "slug": "accesorios-de-masaje-y-terapias", "children": []}, {"name": "Accesorios de masaje y terapias", "slug": "accesorios-de-masaje-y-terapias", "children": []}, {"name": "Acupuntura y terapias orientales", "slug": "acupuntura-y-terapias-orientales", "children": []}, {"name": "Ambientadores aromáticos", "slug": "ambientadores-aromaticos", "children": []}, {"name": "Bambuterapia", "slug": "bambuterapia", "children": []}, {"name": "Calentadores de piedras", "slug": "calentadores-de-piedras", "children": []}, {"name": "Cojines de quiromasaje", "slug": "cojines-de-quiromasaje", "children": []}, {"name": "Cremas de masaje y fisioterapia", "slug": "cremas-de-masaje-y-fisioterapia", "children": []}, {"name": "Parafina y Parafangos", "slug": "parafina-y-parafangos", "children": []}, {"name": "Pediluvios, pedicura e hidromasajeadores para pies", "slug": "pediluvios-pedicura-e-hidromasajeadores-para-pies", "children": []}, {"name": "Piedras para masaje", "slug": "piedras-para-masaje", "children": []}, {"name": "Pindas para masaje", "slug": "pindas-para-masaje", "children": []}]}]}, {"name": "Higiene personal", "slug": "higiene-personal", "children": [{"name": "Cuidado del cabello", "slug": "cuidado-del-cabello", "children": [{"name": "Acondicionadores", "slug": "acondicionadores", "children": []}, {"name": "Champús", "slug": "champus", "children": []}, {"name": "Cortapelos", "slug": "cortapelos", "children": []}, {"name": "Mascarillas capilares", "slug": "mascarillas-capilares", "children": []}, {"name": "Moldeadores", "slug": "moldeadores", "children": []}, {"name": "Planchas", "slug": "planchas", "children": []}, {"name": "Secadores de pelo profesionales", "slug": "secadores-de-pelo-profesionales", "children": []}, {"name": "Serums y aceites capilares", "slug": "serums-y-aceites-capilares", "children": []}, {"name": "Tintes y oxidantes", "slug": "tintes-y-oxidantes", "children": [{"name": "Accesorios tintura", "slug": "accesorios-tintura", "children": []}, {"name": "Coloración permanente", "slug": "coloracion-permanente", "children": []}, {"name": "Decolorante", "slug": "decolorante", "children": []}, {"name": "Retoca raíces y canas", "slug": "retoca-raices-y-canas", "children": []}, {"name": "Tintes permanentes", "slug": "tintes-permanentes", "children": []}, {"name": "Tintes semipermanentes", "slug": "tintes-semipermanentes", "children": []}, {"name": "Tintes sin amoniaco", "slug": "tintes-sin-amoniaco", "children": []}, {"name": "Tintes y oxidantes", "slug": "tintes-y-oxidantes", "children": []}, {"name": "Utensilios para tintes", "slug": "utensilios-para-tintes", "children": []}]}, {"name": "Utensilios y accesorios peluqueria", "slug": "utensilios-y-accesorios-peluqueria", "children": [{"name": "Bigudíes,rulos y postizos", "slug": "bigudies-rulos-y-postizos", "children": []}, {"name": "Peines y cepillos", "slug": "peines-y-cepillos", "children": []}, {"name": "Pinzas, gomas y clips", "slug": "pinzas-gomas-y-clips", "children": []}, {"name": "Tijeras para el pelo", "slug": "tijeras-para-el-pelo", "children": []}]}]}]}, {"name": "Limpieza", "slug": "limpieza", "children": [{"name": "Ambientadores", "slug": "ambientadores", "children": []}, {"name": "Desengrasantes", "slug": "desengrasantes", "children": []}, {"name": "Desinfectantes limpieza", "slug": "desinfectantes-limpieza", "children": []}, {"name": "Detergente y abrillantador lavavajillas", "slug": "detergente-y-abrillantador-lavavajillas", "children": []}, {"name": "Detergentes para superficices y uso general", "slug": "detergentes-para-superficices-y-uso-general", "children": []}, {"name": "Detergentes y limpiador suelos", "slug": "detergentes-y-limpiador-suelos", "children": []}, {"name": "Detergentes, suavizantes, blanqueantes y quitamanchas ropa", "slug": "detergentes-suavizantes-blanqueantes-y-quitamanchas-ropa", "children": []}, {"name": "Insecticidas", "slug": "insecticidas", "children": []}, {"name": "Jabón líquido y espuma para manos", "slug": "jabon-liquido-y-espuma-para-manos", "children": []}, {"name": "Limpiacristales y limpiadores multiusos", "slug": "limpiacristales-y-limpiadores-multiusos", "children": []}, {"name": "Limpiadores baños", "slug": "limpiadores-banos", "children": []}, {"name": "Otros limpiadores", "slug": "otros-limpiadores", "children": []}, {"name": "Productos de limpieza genéricos", "slug": "productos-de-limpieza-genericos", "children": []}, {"name": "Útiles de limpieza", "slug": "utiles-de-limpieza", "children": [{"name": "Bayetas y paños", "slug": "bayetas-y-panos", "children": []}, {"name": "Bolsa de basura", "slug": "bolsa-de-basura", "children": []}, {"name": "Bolsas basura industrial", "slug": "bolsas-basura-industrial", "children": []}, {"name": "Botellas vacías", "slug": "botellas-vacias", "children": []}, {"name": "Complementos de limpieza", "slug": "complementos-de-limpieza", "children": []}, {"name": "Cubos y cubetas", "slug": "cubos-y-cubetas", "children": []}, {"name": "Discos de limpieza", "slug": "discos-de-limpieza", "children": []}, {"name": "Estropajos", "slug": "estropajos", "children": []}, {"name": "Fregonas, mopas, escobas", "slug": "fregonas-mopas-escobas", "children": []}, {"name": "Guantes de limpieza", "slug": "guantes-de-limpieza", "children": []}, {"name": "Otras bolsas", "slug": "otras-bolsas", "children": []}]}]}, {"name": "Salud y bienestar", "slug": "salud-y-bienestar", "children": [{"name": "Alcoholímetros", "slug": "alcoholimetros", "children": []}, {"name": "Gestión de la salud", "slug": "gestion-de-la-salud", "children": [{"name": "Pastilleros, alarmas y trituradores", "slug": "pastilleros-alarmas-y-trituradores", "children": []}]}, {"name": "Nutricion y bienestar", "slug": "nutricion-y-bienestar", "children": [{"name": "Alimentación natural", "slug": "alimentacion-natural", "children": []}, {"name": "Complementos alimenticios", "slug": "complementos-alimenticios", "children": []}, {"name": "Flores de Bach", "slug": "flores-de-bach", "children": []}, {"name": "Nutrición y suplementos", "slug": "nutricion-y-suplementos", "children": []}]}, {"name": "Salud sexual", "slug": "salud-sexual", "children": [{"name": "Anillos vibradores", "slug": "anillos-vibradores", "children": []}, {"name": "Balas vibratorias", "slug": "balas-vibratorias", "children": []}, {"name": "Bolas chinas", "slug": "bolas-chinas", "children": []}, {"name": "Huevos vibradores", "slug": "huevos-vibradores", "children": []}, {"name": "Masturbadores masculinos", "slug": "masturbadores-masculinos", "children": []}, {"name": "Succionadores de clítoris", "slug": "succionadores-de-clitoris", "children": []}, {"name": "Vibradores", "slug": "vibradores", "children": []}]}]}]}, {"name": "Desechables y consumibles", "slug": "desechables-y-consumibles", "children": [{"name": "Agujas para tatuar", "slug": "agujas-para-tatuar", "children": []}, {"name": "Contenedor objetos punzantes", "slug": "contenedor-objetos-punzantes", "children": []}, {"name": "Contenedores para desechar agujas", "slug": "contenedores-para-desechar-agujas", "children": []}, {"name": "Destructor agujas", "slug": "destructor-agujas", "children": []}, {"name": "Envases alimentarios", "slug": "envases-alimentarios", "children": []}, {"name": "Fundas para camillas tatuaje", "slug": "fundas-para-camillas-tatuaje", "children": []}, {"name": "Geles", "slug": "geles", "children": []}, {"name": "Guantes", "slug": "guantes", "children": []}, {"name": "Mascarillas desechables", "slug": "mascarillas-desechables", "children": []}, {"name": "Material de curas", "slug": "material-de-curas", "children": []}, {"name": "Otros desechables", "slug": "otros-desechables", "children": []}, {"name": "papel aluminio", "slug": "papel-aluminio", "children": []}, {"name": "Papel higiénico", "slug": "papel-higienico", "children": []}, {"name": "Rollos de papel industral", "slug": "rollos-de-papel-industral", "children": []}, {"name": "Rollos de papel y portarollos para tatuaje", "slug": "rollos-de-papel-y-portarollos-para-tatuaje", "children": []}, {"name": "Rollos y toallas de papel para camillas", "slug": "rollos-y-toallas-de-papel-para-camillas", "children": []}, {"name": "servilletas y manteles", "slug": "servilletas-y-manteles", "children": []}, {"name": "Tintas tatuaje", "slug": "tintas-tatuaje", "children": []}, {"name": "Toallas y papel desechable", "slug": "toallas-y-papel-desechable", "children": [{"name": "Papel secante", "slug": "papel-secante", "children": []}, {"name": "Toallas, pañuelos y papel secamanos", "slug": "toallas-panuelos-y-papel-secamanos", "children": []}]}, {"name": "Torniquetes hemostáticos", "slug": "torniquetes-hemostaticos", "children": []}, {"name": "Vendas y vendajes", "slug": "vendas-y-vendajes", "children": [{"name": "Vendajes neuromusculares Kinesiotape", "slug": "vendajes-neuromusculares-kinesiotape", "children": []}, {"name": "Vendajes tubulares", "slug": "vendajes-tubulares", "children": []}, {"name": "Vendas cohesivas", "slug": "vendas-cohesivas", "children": []}, {"name": "Vendas crepé", "slug": "vendas-crepe", "children": []}, {"name": "Vendas elásticas", "slug": "vendas-elasticas", "children": []}, {"name": "Vendas inelásticas adhesivas", "slug": "vendas-inelasticas-adhesivas", "children": []}]}, {"name": "Vestuario desechable", "slug": "vestuario-desechable", "children": [{"name": "Batas médicas desechables", "slug": "batas-medicas-desechables", "children": []}, {"name": "Calzas desechables y dispensadores", "slug": "calzas-desechables-y-dispensadores", "children": []}, {"name": "Capas desechables", "slug": "capas-desechables", "children": []}, {"name": "Delantales y manguitos desechables", "slug": "delantales-y-manguitos-desechables", "children": []}, {"name": "Desechables médicos", "slug": "desechables-medicos", "children": []}, {"name": "Gorro desechable", "slug": "gorro-desechable", "children": []}, {"name": "Ropa desechable", "slug": "ropa-desechable", "children": []}, {"name": "Ropa interior desechable hospital", "slug": "ropa-interior-desechable-hospital", "children": []}]}]}, {"name": "Diagnóstico", "slug": "diagnostico", "children": [{"name": "binoculares", "slug": "binoculares", "children": []}, {"name": "cooxímetros y cooximetría", "slug": "cooximetros-y-cooximetria", "children": []}, {"name": "dematoscopios", "slug": "dematoscopios", "children": []}, {"name": "Holters ECG tensión arterial", "slug": "holters-ecg-tension-arterial", "children": []}, {"name": "Máquinas de anestesia", "slug": "maquinas-de-anestesia", "children": [{"name": "Máquinas anestesia veterinaria", "slug": "maquinas-anestesia-veterinaria", "children": []}]}]}, {"name": "Electrodomesticos y Hogar", "slug": "electrodomesticos-y-hogar", "children": [{"name": "informatica", "slug": "informatica", "children": [{"name": "Accesorios informática", "slug": "accesorios-informatica", "children": []}]}]}, {"name": "Esterilización y autoclaves", "slug": "esterilizacion-y-autoclaves", "children": [{"name": "Autoclaves", "slug": "autoclaves", "children": [{"name": "Autoclaves clase b", "slug": "autoclaves-clase-b", "children": []}, {"name": "Autoclaves clase n", "slug": "autoclaves-clase-n", "children": []}, {"name": "Autoclaves clase s", "slug": "autoclaves-clase-s", "children": []}, {"name": "Autoclaves verticales", "slug": "autoclaves-verticales", "children": []}]}, {"name": "Desinfectantes y antisépticos", "slug": "desinfectantes-y-antisepticos", "children": []}, {"name": "Destiladoras de agua", "slug": "destiladoras-de-agua", "children": []}, {"name": "Esterilizadores de calor seco", "slug": "esterilizadores-de-calor-seco", "children": []}, {"name": "Esterilizadores uv", "slug": "esterilizadores-uv", "children": []}, {"name": "Etiquetadora para esterilización", "slug": "etiquetadora-para-esterilizacion", "children": []}, {"name": "Incubadora indicadores biológicos", "slug": "incubadora-indicadores-biologicos", "children": []}, {"name": "Indicadores de proceso de esterilización", "slug": "indicadores-de-proceso-de-esterilizacion", "children": []}, {"name": "Limpiadores ultrasonidos", "slug": "limpiadores-ultrasonidos", "children": []}, {"name": "Pruebas comprobación esterlizadores", "slug": "pruebas-comprobacion-esterlizadores", "children": []}, {"name": "Termoselladoras", "slug": "termoselladoras", "children": []}]}, {"name": "Instrumental", "slug": "instrumental", "children": [{"name": "instrumental especialidades", "slug": "instrumental-especialidades", "children": []}, {"name": "instrumental quirúrgico traumatología", "slug": "instrumental-quirurgico-traumatologia", "children": []}, {"name": "lupas de mano", "slug": "lupas-de-mano", "children": []}, {"name": "maletines médicos", "slug": "maletines-medicos", "children": []}]}, {"name": "Material médico", "slug": "material-medico", "children": [{"name": "Diagnóstico", "slug": "diagnostico", "children": [{"name": "Audiometría", "slug": "audiometria", "children": [{"name": "Audiómetros", "slug": "audiometros", "children": []}, {"name": "Diapasones médicos", "slug": "diapasones-medicos", "children": []}]}, {"name": "Diagnóstico Corporal", "slug": "diagnostico-corporal", "children": [{"name": "Adipómetros", "slug": "adipometros", "children": []}, {"name": "Básculas", "slug": "basculas", "children": []}, {"name": "Básculas veterinarias", "slug": "basculas-veterinarias", "children": []}, {"name": "Podoscopios y pedígrafos", "slug": "podoscopios-y-pedigrafos", "children": []}, {"name": "Tallímetros y cintas de medición", "slug": "tallimetros-y-cintas-de-medicion", "children": []}]}, {"name": "Diagnóstico oftalmológico y optometría", "slug": "diagnostico-oftalmologico-y-optometria", "children": [{"name": "Aparatos oftalmología", "slug": "aparatos-oftalmologia", "children": []}, {"name": "Optotipos y proyectores de optometría", "slug": "optotipos-y-proyectores-de-optometria", "children": []}, {"name": "Otoscopios oftalmoscopios", "slug": "otoscopios-oftalmoscopios", "children": []}]}, {"name": "Diagnóstico por imagen", "slug": "diagnostico-por-imagen", "children": [{"name": "Cabinas de audimetría", "slug": "cabinas-de-audimetria", "children": []}, {"name": "Cabinas para rayos-x", "slug": "cabinas-para-rayos-x", "children": []}, {"name": "Ecógrafos portátiles y doppler", "slug": "ecografos-portatiles-y-doppler", "children": []}, {"name": "Luminarias de cirugía", "slug": "luminarias-de-cirugia", "children": []}, {"name": "Lámparas de reconocimiento", "slug": "lamparas-de-reconocimiento", "children": []}, {"name": "Monitores de constantes vitales", "slug": "monitores-de-constantes-vitales", "children": []}, {"name": "Negatoscopios", "slug": "negatoscopios", "children": []}]}, {"name": "Diagnóstico Respiratorio", "slug": "diagnostico-respiratorio", "children": [{"name": "Espirómetros", "slug": "espirometros", "children": []}, {"name": "Rehabilitación respiratoria", "slug": "rehabilitacion-respiratoria", "children": []}]}, {"name": "Equipos de diagnóstico y medición", "slug": "equipos-de-diagnostico-y-medicion", "children": [{"name": "ECG", "slug": "ecg", "children": []}, {"name": "Fonendoscopios", "slug": "fonendoscopios", "children": []}, {"name": "Pulsioxímetros", "slug": "pulsioximetros", "children": []}, {"name": "Tensiómetro", "slug": "tensiometro", "children": []}, {"name": "Termómetros", "slug": "termometros", "children": []}]}, {"name": "Monitores fetales y neonatales", "slug": "monitores-fetales-y-neonatales", "children": [{"name": "Detectores fetales", "slug": "detectores-fetales", "children": []}]}]}, {"name": "Electromedicina", "slug": "electromedicina", "children": [{"name": "Anestesia dental y sedación consciente", "slug": "anestesia-dental-y-sedacion-consciente", "children": []}, {"name": "Aspiradores quirúrgicos/emergencias", "slug": "aspiradores-quirurgicos-emergencias", "children": []}, {"name": "Bisturís eléctricos y electrocauterios", "slug": "bisturis-electricos-y-electrocauterios", "children": []}, {"name": "Concentradores de oxígeno", "slug": "concentradores-de-oxigeno", "children": []}, {"name": "CPAPs", "slug": "cpaps", "children": []}, {"name": "Electrocardiógrafos ECG", "slug": "electrocardiografos-ecg", "children": []}, {"name": "Electroestimulador", "slug": "electroestimulador", "children": [{"name": "Electroestimulador globus", "slug": "electroestimulador-globus", "children": []}]}, {"name": "Nebulizadores médicos", "slug": "nebulizadores-medicos", "children": []}, {"name": "Papel para electrocardiógrafos", "slug": "papel-para-electrocardiografos", "children": []}]}, {"name": "Emergencias", "slug": "emergencias", "children": [{"name": "Ampulario", "slug": "ampulario", "children": []}, {"name": "Bolsa trauma", "slug": "bolsa-trauma", "children": []}, {"name": "Botiquines", "slug": "botiquines", "children": []}, {"name": "Desfibrilador", "slug": "desfibrilador", "children": []}, {"name": "Equipos de emergencia y oxígeno", "slug": "equipos-de-emergencia-y-oxigeno", "children": []}, {"name": "Mantas", "slug": "mantas", "children": []}, {"name": "Mochilas", "slug": "mochilas", "children": []}, {"name": "Primeros auxilios", "slug": "primeros-auxilios", "children": []}]}, {"name": "Formación y simulación", "slug": "formacion-y-simulacion", "children": [{"name": "Entrenadores habilidades enfermería", "slug": "entrenadores-habilidades-enfermeria", "children": []}, {"name": "Maniquíes para enfermería", "slug": "maniquies-para-enfermeria", "children": []}, {"name": "Modelos anatómicos", "slug": "modelos-anatomicos", "children": []}]}, {"name": "Instrumental", "slug": "instrumental", "children": [{"name": "Instrumental de curas", "slug": "instrumental-de-curas", "children": [{"name": "Lavado, punción y aspiración", "slug": "lavado-puncion-y-aspiracion", "children": []}, {"name": "Limpiadores de sarro", "slug": "limpiadores-de-sarro", "children": []}, {"name": "Obturación axial", "slug": "obturacion-axial", "children": []}, {"name": "Tijeras enfermería médicas", "slug": "tijeras-enfermeria-medicas", "children": []}]}, {"name": "Instrumental de esterilización", "slug": "instrumental-de-esterilizacion", "children": [{"name": "Contenedor para esterilización", "slug": "contenedor-para-esterilizacion", "children": []}, {"name": "Envases y accesorios para esterilización", "slug": "envases-y-accesorios-para-esterilizacion", "children": []}, {"name": "Olla neumática polimerizadora", "slug": "olla-neumatica-polimerizadora", "children": []}, {"name": "Prensa hidráulica", "slug": "prensa-hidraulica", "children": []}]}, {"name": "Instrumental de laboratorio", "slug": "instrumental-de-laboratorio", "children": [{"name": "Compresor de pistón seco", "slug": "compresor-de-piston-seco", "children": []}, {"name": "Equipos de medición profesional", "slug": "equipos-de-medicion-profesional", "children": []}, {"name": "Espátulas", "slug": "espatulas", "children": []}, {"name": "Mezcladoras", "slug": "mezcladoras", "children": []}, {"name": "Microscopios y estereomicroscopios", "slug": "microscopios-y-estereomicroscopios", "children": []}, {"name": "Moldeador de muelas", "slug": "moldeador-de-muelas", "children": []}, {"name": "Morteros de laboratorio", "slug": "morteros-de-laboratorio", "children": []}, {"name": "Muflas", "slug": "muflas", "children": []}, {"name": "Pipetas", "slug": "pipetas", "children": []}, {"name": "Vibrador de laboratorio", "slug": "vibrador-de-laboratorio", "children": []}, {"name": "Vidrio", "slug": "vidrio", "children": []}]}, {"name": "Instrumental diagnóstico", "slug": "instrumental-diagnostico", "children": [{"name": "Dermatoscopios", "slug": "dermatoscopios", "children": []}, {"name": "Electrodos", "slug": "electrodos", "children": []}, {"name": "Estuche de irrigación interna", "slug": "estuche-de-irrigacion-interna", "children": []}, {"name": "Instrumento para modelar", "slug": "instrumento-para-modelar", "children": []}, {"name": "Linternas y lámparas de diagnóstico", "slug": "linternas-y-lamparas-de-diagnostico", "children": []}, {"name": "Martillos de diagnóstico", "slug": "martillos-de-diagnostico", "children": []}]}, {"name": "Instrumental quirúrgico", "slug": "instrumental-quirurgico", "children": [{"name": "Agujas punción seca", "slug": "agujas-puncion-seca", "children": []}, {"name": "Bandeja y cubetas", "slug": "bandeja-y-cubetas", "children": []}, {"name": "Bisturís quirurgícos", "slug": "bisturis-quirurgicos", "children": []}, {"name": "Cincel", "slug": "cincel", "children": []}, {"name": "Elevador", "slug": "elevador", "children": []}, {"name": "Fórceps", "slug": "forceps", "children": []}, {"name": "Goteros", "slug": "goteros", "children": []}, {"name": "Instrumental de sutura", "slug": "instrumental-de-sutura", "children": []}, {"name": "Instrumental y sierras para yesos", "slug": "instrumental-y-sierras-para-yesos", "children": []}, {"name": "Instrumentos para rectoscopia", "slug": "instrumentos-para-rectoscopia", "children": []}, {"name": "Jeringa para carpule", "slug": "jeringa-para-carpule", "children": []}, {"name": "Laringoscopios", "slug": "laringoscopios", "children": []}, {"name": "Material quirúrgico", "slug": "material-quirurgico", "children": []}, {"name": "Pala", "slug": "pala", "children": []}, {"name": "Pinzas quirúrgicas", "slug": "pinzas-quirurgicas", "children": []}, {"name": "Porta agujas", "slug": "porta-agujas", "children": []}, {"name": "Separadores quirúrgicos", "slug": "separadores-quirurgicos", "children": []}, {"name": "Sondas, espátulas y porta algodones", "slug": "sondas-espatulas-y-porta-algodones", "children": []}]}]}, {"name": "Laboratorio", "slug": "laboratorio", "children": [{"name": "Agitadores", "slug": "agitadores", "children": []}, {"name": "Aparatos podología laboratorio", "slug": "aparatos-podologia-laboratorio", "children": []}, {"name": "Aspiración húmeda", "slug": "aspiracion-humeda", "children": []}, {"name": "Balanzas electrónicas y mecánicas", "slug": "balanzas-electronicas-y-mecanicas", "children": []}, {"name": "Baños Estufas Incubadoras", "slug": "banos-estufas-incubadoras", "children": []}, {"name": "Biología molecular", "slug": "biologia-molecular", "children": []}, {"name": "Centrífugas", "slug": "centrifugas", "children": [{"name": "Centrífugas veterinaria", "slug": "centrifugas-veterinaria", "children": []}]}, {"name": "Congeladores neveras laboratorio", "slug": "congeladores-neveras-laboratorio", "children": []}, {"name": "Espectrofotometría", "slug": "espectrofotometria", "children": []}, {"name": "Histología", "slug": "histologia", "children": []}, {"name": "Incubadora de esporas", "slug": "incubadora-de-esporas", "children": []}, {"name": "Micromotores", "slug": "micromotores", "children": []}, {"name": "pH conductividad", "slug": "ph-conductividad", "children": []}, {"name": "Refractómetros", "slug": "refractometros", "children": []}, {"name": "Separación filtración", "slug": "separacion-filtracion", "children": []}]}, {"name": "Materiales educativos y de consulta", "slug": "materiales-educativos-y-de-consulta", "children": [{"name": "Cusos de quiromasaje", "slug": "cusos-de-quiromasaje", "children": []}, {"name": "Libros de dermatología", "slug": "libros-de-dermatologia", "children": []}, {"name": "Libros de fisioterapia", "slug": "libros-de-fisioterapia", "children": []}, {"name": "Libros de medicina estética", "slug": "libros-de-medicina-estetica", "children": []}, {"name": "Libros de Medicina y Ciencias de la Salud", "slug": "libros-de-medicina-y-ciencias-de-la-salud", "children": []}, {"name": "Libros de Nutrición y Dietética", "slug": "libros-de-nutricion-y-dietetica", "children": []}, {"name": "Libros de Nutrición y Endocrinología", "slug": "libros-de-nutricion-y-endocrinologia", "children": []}, {"name": "Libros de ondontología", "slug": "libros-de-ondontologia", "children": []}, {"name": "Libros de veterinaria", "slug": "libros-de-veterinaria", "children": []}, {"name": "Libros Farmacología y Farmacia", "slug": "libros-farmacologia-y-farmacia", "children": []}, {"name": "Libros urgencias y emergencias", "slug": "libros-urgencias-y-emergencias", "children": []}, {"name": "Material didáctico tatuaje", "slug": "material-didactico-tatuaje", "children": []}, {"name": "Simuladores médicos y RCP", "slug": "simuladores-medicos-y-rcp", "children": [{"name": "Equipos simulación heridas accidentes", "slug": "equipos-simulacion-heridas-accidentes", "children": []}, {"name": "Maniquíes para rescate", "slug": "maniquies-para-rescate", "children": []}, {"name": "Obstrucción vías respiratorias", "slug": "obstruccion-vias-respiratorias", "children": []}, {"name": "RCP en adultos", "slug": "rcp-en-adultos", "children": []}, {"name": "RCP en niños y bebés", "slug": "rcp-en-ninos-y-bebes", "children": []}, {"name": "Reanimación avanzada", "slug": "reanimacion-avanzada", "children": []}]}]}]}, {"name": "Mobiliario", "slug": "mobiliario", "children": [{"name": "Accesorios mobiliario", "slug": "accesorios-mobiliario", "children": [{"name": "Accesorios informática", "slug": "accesorios-informatica", "children": []}, {"name": "Accesorios oficina", "slug": "accesorios-oficina", "children": []}, {"name": "Detectores y contadores de dinero", "slug": "detectores-y-contadores-de-dinero", "children": []}]}, {"name": "Armarios, estanterías y vitrinas", "slug": "armarios-estanterias-y-vitrinas", "children": [{"name": "Armario y estantería oficina", "slug": "armario-y-estanteria-oficina", "children": []}, {"name": "Vitrinas clínicas", "slug": "vitrinas-clinicas", "children": []}]}, {"name": "Aseo e higiene", "slug": "aseo-e-higiene", "children": [{"name": "Accesorios aseo", "slug": "accesorios-aseo", "children": [{"name": "Dispensador de jabón", "slug": "dispensador-de-jabon", "children": []}, {"name": "Portarollos y dispensador de papel", "slug": "portarollos-y-dispensador-de-papel", "children": []}, {"name": "Secamanos", "slug": "secamanos", "children": []}, {"name": "Toalleros", "slug": "toalleros", "children": []}]}, {"name": "complementos aseo", "slug": "complementos-aseo", "children": []}, {"name": "Fuentes de agua fria", "slug": "fuentes-de-agua-fria", "children": []}, {"name": "Lavamanos portátiles", "slug": "lavamanos-portatiles", "children": []}, {"name": "Lavaojos y duchas de seguridad", "slug": "lavaojos-y-duchas-de-seguridad", "children": []}]}, {"name": "Camas y accesorios de descanso", "slug": "camas-y-accesorios-de-descanso", "children": [{"name": "Accesorios para somieres", "slug": "accesorios-para-somieres", "children": []}, {"name": "Almohadas", "slug": "almohadas", "children": []}, {"name": "Almohadillas eléctricas", "slug": "almohadillas-electricas", "children": []}, {"name": "Almohadillas térmicas", "slug": "almohadillas-termicas", "children": []}, {"name": "Calientacamas eléctricos", "slug": "calientacamas-electricos", "children": []}, {"name": "Cama articulada", "slug": "cama-articulada", "children": []}, {"name": "Camas hospitalarias", "slug": "camas-hospitalarias", "children": []}, {"name": "Colchones", "slug": "colchones", "children": []}, {"name": "Colchones hospitalarios", "slug": "colchones-hospitalarios", "children": []}, {"name": "Cunas neonatos", "slug": "cunas-neonatos", "children": []}, {"name": "Somieres fijos y artículados", "slug": "somieres-fijos-y-articulados", "children": []}]}, {"name": "Carros", "slug": "carros", "children": [{"name": "Carro auxiliar", "slug": "carro-auxiliar", "children": []}, {"name": "Carros camarera", "slug": "carros-camarera", "children": []}, {"name": "Carros de parada", "slug": "carros-de-parada", "children": []}, {"name": "Carros de peluquería y barbería", "slug": "carros-de-peluqueria-y-barberia", "children": []}, {"name": "Carros de ropa sucia", "slug": "carros-de-ropa-sucia", "children": []}, {"name": "Carros médicos", "slug": "carros-medicos", "children": []}, {"name": "Carros peluquería", "slug": "carros-peluqueria", "children": []}, {"name": "Carros y mesas tatuaje", "slug": "carros-y-mesas-tatuaje", "children": []}]}, {"name": "Iluminación", "slug": "iluminacion", "children": [{"name": "Lupas de mesa y lámparas con lente aumentada", "slug": "lupas-de-mesa-y-lamparas-con-lente-aumentada", "children": []}, {"name": "Lámparas para puesto de trabajo", "slug": "lamparas-para-puesto-de-trabajo", "children": []}, {"name": "Lámparas para tatuar", "slug": "lamparas-para-tatuar", "children": []}]}, {"name": "Mesas y tocadores", "slug": "mesas-y-tocadores", "children": [{"name": "Mesas bañera", "slug": "mesas-banera", "children": []}, {"name": "Mesas de exploración", "slug": "mesas-de-exploracion", "children": [{"name": "Mesas de exploración veterinaria", "slug": "mesas-de-exploracion-veterinaria", "children": []}]}, {"name": "Mesas de laboratorio", "slug": "mesas-de-laboratorio", "children": []}, {"name": "Mesas de manicura", "slug": "mesas-de-manicura", "children": []}, {"name": "Mesas de mayo", "slug": "mesas-de-mayo", "children": []}, {"name": "Mesas exploración veterinarias", "slug": "mesas-exploracion-veterinarias", "children": []}, {"name": "Mesas hospital", "slug": "mesas-hospital", "children": [{"name": "Mesa auxiliar con ruedas", "slug": "mesa-auxiliar-con-ruedas", "children": []}, {"name": "Mesas clínica dental(son mesas aux)", "slug": "mesas-clinica-dental-son-mesas-aux", "children": []}, {"name": "Mesas de operaciones", "slug": "mesas-de-operaciones", "children": []}, {"name": "Mesas de trabajo de acero inoxidable", "slug": "mesas-de-trabajo-de-acero-inoxidable", "children": []}, {"name": "Mesas para camas", "slug": "mesas-para-camas", "children": []}, {"name": "Mesas para instrumental quirúrgico", "slug": "mesas-para-instrumental-quirurgico", "children": []}, {"name": "Mesas quirúrgicas veterinarias", "slug": "mesas-quirurgicas-veterinarias", "children": []}]}, {"name": "Mesas laboratorio dental(tiene lo mismo que laboratorio)", "slug": "mesas-laboratorio-dental-tiene-lo-mismo-que-laboratorio", "children": []}, {"name": "Tocadores peluquería", "slug": "tocadores-peluqueria", "children": []}]}, {"name": "mobiliario de oficina", "slug": "mobiliario-de-oficina", "children": [{"name": "Mobiliario de oficina", "slug": "mobiliario-de-oficina", "children": []}, {"name": "Taburetes oficina", "slug": "taburetes-oficina", "children": []}]}, {"name": "Mobiliario sala de espera y consulta", "slug": "mobiliario-sala-de-espera-y-consulta", "children": [{"name": "Bancadas y sillas sala de espera", "slug": "bancadas-y-sillas-sala-de-espera", "children": []}, {"name": "Mostradores de recepción", "slug": "mostradores-de-recepcion", "children": []}, {"name": "Muebles para recepción", "slug": "muebles-para-recepcion", "children": []}, {"name": "Muebles recepción", "slug": "muebles-recepcion", "children": []}, {"name": "Módulos clínica dental", "slug": "modulos-clinica-dental", "children": []}, {"name": "Postes de barbero", "slug": "postes-de-barbero", "children": []}, {"name": "Sala de espera tattoo", "slug": "sala-de-espera-tattoo", "children": []}, {"name": "Sofás y sillones sala de espera", "slug": "sofas-y-sillones-sala-de-espera", "children": []}]}, {"name": "Muebles auxiliares", "slug": "muebles-auxiliares", "children": [{"name": "Apoyabrazos tattoo", "slug": "apoyabrazos-tattoo", "children": []}, {"name": "Banquetas con escalones", "slug": "banquetas-con-escalones", "children": []}, {"name": "Biombos", "slug": "biombos", "children": []}, {"name": "Muebles auxiliares oficina", "slug": "muebles-auxiliares-oficina", "children": []}]}, {"name": "Sillas", "slug": "sillas", "children": [{"name": "Sillas de emergencia y rescate", "slug": "sillas-de-emergencia-y-rescate", "children": []}, {"name": "Sillas de masaje", "slug": "sillas-de-masaje", "children": []}, {"name": "Sillas de oficina", "slug": "sillas-de-oficina", "children": [{"name": "Sillas confidente", "slug": "sillas-confidente", "children": []}, {"name": "Sillas de escritorio", "slug": "sillas-de-escritorio", "children": []}, {"name": "Sillas dirección", "slug": "sillas-direccion", "children": []}, {"name": "Sillas gaming", "slug": "sillas-gaming", "children": []}, {"name": "Sillas operativa", "slug": "sillas-operativa", "children": []}]}, {"name": "Sillas ergonómicas", "slug": "sillas-ergonomicas", "children": []}, {"name": "Sillas para tatuar", "slug": "sillas-para-tatuar", "children": []}]}, {"name": "Sillones", "slug": "sillones", "children": [{"name": "Lavacabezas peluquería", "slug": "lavacabezas-peluqueria", "children": []}, {"name": "Sillones de diálisis y extracción", "slug": "sillones-de-dialisis-y-extraccion", "children": []}, {"name": "Sillones eléctricos", "slug": "sillones-electricos", "children": []}, {"name": "Sillones estética", "slug": "sillones-estetica", "children": []}, {"name": "Sillones fijos", "slug": "sillones-fijos", "children": []}, {"name": "Sillones hidráulicos", "slug": "sillones-hidraulicos", "children": []}, {"name": "Sillones Levantapersonas", "slug": "sillones-levantapersonas", "children": []}, {"name": "Sillones para pedicura", "slug": "sillones-para-pedicura", "children": []}, {"name": "Sillones para tatuajes", "slug": "sillones-para-tatuajes", "children": []}, {"name": "Sillones peluquería", "slug": "sillones-peluqueria", "children": []}, {"name": "Sillones podológicos", "slug": "sillones-podologicos", "children": []}, {"name": "Sillones relax", "slug": "sillones-relax", "children": []}, {"name": "Sillones tantra", "slug": "sillones-tantra", "children": []}]}, {"name": "Taburetes", "slug": "taburetes", "children": [{"name": "Taburete con ruedas y respaldo", "slug": "taburete-con-ruedas-y-respaldo", "children": []}, {"name": "Taburetes con respaldo", "slug": "taburetes-con-respaldo", "children": []}, {"name": "Taburetes con ruedas", "slug": "taburetes-con-ruedas", "children": []}]}]}, {"name": "Ofertas y campañas", "slug": "ofertas-y-campanas", "children": [{"name": "ofertas", "slug": "ofertas", "children": []}]}, {"name": "Sillas de ruedas", "slug": "sillas-de-ruedas", "children": [{"name": "Accesorios sillas de ruedas y repuestos", "slug": "accesorios-sillas-de-ruedas-y-repuestos", "children": []}, {"name": "Sillas de ruedas de aluminio y ultraligeras", "slug": "sillas-de-ruedas-de-aluminio-y-ultraligeras", "children": []}, {"name": "Sillas de ruedas deportivas", "slug": "sillas-de-ruedas-deportivas", "children": []}, {"name": "Sillas de ruedas ducha y baño", "slug": "sillas-de-ruedas-ducha-y-bano", "children": []}, {"name": "Sillas de ruedas eléctricas", "slug": "sillas-de-ruedas-electricas", "children": []}, {"name": "Sillas de ruedas plegables", "slug": "sillas-de-ruedas-plegables", "children": []}]}, {"name": "Vestuario y seguridad", "slug": "vestuario-y-seguridad", "children": [{"name": "Accesorios de seguridad", "slug": "accesorios-de-seguridad", "children": []}, {"name": "Batas", "slug": "batas", "children": []}, {"name": "Bermudas", "slug": "bermudas", "children": []}, {"name": "Calzado", "slug": "calzado", "children": [{"name": "Botas de agua de seguridad", "slug": "botas-de-agua-de-seguridad", "children": []}, {"name": "Botas de seguridad", "slug": "botas-de-seguridad", "children": []}, {"name": "Zapatos de seguridad", "slug": "zapatos-de-seguridad", "children": []}, {"name": "Zuecos", "slug": "zuecos", "children": []}]}, {"name": "Camisetas", "slug": "camisetas", "children": []}, {"name": "cascos de seguridad", "slug": "cascos-de-seguridad", "children": []}, {"name": "Cazadoras", "slug": "cazadoras", "children": []}, {"name": "Chaleco", "slug": "chaleco", "children": []}, {"name": "Complementos", "slug": "complementos", "children": []}, {"name": "Delantales", "slug": "delantales", "children": []}, {"name": "guantes de seguridad", "slug": "guantes-de-seguridad", "children": []}, {"name": "Maletines médicos", "slug": "maletines-medicos", "children": []}, {"name": "Monos y buzos", "slug": "monos-y-buzos", "children": []}, {"name": "Pantalones", "slug": "pantalones", "children": []}, {"name": "Pijamas", "slug": "pijamas", "children": []}, {"name": "Polos", "slug": "polos", "children": []}, {"name": "Protección facial y ocular", "slug": "proteccion-facial-y-ocular", "children": [{"name": "Gafas de laboratorio", "slug": "gafas-de-laboratorio", "children": []}]}, {"name": "protección facial y ocular", "slug": "proteccion-facial-y-ocular", "children": [{"name": "gafas de seguridad", "slug": "gafas-de-seguridad", "children": []}]}, {"name": "protección trabajos de altura", "slug": "proteccion-trabajos-de-altura", "children": []}, {"name": "rodilleras", "slug": "rodilleras", "children": []}, {"name": "señalización", "slug": "senalizacion", "children": []}, {"name": "Sudaderas", "slug": "sudaderas", "children": []}]}];
 
-    let menuTree = [];
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-    const CHEVRON_SVG = `<span class="chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
+  const overlay = $("#overlay");
+  const drawer  = $("#drawer");
+  $("#openMenu").addEventListener("click", () => {
+    overlay.classList.add("open");
+    drawer.classList.add("open");
+  });
+  const closeDrawer = () => {
+    overlay.classList.remove("open");
+    drawer.classList.remove("open");
+    reset();
+  };
+  $("#closeMenu").addEventListener("click", closeDrawer);
+  overlay.addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
 
-    const ICON_MAP = {
-      'aparatologia y equipos': '📁',
-      'ayudas tecnicas para personas mayores': '🧓',
-      'camillas': '🛏️',
-      'cuidado personal y salud': '🧴',
-      'desechables y consumibles': '🧻',
-      'diagnostico': '🩺',
-      'electrodomesticos y hogar': '🏠',
-      'esterilizacion y autoclaves': '🧼',
-      'instrumental': '🧰',
-      'material medico': '📦',
-      'mobiliario': '🪑',
-      'ofertas y campanas': '🏷️',
-      'sillas de ruedas': '🦽',
-      'vestuario y seguridad': '🦺'
-    };
+  const panel0 = $("#panel0"), panel1 = $("#panel1"), panel2 = $("#panel2");
+  const panels = [panel0, panel1, panel2];
+  const mobileLvl = $("#mobileLvl");
+  let stack = []; // nodes
 
-    const norm = (s) => String(s||'')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .toLowerCase().trim().replace(/\s+/g,' ');
+  function itemHref(node) {
+    const path = [...stack.map(s => s.slug), node.slug].filter(Boolean).join("/");
+    return "#" + path;
+  }
 
-    function getIconForFirstLevel(name) {
-      return ICON_MAP[norm(name)] || '';
-    }
+  function viewAllLabel(name) { return "Ver " + name; }
 
 
-    async function loadData() {
-        const status = document.getElementById('status');
+  function activate(idx) {
+    panels.forEach((p,i) => {
+      p.classList.toggle("active", i === idx);
+      p.classList.toggle("behind", i < idx);
+    });
+  }
 
-        // ⚠️ Si abres este HTML como archivo (file://), el navegador suele bloquear fetch().
-        if (location.protocol === 'file:') {
-            status.style.display = 'block';
-            status.textContent = '⚠️ Abre este archivo desde un servidor (GitHub Pages / localhost). No funciona con file://';
-            return;
-        }
-
-        try {
-            const response = await fetch(DATA_URL);
-            if (!response.ok) throw new Error("No se pudo leer el archivo");
-            const csvText = await response.text();
-            if (csvText.trim().startsWith('<')) {
-                throw new Error('Sheets devolvió HTML (revisa que esté publicado como CSV y sea accesible)');
-            }
-
-            buildTree(csvText);
-            status.style.display = 'none';
-        } catch (e) {
-            status.innerHTML = "⚠ Error: El navegador bloquea la conexión local. <br><small>Prueba a subir este HTML a un hosting o usa Chrome con seguridad desactivada.</small>";
-            console.error(e);
-        }
-    }
-
-    function buildTree(csv) {
-        const root = [];
-        const lines = csv.split(/\r?\n/);
-        lines.forEach(line => {
-            const cleanLine = line.replace(/"/g, '').trim();
-            if (!cleanLine.includes('>')) return;
-            const parts = cleanLine.split('>').map(p => p.trim());
-            let current = root;
-            parts.forEach(name => {
-                if(!name) return;
-                let node = current.find(n => n.name === name);
-                if (!node) {
-                    node = { name: name, children: [] };
-                    current.push(node);
-                }
-                current = node.children;
-            });
+  function renderList(ul, items, q="") {
+    ul.innerHTML = "";
+    const query = q.trim().toLowerCase();
+    items
+      .filter(n => !query || n.name.toLowerCase().includes(query))
+      .forEach(node => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.className = "item";
+        a.href = itemHref(node);
+        a.innerHTML =
+          `<span class="label"><span class="dot"></span>${esc(node.name)}</span>` +
+          (node.children && node.children.length ? `<span class="chev">›</span>` : ``);
+        a.addEventListener("click", (e) => {
+          if (node.children && node.children.length) {
+            e.preventDefault();
+            push(node);
+          } else {
+            // leaf: just close (mock navigation)
+            closeDrawer();
+          }
         });
-        menuTree = root.sort((a,b) => a.name.localeCompare(b.name));
-        render(menuTree, 0);
-    }
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+  }
 
-    function toggleMenu() {
-        const d = document.getElementById('drawer');
-        const o = document.getElementById('overlay');
-        const isOpening = d.style.display !== 'flex';
-        if (isOpening) {
-            d.style.display = 'flex';
-            o.style.display = 'block';
-            if (menuTree.length === 0) loadData();
-        } else {
-            d.style.display = 'none';
-            o.style.display = 'none';
-        }
+  function setPanel(panelEl, title, items, level) {
+    panelEl.innerHTML = "";
+    const header = document.createElement("div");
+    header.className = "panel-header";
+    if (level > 0) {
+      const back = document.createElement("button");
+      back.className = "back";
+      back.textContent = "‹";
+      back.addEventListener("click", pop);
+      header.appendChild(back);
     }
+    const h = document.createElement("div");
+    h.className = "title";
+    h.textContent = title;
+    header.appendChild(h);
 
-    function render(items, level) {
-        const container = document.getElementById('columns-container');
-        container.querySelectorAll('.column').forEach((col, idx) => { if (idx >= level) col.remove(); });
-        const colDiv = document.createElement('div');
-        colDiv.className = 'column';
-        const ul = document.createElement('ul');
-        items.forEach(item => {
-            const hasChild = item.children && item.children.length > 0;
-            const li = document.createElement('li');
-            li.className = 'item';
-            const icon = (level === 0) ? getIconForFirstLevel(item.name) : '';
-            li.innerHTML = `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ``}<span class="text">${item.name}</span></span>${hasChild ? CHEVRON_SVG : ''}`;
-            li.onclick = () => {
-                Array.from(ul.children).forEach(el => el.classList.remove('active'));
-                li.classList.add('active');
-                if (hasChild) render(item.children, level + 1);
-            };
-            ul.appendChild(li);
-        });
-        colDiv.appendChild(ul);
-        container.appendChild(colDiv);
+    const section = document.createElement("div");
+    section.className = "section-title";
+    section.textContent = "Catégories";
+
+    const ul = document.createElement("ul");
+    ul.className = "menu";
+
+    panelEl.appendChild(header);
+    panelEl.appendChild(section);
+    panelEl.appendChild(ul);
+
+    renderList(ul, items, $("#searchInput").value || "");
+  }
+
+  function reset() {
+    stack = [];
+    activate(0);
+    renderList(mobileLvl, MENU_DATA, $("#searchInput").value || "");
+    panel1.innerHTML = "";
+    panel2.innerHTML = "";
+  }
+
+  function push(node) {
+    stack.push(node);
+    const level = stack.length;
+    const panel = level === 1 ? panel1 : panel2;
+    setPanel(panel, node.name, node.children || [], level);
+    activate(level);
+  }
+
+  function pop() {
+    if (!stack.length) return;
+    stack.pop();
+    const level = stack.length;
+    if (level === 0) {
+      activate(0);
+      return;
     }
+    const node = stack[level-1];
+    const panel = level === 1 ? panel1 : panel2;
+    setPanel(panel, node.name, node.children || [], level);
+    activate(level);
+  }
+
+  $("#searchInput").addEventListener("input", () => {
+    const q = $("#searchInput").value || "";
+    if (stack.length === 0) {
+      renderList(mobileLvl, MENU_DATA, q);
+    } else {
+      const level = stack.length;
+      const panel = level === 1 ? panel1 : panel2;
+      const ul = panel.querySelector("ul.menu");
+      if (ul) renderList(ul, stack[level-1].children || [], q);
+    }
+  });
+
+  // init
+  reset();
 </script>
 </body>
 </html>
