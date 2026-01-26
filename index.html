@@ -19,8 +19,7 @@
     .drawer-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)}
     .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
     #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd}
-    #columns-container{display:flex;flex:1;overflow-x:auto;overflow-y:hidden;background:#fff;scrollbar-width:none;-ms-overflow-style:none}
-#columns-container::-webkit-scrollbar{height:0px}
+    #columns-container{display:flex;flex:1;overflow-x:auto;background:#fff}
 
     .column{flex:0 0 330px;border-right:1px solid #eee;overflow-y:auto;height:100%}
     @media (max-width:520px){.column{flex-basis:86vw}}
@@ -171,7 +170,6 @@
   function toggleMenu(open){
     if(open){
       drawer.style.display="flex";
-      drawer.style.width = 'min(1100px,96vw)';
       overlay.style.display="block";
       if(menuTree.length===0) loadData();
       else renderRootMenu();
@@ -298,7 +296,6 @@
 
     col.appendChild(ul);
     container.appendChild(col);
-    updateDrawerWidth();
   }
 
   function renderOffers(){
@@ -328,7 +325,6 @@
     });
     col.appendChild(ul);
     container.appendChild(col);
-    updateDrawerWidth();
   }
 
   function renderAllCategories(){
@@ -409,7 +405,6 @@
 
     col.appendChild(ul);
     container.appendChild(col);
-    updateDrawerWidth();
   }
 </script>
 </body>
