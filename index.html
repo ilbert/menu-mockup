@@ -19,6 +19,8 @@
     .drawer-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)}
     .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
     #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd}
+
+    /* scroll horizontal funcional pero sin barra visible */
     #columns-container{display:flex;flex:1;overflow-x:auto;overflow-y:hidden;background:#fff;scrollbar-width:none;-ms-overflow-style:none}
     #columns-container::-webkit-scrollbar{height:0px}
 
@@ -39,7 +41,6 @@
 
     .column-header{padding:14px 16px 8px;font-weight:900;color:var(--brand);font-size:18px;display:flex;align-items:center;gap:10px}
     .view-all{display:block;padding:0 16px 12px;color:var(--brand);text-decoration:underline;font-weight:650;font-size:14px}
-
     .back-only{border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center}
 
     .divider{border-top:1px solid #e5e7eb;margin:8px 0;}
@@ -66,14 +67,12 @@
 </aside>
 
 <script>
-  // ✅ Tu CSV publicado
   const DATA_URL_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTB17XxLBUzcUlZZeEh-UPryJijWIBOlec4xgD3BZ9JnF_zy3zKPdlMZpfLpr8bEygm2z5fLhp-ZxFk/pub?gid=0&single=true&output=csv";
   const DATA_URL = DATA_URL_BASE + "&_=" + Date.now();
 
   const CHEVRON_SVG = `<span class="chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" aria-hidden="true" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
-  // 🟦 Orden manual del NIVEL 1 (SIN "Total")
   const TOP_ORDER = [
     "Camillas",
     "Mobiliario",
@@ -87,7 +86,6 @@
     "Vestuario y seguridad"
   ];
 
-  // Iconos del primer nivel (SIN "Total")
   const ICON_MAP = {
     "aparatologia y equipos":"📁",
     "ayudas tecnicas para personas mayores":"🧓",
@@ -111,7 +109,6 @@
     { name:"Promociones", children:[] }
   ];
 
-  // 4 destacadas debajo de “Ofertas” (root)
   const FEATURED_CATS = [
     { name:"Camillas", tag:"trending" },
     { name:"Sillas de ruedas", tag:"new" },
@@ -123,7 +120,6 @@
     .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
     .toLowerCase().trim().replace(/\s+/g," ");
 
-  // ✅ Quita " Total" al final (si existe)
   function displayName(name){
     return String(name||"").replace(/\s+Total\s*$/i,"").trim();
   }
@@ -141,7 +137,6 @@
       .replace(/^-+|-+$/g,"");
   }
 
-  // Ordena hijos alfabético (nivel 2+)
   function sortChildrenAlpha(nodes){
     nodes.forEach(n => {
       n.children.sort((a,b)=>displayName(a.name).localeCompare(displayName(b.name)));
@@ -149,7 +144,6 @@
     });
   }
 
-  // Orden manual del nivel 1
   function sortTopLevel(nodes){
     const rank = new Map(TOP_ORDER.map((n,i)=>[norm(n), i]));
     nodes.sort((a,b)=>{
@@ -164,9 +158,19 @@
 
   const drawer = document.getElementById("drawer");
   const overlay = document.getElementById("overlay");
+  const statusEl = document.getElementById("status");
+
   document.getElementById("openBtn").onclick = () => toggleMenu(true);
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
+
+  function updateDrawerWidth(){
+    const cols = document.querySelectorAll('#columns-container .column').length || 1;
+    const colWidth = 330;
+    const padding = 60;
+    const desired = cols * colWidth + padding;
+    drawer.style.width = `min(${desired}px, 96vw)`;
+  }
 
   function toggleMenu(open){
     if(open){
@@ -179,22 +183,12 @@
       drawer.style.display="none";
       overlay.style.display="none";
     }
-
-  function updateDrawerWidth(){
-    // Expand drawer to fit columns (up to viewport width).
-    const cols = document.querySelectorAll('#columns-container .column').length || 1;
-    const colWidth = 330; // matches .column flex-basis
-    const padding = 60;
-    const desired = cols * colWidth + padding;
-    drawer.style.width = `min(${desired}px, 96vw)`;
-  }
   }
 
   async function loadData(){
-    const status = document.getElementById("status");
     if (location.protocol === "file:") {
-      status.style.display="block";
-      status.textContent="⚠️ Abre este archivo desde un servidor (GitHub Pages / localhost). No funciona con file://";
+      statusEl.style.display="block";
+      statusEl.textContent="⚠️ Abre este archivo desde un servidor (GitHub Pages / localhost). No funciona con file://";
       return;
     }
     try {
@@ -203,51 +197,42 @@
       const csv = await res.text();
       if(csv.trim().startsWith("<")) throw new Error("Sheets devolvió HTML (permisos/publicación)");
       buildTree(csv);
-      status.style.display="none";
+      statusEl.style.display="none";
       renderRootMenu();
     } catch(e) {
-      status.style.display="block";
-      status.textContent="⚠️ Error cargando datos. Revisa consola.";
+      statusEl.style.display="block";
+      statusEl.textContent="⚠️ Error cargando datos. Revisa consola.";
       console.error(e);
     }
   }
 
+  // ✅ FIX: acepta rutas con ">" y también de 1 nivel (sin ">")
   function buildTree(csv){
     const root = [];
-
-    // 1) Normaliza y deduplica rutas (Set)
     const seen = new Set();
 
     const lines = csv.split(/\r?\n/);
     for (const line of lines) {
       const clean = line.replace(/"/g, "").trim();
-      if (!clean || !clean.includes(">")) continue;
+      if (!clean) continue;
 
-      // Normaliza separadores y espacios
       const parts = clean
         .split(">")
         .map(p => p.trim().replace(/\s+/g, " "))
         .filter(Boolean);
 
-      if (parts.length < 2) continue;
+      if (parts.length < 1) continue;
 
-      // Clave canonical para dedupe (sin acentos + minúsculas + sin "Total")
       const key = parts.map(p => norm(displayName(p))).join(">");
-
       if (seen.has(key)) continue;
       seen.add(key);
 
-      // 2) Construye el árbol usando textos "bonitos" (sin Total)
       let current = root;
       parts.forEach((rawName, i) => {
         const name = displayName(rawName);
         let node = current.find(n => n.name === name);
         if (!node) {
-          node = {
-            name,
-            children: [],
-            path: parts.slice(0, i+1).map(displayName).join(" > ")
-          };
+          node = { name, children: [], path: parts.slice(0, i+1).map(displayName).join(" > ") };
           current.push(node);
         } else if (!node.path) {
           node.path = parts.slice(0, i+1).map(displayName).join(" > ");
@@ -257,8 +242,6 @@
     }
 
     menuTree = root;
-
-    // ✅ Ordena nivel 1 como quieres (sin Total), y el resto alfabético
     sortTopLevel(menuTree);
     sortChildrenAlpha(menuTree);
   }
@@ -284,11 +267,9 @@
         li.classList.add("active");
         if(item.type==="all") renderAllCategories();
         else renderOffers();
-    updateDrawerWidth();
-  };
+      };
       ul.appendChild(li);
 
-      // línea + destacadas debajo de Ofertas (en root)
       if(item.type==="offers") {
         const div = document.createElement("li");
         div.className="divider";
@@ -308,6 +289,7 @@
 
     col.appendChild(ul);
     container.appendChild(col);
+    updateDrawerWidth();
   }
 
   function renderOffers(){
@@ -334,20 +316,24 @@
       li.className="item";
       li.innerHTML = `<span class="label"><span class="text">${it.name}</span></span>`;
       ul.appendChild(li);
-    updateDrawerWidth();
-  });
+    });
     col.appendChild(ul);
     container.appendChild(col);
+    updateDrawerWidth();
   }
 
   function renderAllCategories(){
+    if (!menuTree.length){
+      statusEl.style.display="block";
+      statusEl.textContent="⚠️ No se han cargado categorías (revisa el CSV).";
+      return;
+    }
     render(menuTree, 0, null);
   }
 
   function render(items, level, parentItem=null){
     const container = document.getElementById("columns-container");
 
-    // al entrar en nivel 0, sustituye el root
     if(level===0) container.innerHTML = "";
 
     const col = document.createElement("div");
@@ -365,8 +351,7 @@
       bar.appendChild(back);
       bar.appendChild(title);
       col.appendChild(bar);
-    updateDrawerWidth();
-  } else if(parentItem){
+    } else if(parentItem){
       const h = document.createElement("div");
       h.className="column-header";
       h.textContent = displayName(parentItem.name);
@@ -392,33 +377,38 @@
         `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ""}<span class="text">${displayName(item.name)}</span></span>` +
         `${hasChild ? CHEVRON_SVG : ""}`;
 
-      // ✅ Toggle: si vuelves a clicar la misma categoría con hijos, cierra el nivel a la derecha
       li.onclick = () => {
         const wasActive = li.classList.contains("active");
 
-        // borra columnas a la derecha siempre
         const cols = Array.from(container.querySelectorAll(".column"));
         cols.slice(level+1).forEach(c=>c.remove());
 
         if (hasChild && wasActive) {
           li.classList.remove("active");
+          updateDrawerWidth();
           return;
         }
 
-        // activar en esta columna
         Array.from(ul.children).forEach(el=>el.classList.remove("active"));
         li.classList.add("active");
 
         if (hasChild) {
           render(item.children, level+1, item);
         }
+        updateDrawerWidth();
       };
 
-      ul.appendChild(li);
+      notedAppend(ul, li);
     });
 
     col.appendChild(ul);
     container.appendChild(col);
+    updateDrawerWidth();
+  }
+
+  // helper para no liarla con append y poder buscar rápido
+  function notedAppend(ul, li){
+    ul.appendChild(li);
   }
 </script>
 </body>
