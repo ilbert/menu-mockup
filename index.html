@@ -238,22 +238,12 @@
             path: parts.slice(0, i+1).map(displayName).join(" > ")
           };
           current.push(node);
+        } else if (!node.path) {
+          node.path = parts.slice(0, i+1).map(displayName).join(" > ");
         }
         current = node.children;
       });
     }
-
-    menuTree = root;
-
-    // ✅ Ordena nivel 1 como quieres (sin Total), y el resto alfabético
-    sortTopLevel(menuTree);
-    sortChildrenAlpha(menuTree);
-  } else if(!node.path){
-          node.path = parts.slice(0,i+1).join(" > ");
-        }
-        current = node.children;
-      });
-    });
 
     menuTree = root;
 
