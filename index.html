@@ -252,7 +252,7 @@
       ul.appendChild(li);
 
       // línea + destacadas debajo de Ofertas (en root)
-      if(item.type==="offers"){
+      if(item.type==="offers") {
         const div = document.createElement("li");
         div.className="divider";
         ul.appendChild(div);
@@ -353,16 +353,28 @@
         `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ""}<span class="text">${displayName(item.name)}</span></span>` +
         `${hasChild ? CHEVRON_SVG : ""}`;
 
+      // ✅ Toggle: si vuelves a clicar la misma categoría con hijos, cierra el nivel a la derecha
       li.onclick = () => {
+        const wasActive = li.classList.contains("active");
+
+        // borra columnas a la derecha siempre
+        const cols = Array.from(container.querySelectorAll(".column"));
+        cols.slice(level+1).forEach(c=>c.remove());
+
+        if (hasChild && wasActive) {
+          li.classList.remove("active");
+          return;
+        }
+
+        // activar en esta columna
         Array.from(ul.children).forEach(el=>el.classList.remove("active"));
         li.classList.add("active");
-        if(hasChild){
-          // borra columnas a la derecha
-          const cols = Array.from(container.querySelectorAll(".column"));
-          cols.slice(level+1).forEach(c=>c.remove());
+
+        if (hasChild) {
           render(item.children, level+1, item);
         }
       };
+
       ul.appendChild(li);
     });
 
