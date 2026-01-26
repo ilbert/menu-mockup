@@ -1,409 +1,330 @@
 <!doctype html>
 <html lang="es">
 <head>
-    <meta charset="utf-8" />
-    <title>Menu Mockup - Conexión Directa</title>
-    <style>
-        :root { --brand: #034ca8; --border: #e6e8eb; --panel-width: 280px; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f6f9; overflow: hidden; }
-        header { background: #fff; height: 60px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--border); }
-        .hamburger { width: 42px; height: 42px; border: 1px solid var(--border); background: #fff; cursor: pointer; border-radius: 8px; font-size: 20px; color: var(--brand); }
-        #drawer { position: fixed; inset: 0 auto 0 0; background: #fff; z-index: 1001; display: none; flex-direction: column; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
-        .drawer-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--brand); }
-        #columns-container { display: flex; flex: 1; overflow-x: auto; background: #fff; }
-        .column { width: var(--panel-width); min-width: var(--panel-width); border-right: 1px solid var(--border); overflow-y: auto; height: 100%; }
-        ul { list-style: none; padding: 0; margin: 0; }
-        .item { padding: 14px 20px; display: flex; justify-content: space-between; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f9f9f9; }
-        .item:hover { background: #f7f9fc; color: var(--brand); }
-        .item.active { background: #e6f2fa; color: var(--brand); font-weight: bold; border-left: 5px solid var(--brand); }
-        .item .label { display:flex; align-items:center; gap:10px; min-width:0; }
-        .icon { width: 22px; height: 22px; display:inline-grid; place-items:center; font-size: 18px; flex:0 0 auto; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Menu Mockup</title>
+  <style>
+    :root {
+      --brand:#034ca8;
+      --border:#e6e8eb;
+      --bg:#f4f6f9;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);overflow:hidden}
+    header{background:#fff;height:60px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border)}
+    .hamburger{width:42px;height:42px;border:1px solid var(--border);background:#fff;cursor:pointer;border-radius:8px;font-size:20px;color:var(--brand)}
+    #overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:1000}
+    #drawer{position:fixed;inset:0 auto 0 0;background:#fff;z-index:1001;display:none;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.12);width:min(1100px,96vw)}
+    .drawer-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)}
+    .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
+    #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd}
+    #columns-container{display:flex;flex:1;overflow-x:auto;background:#fff}
 
-        .item .text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .chevron { width: 22px; height: 22px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; }
-        .chevron svg { width: 18px; height: 18px; stroke: var(--brand); stroke-width: 2.6; fill: none; }
+    .column{flex:0 0 330px;border-right:1px solid #eee;overflow-y:auto;height:100%}
+    @media (max-width:520px){.column{flex-basis:86vw}}
 
-        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
-        #status { padding: 10px; text-align: center; font-size: 12px; background: #fff3cd; }
-    
-        .column-header{
-            padding: 14px 16px 8px;
-            font-weight: 800;
-            color: var(--brand);
-            font-size: 18px;
-        }
-        .view-all{
-            display:block;
-            padding: 0 16px 12px;
-            color: var(--brand);
-            text-decoration: underline;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        #columns-container{
-            display:flex;
-            height: 100%;
-            overflow-x:auto;
-        }
-        .column{
-            flex: 0 0 330px;
-            border-right: 1px solid #eee;
-            overflow-y:auto;
-        }
-        @media (max-width: 520px){
-            .column{ flex-basis: 86vw; }
-        }
+    ul{list-style:none;padding:0;margin:0}
+    .item{padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;font-size:13px;border-bottom:1px solid #f3f4f6}
+    .item:hover{background:#f7f9fc;color:var(--brand)}
+    .item.active{background:#e6f2fa;color:var(--brand);font-weight:800;border-left:5px solid var(--brand)}
 
-    
-        /* Fix: remove grey inner highlight on back button */
-        .close-btn{
-            -webkit-appearance: none;
-            appearance: none;
-            background: #fff;
-        }
-        .close-btn:active{ background:#fff; }
-        .close-btn:focus{ outline:none; box-shadow:none; }
-        .close-btn:focus-visible{ outline:none; box-shadow:none; }
-        .close-btn .chevron{ background: transparent !important; }
+    .label{display:flex;align-items:center;gap:10px;min-width:0}
+    .text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .icon{width:22px;height:22px;display:inline-grid;place-items:center;font-size:18px;flex:0 0 auto}
 
-    
-        /* Back button: chevron only (no square) */
-        .back-only{
-            border: none !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            width: auto !important;
-            height: auto !important;
-            border-radius: 0 !important;
-        }
+    .chevron{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+    .chevron svg{width:18px;height:18px;stroke:var(--brand);stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
-    
-        .divider{ border-top:1px solid #e5e7eb; margin:8px 0; list-style:none; }
-        .tag{
-            font-size:12px;
-            font-weight:700;
-            padding:2px 8px;
-            border-radius:999px;
-            margin-left:8px;
-            white-space:nowrap;
-        }
-        .tag.new{ background:#e6f2fa; color:var(--brand); }
-        .tag.trending{ background:#eafaf1; color:#0a8f4e; }
+    .column-header{padding:14px 16px 8px;font-weight:900;color:var(--brand);font-size:18px;display:flex;align-items:center;gap:10px}
+    .view-all{display:block;padding:0 16px 12px;color:var(--brand);text-decoration:underline;font-weight:650;font-size:14px}
 
-    </style>
+    /* back chevron only */
+    .back-only{border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center}
+    .divider{border-top:1px solid #e5e7eb;margin:8px 0;}
+    .tag{font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:8px;white-space:nowrap}
+    .tag.new{background:#e6f2fa;color:var(--brand)}
+    .tag.trending{background:#eafaf1;color:#0a8f4e}
+  </style>
 </head>
 <body>
-
 <header>
-    <button class="hamburger" onclick="toggleMenu()">☰</button>
-    <div style="margin-left:15px; font-weight:900; color:var(--brand);">MENU MOCKUP</div>
+  <button class="hamburger" id="openBtn">☰</button>
+  <div style="margin-left:15px;font-weight:900;color:var(--brand);">MENU MOCKUP</div>
 </header>
 
-<div id="overlay" onclick="toggleMenu()"></div>
+<div id="overlay"></div>
 
 <aside id="drawer">
-    <div class="drawer-header">
-        <span>CATEGORÍAS</span>
-        <button onclick="toggleMenu()" style="border:none; background:none; cursor:pointer;">✕</button>
-    </div>
-    <div id="status">Cargando categorías desde Google Sheets...</div>
-    <div id="columns-container"></div>
+  <div class="drawer-header">
+    <span></span>
+    <button class="close-x" id="closeBtn" aria-label="Cerrar">✕</button>
+  </div>
+  <div id="status">Cargando categorías desde Google Sheets...</div>
+  <div id="columns-container"></div>
 </aside>
 
 <script>
-    // URL DE EXPORTACIÓN DIRECTA (Ya configurada con tu ID)
-    const DATA_URL_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTB17XxLBUzcUlZZeEh-UPryJijWIBOlec4xgD3BZ9JnF_zy3zKPdlMZpfLpr8bEygm2z5fLhp-ZxFk/pub?gid=0&single=true&output=csv';
-    const DATA_URL = DATA_URL_BASE + '&_=' + Date.now();
+  const DATA_URL_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTB17XxLBUzcUlZZeEh-UPryJijWIBOlec4xgD3BZ9JnF_zy3zKPdlMZpfLpr8bEygm2z5fLhp-ZxFk/pub?gid=0&single=true&output=csv";
+  const DATA_URL = DATA_URL_BASE + "&_=" + Date.now();
 
-    let menuTree = [];
+  const CHEVRON_SVG = `<span class="chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
+  const BACK_CHEVRON_SVG = `<span class="chevron" aria-hidden="true" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
-    const CHEVRON_SVG = `<span class="chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
+  const ICON_MAP = {
+    "aparatologia y equipos":"📁",
+    "ayudas tecnicas para personas mayores":"🧓",
+    "camillas":"🛏️",
+    "cuidado personal y salud":"🧴",
+    "desechables y consumibles":"🧻",
+    "diagnostico":"🩺",
+    "electrodomesticos y hogar":"🏠",
+    "esterilizacion y autoclaves":"🧼",
+    "instrumental":"🧰",
+    "material medico":"📦",
+    "mobiliario":"🪑",
+    "ofertas y campanas":"🏷️",
+    "sillas de ruedas":"🦽",
+    "vestuario y seguridad":"🦺"
+  };
 
-    const BACK_CHEVRON_SVG = `<span class="chevron" aria-hidden="true" style="transform: rotate(180deg);"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
+  const OFFERS_ITEMS = [
+    { name:"Ofertas del momento", children:[] },
+    { name:"Más vendidos", children:[] },
+    { name:"Promociones", children:[] },
+  ];
 
-    const ICON_MAP = {
-      'aparatologia y equipos': '📁',
-      'ayudas tecnicas para personas mayores': '🧓',
-      'camillas': '🛏️',
-      'cuidado personal y salud': '🧴',
-      'desechables y consumibles': '🧻',
-      'diagnostico': '🩺',
-      'electrodomesticos y hogar': '🏠',
-      'esterilizacion y autoclaves': '🧼',
-      'instrumental': '🧰',
-      'material medico': '📦',
-      'mobiliario': '🪑',
-      'ofertas y campanas': '🏷️',
-      'sillas de ruedas': '🦽',
-      'vestuario y seguridad': '🦺'
-    };
+  // 4 destacadas debajo de Ofertas (root)
+  const FEATURED_CATS = [
+    { name:"Camillas", tag:"trending" },
+    { name:"Sillas de ruedas", tag:"new" },
+    { name:"Diagnóstico", tag:null },
+    { name:"Mobiliario", tag:null },
+  ];
 
-    const norm = (s) => String(s||'')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .toLowerCase().trim().replace(/\s+/g,' ');
+  const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/\s+/g," ");
+  const getIconForFirstLevel = (name) => ICON_MAP[norm(name)] || "";
 
-    
-    const OFFERS_ITEMS = [
-        { name: "Ofertas del momento", children: [] },
-        { name: "Más vendidos", children: [] },
-        { name: "Promociones", children: [] }
-    ];
+  function slugifyPath(s){
+    return String(s||"")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .toLowerCase().trim()
+      .replace(/\s+/g,"-")
+      .replace(/[^a-z0-9\-\/ >]+/g,"")
+      .replace(/\s*>\s*/g,"/")
+      .replace(/\/+/g,"/")
+      .replace(/^-+|-+$/g,"");
+  }
 
-    const FEATURED_CATS = [
-        { name: "Camillas", tag: "trending" },
-        { name: "Sillas de ruedas", tag: "new" },
-        { name: "Diagnóstico", tag: null },
-        { name: "Mobiliario", tag: null }
-    ];
-function getIconForFirstLevel(name) {
-      return ICON_MAP[norm(name)] || '';
-    }
+  let menuTree = [];
 
+  const drawer = document.getElementById("drawer");
+  const overlay = document.getElementById("overlay");
+  document.getElementById("openBtn").onclick = () => toggleMenu(true);
+  document.getElementById("closeBtn").onclick = () => toggleMenu(false);
+  overlay.onclick = () => toggleMenu(false);
 
-    async function loadData() {
-        const status = document.getElementById('status');
-
-        // ⚠️ Si abres este HTML como archivo (file://), el navegador suele bloquear fetch().
-        if (location.protocol === 'file:') {
-            status.style.display = 'block';
-            status.textContent = '⚠️ Abre este archivo desde un servidor (GitHub Pages / localhost). No funciona con file://';
-            return;
-        }
-
-        try {
-            const response = await fetch(DATA_URL);
-            if (!response.ok) throw new Error("No se pudo leer el archivo");
-            const csvText = await response.text();
-            if (csvText.trim().startsWith('<')) {
-                throw new Error('Sheets devolvió HTML (revisa que esté publicado como CSV y sea accesible)');
-            }
-
-            buildTree(csvText);
-            status.style.display = 'none';
-        } catch (e) {
-            status.innerHTML = "⚠ Error: El navegador bloquea la conexión local. <br><small>Prueba a subir este HTML a un hosting o usa Chrome con seguridad desactivada.</small>";
-            console.error(e);
-        }
-    }
-
-    function buildTree(csv) {
-        const root = [];
-        const lines = csv.split(/\r?\n/);
-        lines.forEach(line => {
-            const cleanLine = line.replace(/"/g, '').trim();
-            if (!cleanLine.includes('>')) return;
-            const parts = cleanLine.split('>').map(p => p.trim());
-            let current = root;
-            parts.forEach((name, i) => {
-                if(!name) return;
-                let node = current.find(n => n.name === name);
-                if (!node) {
-                    node = { name: name, children: [], path: parts.slice(0, i+1).join(' > ') };
-                    current.push(node);
-                } else if (!node.path) {
-                    node.path = parts.slice(0, i+1).join(' > ');
-                }
-                current = node.children;
-            });
-        });
-        menuTree = root.sort((a,b) => a.name.localeCompare(b.name));
-        renderRootMenu();
-    }
-
-    function toggleMenu() {
-        const d = document.getElementById('drawer');
-        const o = document.getElementById('overlay');
-        const isOpening = d.style.display !== 'flex';
-        if (isOpening) {
-            d.style.display = 'flex';
-            o.style.display = 'block';
-            if (menuTree.length === 0) loadData();
-        } else {
-            d.style.display = 'none';
-            o.style.display = 'none';
-        }
-    }
-
-    function slugifyPath(s){
-        return String(s||'')
-          .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-          .toLowerCase().trim()
-          .replace(/\s+/g,'-')
-          .replace(/[^a-z0-9\-\/ >]+/g,'')
-          .replace(/\s*>\s*/g,'/')
-          .replace(/\/+/g,'/')
-          .replace(/^-+|-+$/g,'');
-    }
-
-    function renderRootMenu(){
-        const container = document.getElementById('columns-container');
-        container.innerHTML = '';
-
-        const colDiv = document.createElement('div');
-        colDiv.className = 'column';
-
-        // (Sin título extra aquí: ya tienes el header superior del drawer)
-        const ul = document.createElement('ul');
-
-        const rootItems = [
-            { name: 'Todas las categorías', children: menuTree, type: 'all' },
-            { name: 'Ofertas', children: OFFERS_ITEMS, type: 'offers' }
-        ];
-
-        rootItems.forEach(item => {
-            const li = document.createElement('li');
-            li.className = 'item';
-            li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>${CHEVRON_SVG}`;
-            li.onclick = () => {
-                Array.from(ul.children).forEach(el => el.classList.remove('active'));
-                li.classList.add('active');
-
-                if (item.type === 'all'){
-                    render(menuTree, 0, null);
-                } else {
-                    renderOffers();
-                }
-            };
-            ul.appendChild(li);
-
-            // Divider + featured cats right after "Ofertas"
-            if (item.type === 'offers'){
-                const divLi = document.createElement('li');
-                divLi.className = 'divider';
-                ul.appendChild(divLi);
-
-                FEATURED_CATS.forEach(fc => {
-                    const fli = document.createElement('li');
-                    fli.className = 'item';
-                    fli.innerHTML =
-                        `<span class="label"><span class="text">${fc.name}</span>` +
-                        `${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}` +
-                        `</span>`;
-                    // (mock navigation) click just closes
-                    fli.onclick = () => { /* could navigate */ };
-                    ul.appendChild(fli);
-                });
-            }
-        });
-
-        colDiv.appendChild(ul);
-        container.appendChild(colDiv);
+  function toggleMenu(open){
+    if(open){
+      drawer.style.display="flex";
+      overlay.style.display="block";
+      if(menuTree.length===0) loadData();
+      else renderRootMenu();
     } else {
-                    // Offers behave as a simple list in first column; if later you add nesting, it will work
-                    renderOffers();
-                }
-            };
-            ul.appendChild(li);
-        });
-
-        colDiv.appendChild(ul);
-        container.appendChild(colDiv);
+      drawer.style.display="none";
+      overlay.style.display="none";
     }
+  }
 
-    function renderOffers(){
-        const container = document.getElementById('columns-container');
-        container.querySelectorAll('.column').forEach((col, idx) => { if (idx >= 0) col.remove(); });
-        const colDiv = document.createElement('div');
-        colDiv.className = 'column';
-
-        const bar = document.createElement('div');
-        bar.className = 'column-header';
-        bar.style.display = 'flex';
-        bar.style.alignItems = 'center';
-        bar.style.gap = '10px';
-
-        const back = document.createElement('button');
-        back.className = 'close-btn back-only';
-        back.innerHTML = BACK_CHEVRON_SVG;
-                back.onclick = () => renderRootMenu();
-
-        const title = document.createElement('div');
-        title.textContent = 'Ofertas';
-
-        bar.appendChild(back);
-        bar.appendChild(title);
-        colDiv.appendChild(bar);
-
-        const ul = document.createElement('ul');
-        OFFERS_ITEMS.forEach(item => {
-            const li = document.createElement('li');
-            li.className = 'item';
-            li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>`;
-            li.onclick = () => {};
-            ul.appendChild(li);
-        });
-        colDiv.appendChild(ul);
-        container.appendChild(colDiv);
+  async function loadData(){
+    const status = document.getElementById("status");
+    if (location.protocol === "file:") {
+      status.style.display="block";
+      status.textContent="⚠️ Abre este archivo desde un servidor (GitHub Pages / localhost). No funciona con file://";
+      return;
     }
+    try {
+      const res = await fetch(DATA_URL);
+      if(!res.ok) throw new Error("No se pudo leer el CSV");
+      const csv = await res.text();
+      if(csv.trim().startsWith("<")) throw new Error("Sheets devolvió HTML (permisos/publicación)");
+      buildTree(csv);
+      status.style.display="none";
+      renderRootMenu();
+    } catch(e) {
+      status.style.display="block";
+      status.textContent="⚠️ Error cargando datos. Revisa consola.";
+      console.error(e);
+    }
+  }
 
-    function render(items, level, parentItem=null) {
-        const container = document.getElementById('columns-container');
-
-        // Remove columns to the right (>= level)
-        container.querySelectorAll('.column').forEach((col, idx) => { if (idx >= level) col.remove(); });
-
-        const colDiv = document.createElement('div');
-        colDiv.className = 'column';
-
-        if (level === 0) {
-            const bar = document.createElement('div');
-            bar.className = 'column-header';
-            bar.style.display = 'flex';
-            bar.style.alignItems = 'center';
-            bar.style.gap = '10px';
-
-            const back = document.createElement('button');
-            back.className = 'close-btn back-only';
-            back.innerHTML = BACK_CHEVRON_SVG;
-                        back.onclick = () => renderRootMenu();
-
-            const title = document.createElement('div');
-            title.textContent = 'Todas las categorías';
-
-            bar.appendChild(back);
-            bar.appendChild(title);
-            colDiv.appendChild(bar);
-        } else if (parentItem) {
-            const h = document.createElement('div');
-            h.className = 'column-header';
-            h.textContent = parentItem.name;
-
-            const a = document.createElement('a');
-            a.className = 'view-all';
-            a.href = '#' + slugifyPath(parentItem.path || parentItem.name);
-            a.textContent = 'Ver ' + parentItem.name;
-
-            colDiv.appendChild(h);
-            colDiv.appendChild(a);
+  function buildTree(csv){
+    const root = [];
+    csv.split(/\r?\n/).forEach(line => {
+      const clean = line.replace(/"/g,"").trim();
+      if(!clean.includes(">")) return;
+      const parts = clean.split(">").map(p=>p.trim()).filter(Boolean);
+      let current = root;
+      parts.forEach((name,i)=>{
+        let node = current.find(n=>n.name===name);
+        if(!node){
+          node = { name, children:[], path: parts.slice(0,i+1).join(" > ") };
+          current.push(node);
+        } else if(!node.path){
+          node.path = parts.slice(0,i+1).join(" > ");
         }
+        current = node.children;
+      });
+    });
+    menuTree = root.sort((a,b)=>a.name.localeCompare(b.name));
+  }
 
-        const ul = document.createElement('ul');
+  function clearColumns(fromLevel){
+    const container = document.getElementById("columns-container");
+    const cols = Array.from(container.querySelectorAll(".column"));
+    cols.forEach((c,idx)=>{ if(idx>=fromLevel) c.remove(); });
+  }
 
-        items.forEach(item => {
-            const hasChild = item.children && item.children.length > 0;
-            const li = document.createElement('li');
-            li.className = 'item';
+  function renderRootMenu(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML="";
+    const col = document.createElement("div");
+    col.className="column";
+    const ul = document.createElement("ul");
 
-            const icon = (level === 0) ? getIconForFirstLevel(item.name) : '';
-            li.innerHTML =
-                `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ``}<span class="text">${item.name}</span></span>` +
-                `${hasChild ? CHEVRON_SVG : ''}`;
+    const rootItems = [
+      { name:"Todas las categorías", type:"all" },
+      { name:"Ofertas", type:"offers" },
+    ];
 
-            li.onclick = () => {
-                Array.from(ul.children).forEach(el => el.classList.remove('active'));
-                li.classList.add('active');
+    rootItems.forEach(item => {
+      const li = document.createElement("li");
+      li.className="item";
+      li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>${CHEVRON_SVG}`;
+      li.onclick = () => {
+        Array.from(ul.children).forEach(el=>el.classList.remove("active"));
+        li.classList.add("active");
+        if(item.type==="all") renderAllCategories();
+        else renderOffers();
+      };
+      ul.appendChild(li);
 
-                if (hasChild) {
-                    render(item.children, level + 1, item);
-                }
-            };
-            ul.appendChild(li);
+      if(item.type==="offers") {
+        const div = document.createElement("li");
+        div.className="divider";
+        ul.appendChild(div);
+
+        FEATURED_CATS.forEach(fc => {
+          const fli = document.createElement("li");
+          fli.className="item";
+          fli.innerHTML =
+            `<span class="label"><span class="text">${fc.name}</span>` +
+            `${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==="new"?"Nuevo":"Trending"}</span>` : ""}` +
+            `</span>`;
+          ul.appendChild(fli);
         });
+      }
+    });
 
-        colDiv.appendChild(ul);
-        container.appendChild(colDiv);
+    col.appendChild(ul);
+    container.appendChild(col);
+  }
+
+  function renderOffers(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML="";
+    const col = document.createElement("div");
+    col.className="column";
+
+    const bar = document.createElement("div");
+    bar.className="column-header";
+    const back = document.createElement("button");
+    back.className="back-only";
+    back.innerHTML = BACK_CHEVRON_SVG;
+    back.onclick = () => renderRootMenu();
+    const title = document.createElement("div");
+    title.textContent="Ofertas";
+    bar.appendChild(back);
+    bar.appendChild(title);
+    col.appendChild(bar);
+
+    const ul = document.createElement("ul");
+    OFFERS_ITEMS.forEach(it=>{
+      const li=document.createElement("li");
+      li.className="item";
+      li.innerHTML = `<span class="label"><span class="text">${it.name}</span></span>`;
+      ul.appendChild(li);
+    });
+    col.appendChild(ul);
+    container.appendChild(col);
+  }
+
+  function renderAllCategories(){
+    // start at level 0 list
+    render(menuTree, 0, null, true);
+  }
+
+  function render(items, level, parentItem=null, isTopCats=false){
+    const container = document.getElementById("columns-container");
+    // keep root column as col0? In FR, when you enter, it replaces root list with categories.
+    // We'll replace everything with the category columns view.
+    if(level===0) container.innerHTML = "";
+
+    const col = document.createElement("div");
+    col.className="column";
+
+    if(level===0){
+      const bar = document.createElement("div");
+      bar.className="column-header";
+      const back = document.createElement("button");
+      back.className="back-only";
+      back.innerHTML = BACK_CHEVRON_SVG;
+      back.onclick = () => renderRootMenu();
+      const title = document.createElement("div");
+      title.textContent="Todas las categorías";
+      bar.appendChild(back);
+      bar.appendChild(title);
+      col.appendChild(bar);
+    } else if(parentItem){
+      const h = document.createElement("div");
+      h.className="column-header";
+      h.textContent = parentItem.name;
+      const a = document.createElement("a");
+      a.className="view-all";
+      a.href = "#" + slugifyPath(parentItem.path || parentItem.name);
+      a.textContent = "Ver " + parentItem.name;
+      col.appendChild(h);
+      col.appendChild(a);
     }
+
+    const ul = document.createElement("ul");
+
+    items.forEach(item=>{
+      const hasChild = item.children && item.children.length>0;
+      const li = document.createElement("li");
+      li.className="item";
+
+      const icon = (level===0) ? getIconForFirstLevel(item.name) : "";
+      li.innerHTML =
+        `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ""}<span class="text">${item.name}</span></span>` +
+        `${hasChild ? CHEVRON_SVG : ""}`;
+
+      li.onclick = () => {
+        Array.from(ul.children).forEach(el=>el.classList.remove("active"));
+        li.classList.add("active");
+        if(hasChild){
+          // remove columns to the right
+          const cols = Array.from(container.querySelectorAll(".column"));
+          cols.slice(level+1).forEach(c=>c.remove());
+          render(item.children, level+1, item, false);
+        }
+      };
+      ul.appendChild(li);
+    });
+
+    col.appendChild(ul);
+    container.appendChild(col);
+  }
 </script>
 </body>
 </html>
