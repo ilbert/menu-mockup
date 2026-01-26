@@ -203,17 +203,52 @@
 
   function buildTree(csv){
     const root = [];
-    csv.split(/\r?\n/).forEach(line => {
-      const clean = line.replace(/"/g,"").trim();
-      if(!clean.includes(">")) return;
-      const parts = clean.split(">").map(p=>p.trim()).filter(Boolean);
+
+    // 1) Normaliza y deduplica rutas (Set)
+    const seen = new Set();
+
+    const lines = csv.split(/\r?\n/);
+    for (const line of lines) {
+      const clean = line.replace(/"/g, "").trim();
+      if (!clean || !clean.includes(">")) continue;
+
+      // Normaliza separadores y espacios
+      const parts = clean
+        .split(">")
+        .map(p => p.trim().replace(/\s+/g, " "))
+        .filter(Boolean);
+
+      if (parts.length < 2) continue;
+
+      // Clave canonical para dedupe (sin acentos + minúsculas + sin "Total")
+      const key = parts.map(p => norm(displayName(p))).join(">");
+
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      // 2) Construye el árbol usando textos "bonitos" (sin Total)
       let current = root;
-      parts.forEach((name,i)=>{
-        let node = current.find(n=>n.name===name);
-        if(!node){
-          node = { name, children:[], path: parts.slice(0,i+1).join(" > ") };
+      parts.forEach((rawName, i) => {
+        const name = displayName(rawName);
+        let node = current.find(n => n.name === name);
+        if (!node) {
+          node = {
+            name,
+            children: [],
+            path: parts.slice(0, i+1).map(displayName).join(" > ")
+          };
           current.push(node);
-        } else if(!node.path){
+        }
+        current = node.children;
+      });
+    }
+
+    menuTree = root;
+
+    // ✅ Ordena nivel 1 como quieres (sin Total), y el resto alfabético
+    sortTopLevel(menuTree);
+    sortChildrenAlpha(menuTree);
+  } else if(!node.path){
           node.path = parts.slice(0,i+1).join(" > ");
         }
         current = node.children;
