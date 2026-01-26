@@ -221,15 +221,15 @@
     const lines = csv.split(/\r?\n/);
     for (const line of lines) {
       const clean = line.replace(/"/g, "").trim();
-      if (!clean || !clean.includes(">")) continue;
+      if (!clean) continue;
 
-      // Normaliza separadores y espacios
+      // Permite rutas de un solo nivel o con ">"
       const parts = clean
         .split(">")
         .map(p => p.trim().replace(/\s+/g, " "))
         .filter(Boolean);
 
-      if (parts.length < 2) continue;
+      if (parts.length < 1) continue;
 
       // Clave canonical para dedupe (sin acentos + minúsculas + sin "Total")
       const key = parts.map(p => norm(displayName(p))).join(">");
