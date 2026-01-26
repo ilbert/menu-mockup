@@ -19,7 +19,8 @@
     .drawer-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)}
     .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
     #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd}
-    #columns-container{display:flex;flex:1;overflow-x:auto;background:#fff}
+    #columns-container{display:flex;flex:1;overflow-x:auto;overflow-y:hidden;background:#fff;scrollbar-width:none;-ms-overflow-style:none}
+    #columns-container::-webkit-scrollbar{height:0px}
 
     .column{flex:0 0 330px;border-right:1px solid #eee;overflow-y:auto;height:100%}
     @media (max-width:520px){.column{flex-basis:86vw}}
@@ -170,6 +171,7 @@
   function toggleMenu(open){
     if(open){
       drawer.style.display="flex";
+      drawer.style.width = "min(1100px,96vw)";
       overlay.style.display="block";
       if(menuTree.length===0) loadData();
       else renderRootMenu();
@@ -177,6 +179,15 @@
       drawer.style.display="none";
       overlay.style.display="none";
     }
+
+  function updateDrawerWidth(){
+    // Expand drawer to fit columns (up to viewport width).
+    const cols = document.querySelectorAll('#columns-container .column').length || 1;
+    const colWidth = 330; // matches .column flex-basis
+    const padding = 60;
+    const desired = cols * colWidth + padding;
+    drawer.style.width = `min(${desired}px, 96vw)`;
+  }
   }
 
   async function loadData(){
@@ -273,7 +284,8 @@
         li.classList.add("active");
         if(item.type==="all") renderAllCategories();
         else renderOffers();
-      };
+    updateDrawerWidth();
+  };
       ul.appendChild(li);
 
       // línea + destacadas debajo de Ofertas (en root)
@@ -322,7 +334,8 @@
       li.className="item";
       li.innerHTML = `<span class="label"><span class="text">${it.name}</span></span>`;
       ul.appendChild(li);
-    });
+    updateDrawerWidth();
+  });
     col.appendChild(ul);
     container.appendChild(col);
   }
@@ -352,7 +365,8 @@
       bar.appendChild(back);
       bar.appendChild(title);
       col.appendChild(bar);
-    } else if(parentItem){
+    updateDrawerWidth();
+  } else if(parentItem){
       const h = document.createElement("div");
       h.className="column-header";
       h.textContent = displayName(parentItem.name);
