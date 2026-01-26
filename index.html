@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Menu Mockup</title>
   <style>
-    :root {
+    :root{
       --brand:#034ca8;
       --border:#e6e8eb;
       --bg:#f4f6f9;
@@ -39,8 +39,8 @@
     .column-header{padding:14px 16px 8px;font-weight:900;color:var(--brand);font-size:18px;display:flex;align-items:center;gap:10px}
     .view-all{display:block;padding:0 16px 12px;color:var(--brand);text-decoration:underline;font-weight:650;font-size:14px}
 
-    /* back chevron only */
     .back-only{border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center}
+
     .divider{border-top:1px solid #e5e7eb;margin:8px 0;}
     .tag{font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:8px;white-space:nowrap}
     .tag.new{background:#e6f2fa;color:var(--brand)}
@@ -65,12 +65,28 @@
 </aside>
 
 <script>
+  // ✅ Tu CSV publicado
   const DATA_URL_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTB17XxLBUzcUlZZeEh-UPryJijWIBOlec4xgD3BZ9JnF_zy3zKPdlMZpfLpr8bEygm2z5fLhp-ZxFk/pub?gid=0&single=true&output=csv";
   const DATA_URL = DATA_URL_BASE + "&_=" + Date.now();
 
   const CHEVRON_SVG = `<span class="chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" aria-hidden="true" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
+  // 🟦 Orden manual del NIVEL 1 (SIN "Total")
+  const TOP_ORDER = [
+    "Camillas",
+    "Mobiliario",
+    "Sillas de ruedas",
+    "Aparatología  y equipos",
+    "Esterilización y autoclaves",
+    "Material médico",
+    "Cuidado personal y salud",
+    "Desechables y consumibles",
+    "Ayudas técnicas para personas mayores",
+    "Vestuario y seguridad"
+  ];
+
+  // Iconos del primer nivel (SIN "Total")
   const ICON_MAP = {
     "aparatologia y equipos":"📁",
     "ayudas tecnicas para personas mayores":"🧓",
@@ -91,19 +107,27 @@
   const OFFERS_ITEMS = [
     { name:"Ofertas del momento", children:[] },
     { name:"Más vendidos", children:[] },
-    { name:"Promociones", children:[] },
+    { name:"Promociones", children:[] }
   ];
 
-  // 4 destacadas debajo de Ofertas (root)
+  // 4 destacadas debajo de “Ofertas” (root)
   const FEATURED_CATS = [
     { name:"Camillas", tag:"trending" },
     { name:"Sillas de ruedas", tag:"new" },
     { name:"Diagnóstico", tag:null },
-    { name:"Mobiliario", tag:null },
+    { name:"Mobiliario", tag:null }
   ];
 
-  const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/\s+/g," ");
-  const getIconForFirstLevel = (name) => ICON_MAP[norm(name)] || "";
+  const norm = (s) => String(s||"")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase().trim().replace(/\s+/g," ");
+
+  // ✅ Quita " Total" al final (si existe)
+  function displayName(name){
+    return String(name||"").replace(/\s+Total\s*$/i,"").trim();
+  }
+
+  const getIconForFirstLevel = (name) => ICON_MAP[norm(displayName(name))] || "";
 
   function slugifyPath(s){
     return String(s||"")
@@ -114,6 +138,25 @@
       .replace(/\s*>\s*/g,"/")
       .replace(/\/+/g,"/")
       .replace(/^-+|-+$/g,"");
+  }
+
+  // Ordena hijos alfabético (nivel 2+)
+  function sortChildrenAlpha(nodes){
+    nodes.forEach(n => {
+      n.children.sort((a,b)=>displayName(a.name).localeCompare(displayName(b.name)));
+      sortChildrenAlpha(n.children);
+    });
+  }
+
+  // Orden manual del nivel 1
+  function sortTopLevel(nodes){
+    const rank = new Map(TOP_ORDER.map((n,i)=>[norm(n), i]));
+    nodes.sort((a,b)=>{
+      const ra = rank.has(norm(displayName(a.name))) ? rank.get(norm(displayName(a.name))) : 9999;
+      const rb = rank.has(norm(displayName(b.name))) ? rank.get(norm(displayName(b.name))) : 9999;
+      if(ra !== rb) return ra - rb;
+      return displayName(a.name).localeCompare(displayName(b.name));
+    });
   }
 
   let menuTree = [];
@@ -176,13 +219,12 @@
         current = node.children;
       });
     });
-    menuTree = root.sort((a,b)=>a.name.localeCompare(b.name));
-  }
 
-  function clearColumns(fromLevel){
-    const container = document.getElementById("columns-container");
-    const cols = Array.from(container.querySelectorAll(".column"));
-    cols.forEach((c,idx)=>{ if(idx>=fromLevel) c.remove(); });
+    menuTree = root;
+
+    // ✅ Ordena nivel 1 como quieres (sin Total), y el resto alfabético
+    sortTopLevel(menuTree);
+    sortChildrenAlpha(menuTree);
   }
 
   function renderRootMenu(){
@@ -194,7 +236,7 @@
 
     const rootItems = [
       { name:"Todas las categorías", type:"all" },
-      { name:"Ofertas", type:"offers" },
+      { name:"Ofertas", type:"offers" }
     ];
 
     rootItems.forEach(item => {
@@ -209,7 +251,8 @@
       };
       ul.appendChild(li);
 
-      if(item.type==="offers") {
+      // línea + destacadas debajo de Ofertas (en root)
+      if(item.type==="offers"){
         const div = document.createElement("li");
         div.className="divider";
         ul.appendChild(div);
@@ -260,14 +303,13 @@
   }
 
   function renderAllCategories(){
-    // start at level 0 list
-    render(menuTree, 0, null, true);
+    render(menuTree, 0, null);
   }
 
-  function render(items, level, parentItem=null, isTopCats=false){
+  function render(items, level, parentItem=null){
     const container = document.getElementById("columns-container");
-    // keep root column as col0? In FR, when you enter, it replaces root list with categories.
-    // We'll replace everything with the category columns view.
+
+    // al entrar en nivel 0, sustituye el root
     if(level===0) container.innerHTML = "";
 
     const col = document.createElement("div");
@@ -288,11 +330,13 @@
     } else if(parentItem){
       const h = document.createElement("div");
       h.className="column-header";
-      h.textContent = parentItem.name;
+      h.textContent = displayName(parentItem.name);
+
       const a = document.createElement("a");
       a.className="view-all";
       a.href = "#" + slugifyPath(parentItem.path || parentItem.name);
-      a.textContent = "Ver " + parentItem.name;
+      a.textContent = "Ver " + displayName(parentItem.name);
+
       col.appendChild(h);
       col.appendChild(a);
     }
@@ -306,17 +350,17 @@
 
       const icon = (level===0) ? getIconForFirstLevel(item.name) : "";
       li.innerHTML =
-        `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ""}<span class="text">${item.name}</span></span>` +
+        `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ""}<span class="text">${displayName(item.name)}</span></span>` +
         `${hasChild ? CHEVRON_SVG : ""}`;
 
       li.onclick = () => {
         Array.from(ul.children).forEach(el=>el.classList.remove("active"));
         li.classList.add("active");
         if(hasChild){
-          // remove columns to the right
+          // borra columnas a la derecha
           const cols = Array.from(container.querySelectorAll(".column"));
           cols.slice(level+1).forEach(c=>c.remove());
-          render(item.children, level+1, item, false);
+          render(item.children, level+1, item);
         }
       };
       ul.appendChild(li);
