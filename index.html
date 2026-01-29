@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Banner Fix</title>
+  <title>Menu Mockup - Dinámico</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -14,7 +14,7 @@
     #drawer{position:fixed;inset:0 auto 0 0;background:#fff;z-index:1001;display:none;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.12);width:auto;max-width:96vw}
     .drawer-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)}
     .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
-    #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd; color: #856404; display: none;}
+    #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd;display:none}
     #columns-container{display:flex;flex:1;overflow-x:auto;overflow-y:hidden;background:#fff;scrollbar-width:none;-ms-overflow-style:none}
     #columns-container::-webkit-scrollbar{height:0px}
     .column{flex:0 0 330px;border-right:1px solid #eee;overflow-y:auto;height:100%}
@@ -61,7 +61,7 @@
 </aside>
 
 <script>
-  // IDs de tu documento según las capturas
+  // CONFIGURACIÓN DINÁMICA DE GOOGLE SHEETS
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
   const GID_BANNERS = "1300813141";
@@ -72,7 +72,6 @@
   const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
-  // Configuración de niveles y estilos
   const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "electrodomesticos y hogar":"🏠", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "ofertas y campanas":"🏷️", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
   const FEATURED_CATS = [{ name:"Camillas", tag:"trending" }, { name:"Sillas de ruedas", tag:"new" }, { name:"Diagnóstico", tag:null }, { name:"Mobiliario", tag:null }];
@@ -107,7 +106,7 @@
 
   async function loadAllData(){
     statusEl.style.display="block";
-    statusEl.textContent="Cargando menú...";
+    statusEl.textContent="Cargando configuración...";
     try {
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
       const catCsv = await catRes.text();
@@ -119,7 +118,7 @@
       statusEl.style.display="none";
       renderRootMenu();
     } catch(e) {
-      statusEl.innerHTML = `❌ Error de sincronización`;
+      statusEl.innerHTML = `❌ Error de carga`;
     }
   }
 
@@ -150,7 +149,6 @@
     });
   }
 
-  // Ordenamiento alfabético a partir del nivel 2
   function sortNodesRecursively(nodes, level) {
     if (!nodes || nodes.length === 0) return;
     if (level === 0) {
@@ -266,7 +264,7 @@
     
     const ul = col.querySelector("ul");
 
-    // Banner de cabecera de columna
+    // Banner de cabecera de columna (category_children)
     if(parent) {
       const bChild = findBanner({scope: 'category_children', parent: parent.name});
       if(bChild) col.insertAdjacentHTML('afterbegin', renderBanner(bChild, 'small'));
@@ -291,12 +289,12 @@
       };
       ul.appendChild(li);
 
-      // Lógica de banner debajo de un item específico
+      // INSERCIÓN DINÁMICA DE BANNER "AFTER ITEM"
       if(parent) {
         const bAfter = findBanner({scope: 'after_item', parent: parent.name, after: item.name});
         if(bAfter) {
           const bLi = document.createElement("li");
-          bLi.style.listStyle = "none";
+          bLi.style.borderBottom = "none";
           bLi.innerHTML = renderBanner(bAfter, 'small');
           ul.appendChild(bLi);
         }
