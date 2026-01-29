@@ -125,11 +125,11 @@
 
   // Especialidades (debajo de Ofertas)
   const SPECIALTIES_ITEMS = [
-    { name:"Fisioterapia", children:[] },
-    { name:"Estética", children:[] },
-    { name:"Peluquería y Barbería", children:[] },
-    { name:"SPA & Wellness", children:[] },
-    { name:"Medicina", children:[] }
+    { name:"Fisioterapia", icon:"🦵", children:[] },
+    { name:"Estética", icon:"✨", children:[] },
+    { name:"Peluquería y Barbería", icon:"💈", children:[] },
+    { name:"SPA & Wellness", icon:"🧖", children:[] },
+    { name:"Medicina", icon:"🩺", children:[] }
   ];
 
   const norm = (s) => String(s||"")
@@ -336,7 +336,7 @@
     OFFERS_ITEMS.forEach(it=>{
       const li=document.createElement("li");
       li.className="item";
-      li.innerHTML = `<span class="label"><span class="text">${it.name}</span></span>`;
+      li.innerHTML = `<span class="label">${it.icon ? `<span class="icon">${it.icon}</span>` : ``}<span class="text">${it.name}</span></span>`;
       ul.appendChild(li);
     });
     col.appendChild(ul);
@@ -366,7 +366,7 @@
     SPECIALTIES_ITEMS.forEach(it=>{
       const li=document.createElement("li");
       li.className="item";
-      li.innerHTML = `<span class="label"><span class="text">${it.name}</span></span>`;
+      li.innerHTML = `<span class="label">${it.icon ? `<span class="icon">${it.icon}</span>` : ``}<span class="text">${it.name}</span></span>`;
       ul.appendChild(li);
     });
     col.appendChild(ul);
