@@ -46,6 +46,53 @@
     .tag{font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:8px;white-space:nowrap}
     .tag.new{background:#e6f2fa;color:var(--brand)}
     .tag.trending{background:#eafaf1;color:#0a8f4e}
+  
+    /* Root column layout (allows banner at bottom) */
+    .root-col{display:flex;flex-direction:column;}
+    .root-col > ul{flex:0 0 auto;}
+    .promo-banner{
+      margin:16px;
+      border-radius:14px;
+      padding:16px;
+      background: linear-gradient(135deg, #0b5fff 0%, #00b3a6 100%);
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+    }
+    .promo-banner:before{
+      content:"";
+      position:absolute;
+      right:-40px;
+      top:-40px;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      background: rgba(255,255,255,0.18);
+    }
+    .promo-kicker{font-weight:900;letter-spacing:.04em;font-size:12px;opacity:.95;text-transform:uppercase}
+    .promo-title{margin:6px 0 6px;font-size:18px;font-weight:900;line-height:1.15}
+    .promo-sub{margin:0 0 12px;font-size:13px;opacity:.95}
+    .promo-cta{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:10px;
+      background:#fff;
+      color:#034ca8;
+      text-decoration:none;
+      font-weight:800;
+      font-size:13px;
+    }
+    .promo-cta:hover{filter:brightness(.97)}
+    .promo-badge{
+      position:absolute;
+      left:16px;
+      bottom:16px;
+      font-size:34px;
+      opacity:.25;
+    }
+
   </style>
 </head>
 <body>
@@ -287,7 +334,7 @@
     const container = document.getElementById("columns-container");
     container.innerHTML="";
     const col = document.createElement("div");
-    col.className="column";
+    col.className="column root-col";
     const ul = document.createElement("ul");
 
     const rootItems = [
@@ -329,6 +376,19 @@
     });
 
     col.appendChild(ul);
+
+    // Banner promo (aprovecha espacio en blanco)
+    const banner = document.createElement("div");
+    banner.className = "promo-banner";
+    banner.innerHTML = `
+      <div class="promo-kicker">Fitness · Pilates</div>
+      <div class="promo-title">Pilates Reformers y equipamiento</div>
+      <div class="promo-sub">Reformers, Cadillac y accesorios para estudios y casa.</div>
+      <a class="promo-cta" href="#pilates-reformer">Ver Reformers ${CHEVRON_SVG}</a>
+      <div class="promo-badge">🏋️‍♀️</div>
+    `;
+    col.appendChild(banner);
+
     container.appendChild(col);
   }
 
@@ -359,6 +419,19 @@
     updateDrawerWidth();
   });
     col.appendChild(ul);
+
+    // Banner promo (aprovecha espacio en blanco)
+    const banner = document.createElement("div");
+    banner.className = "promo-banner";
+    banner.innerHTML = `
+      <div class="promo-kicker">Fitness · Pilates</div>
+      <div class="promo-title">Pilates Reformers y equipamiento</div>
+      <div class="promo-sub">Reformers, Cadillac y accesorios para estudios y casa.</div>
+      <a class="promo-cta" href="#pilates-reformer">Ver Reformers ${CHEVRON_SVG}</a>
+      <div class="promo-badge">🏋️‍♀️</div>
+    `;
+    col.appendChild(banner);
+
     container.appendChild(col);
   }
 
@@ -390,6 +463,19 @@
     updateDrawerWidth();
   });
     col.appendChild(ul);
+
+    // Banner promo (aprovecha espacio en blanco)
+    const banner = document.createElement("div");
+    banner.className = "promo-banner";
+    banner.innerHTML = `
+      <div class="promo-kicker">Fitness · Pilates</div>
+      <div class="promo-title">Pilates Reformers y equipamiento</div>
+      <div class="promo-sub">Reformers, Cadillac y accesorios para estudios y casa.</div>
+      <a class="promo-cta" href="#pilates-reformer">Ver Reformers ${CHEVRON_SVG}</a>
+      <div class="promo-badge">🏋️‍♀️</div>
+    `;
+    col.appendChild(banner);
+
     container.appendChild(col);
     updateDrawerWidth();
   }
@@ -474,6 +560,19 @@
     });
 
     col.appendChild(ul);
+
+    // Banner promo (aprovecha espacio en blanco)
+    const banner = document.createElement("div");
+    banner.className = "promo-banner";
+    banner.innerHTML = `
+      <div class="promo-kicker">Fitness · Pilates</div>
+      <div class="promo-title">Pilates Reformers y equipamiento</div>
+      <div class="promo-sub">Reformers, Cadillac y accesorios para estudios y casa.</div>
+      <a class="promo-cta" href="#pilates-reformer">Ver Reformers ${CHEVRON_SVG}</a>
+      <div class="promo-badge">🏋️‍♀️</div>
+    `;
+    col.appendChild(banner);
+
     container.appendChild(col);
   }
 </script>
