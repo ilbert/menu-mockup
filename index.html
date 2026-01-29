@@ -347,7 +347,7 @@ async function loadData(){
       renderRootMenu();
     } catch(e) {
       status.style.display="block";
-      status.textContent="⚠️ Error cargando datos. Revisa consola.";
+      status.textContent="⚠️ Error cargando datos: " + (e && e.message ? e.message : e);
       console.error(e);
     }
   }
