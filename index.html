@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Completo y Dinámico</title>
+  <title>Menu Mockup - Versión Final Corregida</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -73,7 +73,7 @@
 
   const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "electrodomesticos y hogar":"🏠", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "ofertas y campanas":"🏷️", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
-  
+  const FEATURED_CATS = [{ name:"Camillas", tag:"trending" }, { name:"Sillas de ruedas", tag:"new" }, { name:"Diagnóstico", tag:null }, { name:"Mobiliario", tag:null }];
   const SPECIALTIES_ITEMS = [{ name:"Fisioterapia", icon:"🦵" }, { name:"Estética", icon:"✨" }, { name:"Peluquería y Barbería", icon:"💈" }, { name:"SPA & Wellness", icon:"🧖" }, { name:"Medicina", icon:"🩺" }];
   const OFFERS_ITEMS = [{ name:"Ofertas del momento" }, { name:"Más vendidos" }, { name:"Promociones" }];
 
@@ -105,7 +105,7 @@
 
   async function loadAllData(){
     statusEl.style.display="block";
-    statusEl.textContent="Cargando...";
+    statusEl.textContent="Cargando configuración...";
     try {
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
       const catCsv = await catRes.text();
@@ -115,7 +115,7 @@
       statusEl.style.display="none";
       renderRootMenu();
     } catch(e) {
-      statusEl.textContent="Error de carga";
+      statusEl.textContent="Error de conexión";
     }
   }
 
@@ -196,15 +196,18 @@
     const col = document.createElement("div");
     col.className = "column";
     
-    col.innerHTML = `<ul>
+    let html = `<ul>
       <li class="item" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
       <li class="item" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
       <li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
+      <li class="divider"></li>
+      ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}</span></li>`).join('')}
     </ul>`;
     
     const bRoot = findBanner({scope: 'root'});
-    if(bRoot) col.innerHTML += renderBanner(bRoot);
+    if(bRoot) html += renderBanner(bRoot);
 
+    col.innerHTML = html;
     container.appendChild(col);
     updateDrawerWidth();
   }
@@ -260,13 +263,21 @@
       li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
       
       li.onclick = () => {
+        const wasActive = li.classList.contains("active");
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
-        li.classList.add("active");
-        if(item.children.length) render(item.children, level + 1, item);
+        
+        // Funcionalidad TOGGLE (Cerrar si ya estaba abierto)
+        if(item.children.length && wasActive) {
+          Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
+        } else {
+          li.classList.add("active");
+          if(item.children.length) render(item.children, level + 1, item);
+        }
         updateDrawerWidth();
       };
       ul.appendChild(li);
 
+      // Banner AFTER_ITEM (Ej: Limpieza debajo de su sitio)
       if(parent){
         const bAfter = findBanner({scope: 'after_item', parent: parent.name, after: item.name});
         if(bAfter) {
