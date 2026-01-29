@@ -47,50 +47,30 @@
     .tag.new{background:#e6f2fa;color:var(--brand)}
     .tag.trending{background:#eafaf1;color:#0a8f4e}
   
-    /* Root column layout (allows banner at bottom) */
-    .root-col{display:flex;flex-direction:column;}
-    .root-col > ul{flex:0 0 auto;}
-    .promo-banner{
+    /* Banner promo en menú principal */
+    .promo-card{
       margin:16px;
       border-radius:14px;
-      padding:16px;
-      background: linear-gradient(135deg, #0b5fff 0%, #00b3a6 100%);
-      color:#fff;
-      position:relative;
       overflow:hidden;
+      position:relative;
+      background:#0b5ed7;
+      box-shadow:0 10px 25px rgba(0,0,0,.12);
     }
-    .promo-banner:before{
-      content:"";
+    .promo-img{
+      width:100%;
+      height:160px;
+      object-fit:cover;
+      display:block;
+    }
+    .promo-overlay{
       position:absolute;
-      right:-40px;
-      top:-40px;
-      width:180px;
-      height:180px;
-      border-radius:50%;
-      background: rgba(255,255,255,0.18);
+      inset:0;
+      background:linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 55%, rgba(0,0,0,0) 100%);
     }
-    .promo-kicker{font-weight:900;letter-spacing:.04em;font-size:12px;opacity:.95;text-transform:uppercase}
-    .promo-title{margin:6px 0 6px;font-size:18px;font-weight:900;line-height:1.15}
-    .promo-sub{margin:0 0 12px;font-size:13px;opacity:.95}
-    .promo-cta{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 12px;
-      border-radius:10px;
-      background:#fff;
-      color:#034ca8;
-      text-decoration:none;
-      font-weight:800;
-      font-size:13px;
-    }
-    .promo-cta:hover{filter:brightness(.97)}
-    .promo-badge{
+    .promo-link{
       position:absolute;
-      left:16px;
-      bottom:16px;
-      font-size:34px;
-      opacity:.25;
+      inset:0;
+      display:block;
     }
 
   </style>
@@ -334,7 +314,7 @@
     const container = document.getElementById("columns-container");
     container.innerHTML="";
     const col = document.createElement("div");
-    col.className="column root-col";
+    col.className="column";
     const ul = document.createElement("ul");
 
     const rootItems = [
@@ -377,19 +357,15 @@
 
     col.appendChild(ul);
 
-    // Banner promo (aprovecha espacio en blanco)
-    const banner = document.createElement("div");
-    banner.className = "promo-banner";
-    banner.innerHTML = `
+    // Banner promo (solo menú principal)
+    const promo = document.createElement("div");
+    promo.className = "promo-card";
+    promo.innerHTML = `
+      <img class="promo-img" src="https://www.quirumed.com/media/wysiwyg/banners-nevera/081-245x135-homeIZ7.jpg" alt="Promo Quirumed">
       <div class="promo-overlay"></div>
-      <div class="promo-content">
-        <span class="promo-ribbon">REBAJAS</span>
-        <div class="promo-title">Pilates Reformer & Fitness</div>
-        <div class="promo-sub">Estrena Reformer: ofertas y packs para estudio y casa.</div>
-        <a class="promo-cta" href="#pilates-reformer">Ver ofertas ${CHEVRON_SVG}</a>
-      </div>
+      <a class="promo-link" href="#promo" aria-label="Ver promoción"></a>
     `;
-    col.appendChild(banner);
+    col.appendChild(promo);
 
     container.appendChild(col);
   }
@@ -421,19 +397,6 @@
     updateDrawerWidth();
   });
     col.appendChild(ul);
-
-    // Banner promo (aprovecha espacio en blanco)
-    const banner = document.createElement("div");
-    banner.className = "promo-banner";
-    banner.innerHTML = `
-      <div class="promo-kicker">Fitness · Pilates</div>
-      <div class="promo-title">Pilates Reformers y equipamiento</div>
-      <div class="promo-sub">Reformers, Cadillac y accesorios para estudios y casa.</div>
-      <a class="promo-cta" href="#pilates-reformer">Ver Reformers ${CHEVRON_SVG}</a>
-      <div class="promo-badge">🏋️‍♀️</div>
-    `;
-    col.appendChild(banner);
-
     container.appendChild(col);
   }
 
@@ -465,19 +428,6 @@
     updateDrawerWidth();
   });
     col.appendChild(ul);
-
-    // Banner promo (aprovecha espacio en blanco)
-    const banner = document.createElement("div");
-    banner.className = "promo-banner";
-    banner.innerHTML = `
-      <div class="promo-kicker">Fitness · Pilates</div>
-      <div class="promo-title">Pilates Reformers y equipamiento</div>
-      <div class="promo-sub">Reformers, Cadillac y accesorios para estudios y casa.</div>
-      <a class="promo-cta" href="#pilates-reformer">Ver Reformers ${CHEVRON_SVG}</a>
-      <div class="promo-badge">🏋️‍♀️</div>
-    `;
-    col.appendChild(banner);
-
     container.appendChild(col);
     updateDrawerWidth();
   }
@@ -562,19 +512,6 @@
     });
 
     col.appendChild(ul);
-
-    // Banner promo (aprovecha espacio en blanco)
-    const banner = document.createElement("div");
-    banner.className = "promo-banner";
-    banner.innerHTML = `
-      <div class="promo-kicker">Fitness · Pilates</div>
-      <div class="promo-title">Pilates Reformers y equipamiento</div>
-      <div class="promo-sub">Reformers, Cadillac y accesorios para estudios y casa.</div>
-      <a class="promo-cta" href="#pilates-reformer">Ver Reformers ${CHEVRON_SVG}</a>
-      <div class="promo-badge">🏋️‍♀️</div>
-    `;
-    col.appendChild(banner);
-
     container.appendChild(col);
   }
 </script>
