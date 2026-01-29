@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Base Restaurada y Banners al Final</title>
+  <title>Menu Mockup - Corregido</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -59,10 +59,9 @@
 </aside>
 
 <script>
-  // URLS DE TU HOJA DE CALCULO
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0"; 
-  const GID_BANNERS = "1300813141"; // Pestaña de banners
+  const GID_BANNERS = "1300813141";
 
   const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_CATEGORIES}&_=${Date.now()}`;
   const BANNERS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_BANNERS}&_=${Date.now()}`;
@@ -70,7 +69,6 @@
   const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
-  // CONFIGURACIÓN DE TU BASE ORIGINAL
   const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
   const FEATURED_CATS = [{ name:"Camillas", tag:"trending" }, { name:"Sillas de ruedas", tag:"new" }, { name:"Diagnóstico", tag:null }, { name:"Mobiliario", tag:null }];
@@ -93,7 +91,7 @@
 
   async function loadAllData(){
     statusEl.style.display="block";
-    statusEl.textContent="Cargando categorías...";
+    statusEl.textContent="Cargando...";
     try {
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
       const catCsv = await catRes.text();
@@ -102,7 +100,7 @@
       bannersData = rowsToObjects(parseCSV(banCsv)).reverse();
       statusEl.style.display="none";
       renderRootMenu();
-    } catch(e) { statusEl.textContent="Error al cargar datos."; }
+    } catch(e) { statusEl.textContent="Error de carga"; }
   }
 
   function parseCSV(text){
@@ -171,14 +169,13 @@
     col.className = "column";
     
     col.innerHTML = `<ul>
-      <li class="item" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
-      <li class="item" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
-      <li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
+      <li class="item" id="item-spec" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
+      <li class="item" id="item-off" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
+      <li class="item" id="item-all" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
       <li class="divider"></li>
       ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}</span></li>`).join('')}
     </ul>`;
     
-    // Banner Root (ej: Home)
     const b = bannersData.find(b => norm(b.scope) === 'root');
     if(b) col.innerHTML += `<div class="promo-card"><img class="promo-img" src="${b.img}"><a class="promo-link" href="${b.href||'#'}"></a></div>`;
 
@@ -187,8 +184,10 @@
   }
 
   function renderSpecialties(){
+    clearActiveRoot();
+    document.getElementById("item-spec").classList.add("active");
     const container = document.getElementById("columns-container");
-    container.innerHTML = "";
+    Array.from(container.querySelectorAll(".column")).slice(1).forEach(c => c.remove());
     const col = document.createElement("div");
     col.className = "column";
     col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Especialidades</div><ul>
@@ -199,8 +198,10 @@
   }
 
   function renderOffers(){
+    clearActiveRoot();
+    document.getElementById("item-off").classList.add("active");
     const container = document.getElementById("columns-container");
-    container.innerHTML = "";
+    Array.from(container.querySelectorAll(".column")).slice(1).forEach(c => c.remove());
     const col = document.createElement("div");
     col.className = "column";
     col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Ofertas</div><ul>
@@ -210,10 +211,22 @@
     updateDrawerWidth();
   }
 
-  function renderAllCategories(){ render(menuTree, 0); }
+  function renderAllCategories(){
+    clearActiveRoot();
+    document.getElementById("item-all").classList.add("active");
+    render(menuTree, 0); 
+  }
+
+  function clearActiveRoot() {
+    ["item-spec", "item-off", "item-all"].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.classList.remove("active");
+    });
+  }
 
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
+    // Eliminar columnas a la derecha (si level 0, borramos a partir de la 1)
     Array.from(container.querySelectorAll(".column")).slice(level + 1).forEach(c => c.remove());
 
     const col = document.createElement("div");
@@ -231,7 +244,8 @@
         const wasActive = li.classList.contains("active");
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
         if(item.children.length && wasActive) {
-          Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
+          Array.from(container.querySelectorAll(".column")).slice(level+2).forEach(c => c.remove());
+          li.classList.remove("active");
         } else {
           li.classList.add("active");
           if(item.children.length) render(item.children, level + 1, item);
@@ -240,7 +254,6 @@
       };
       ul.appendChild(li);
 
-      // Banner AFTER_ITEM (Específico de un ítem)
       if(parent){
         const bAfter = bannersData.find(b => norm(b.scope) === 'after_item' && norm(b.parent) === norm(parent.name) && norm(b.after) === norm(item.name));
         if(bAfter) {
@@ -251,7 +264,6 @@
       }
     });
 
-    // POSICIÓN AL FINAL: Banner de categoría (basado en parent)
     if(parent){
       const bChild = bannersData.find(b => norm(b.scope) === 'category_children' && norm(b.parent) === norm(parent.name));
       if(bChild) {
@@ -267,6 +279,7 @@
     drawer.style.display = open ? "flex" : "none";
     overlay.style.display = open ? "block" : "none";
     if(open && menuTree.length===0) loadAllData();
+    else if(open) renderRootMenu();
   }
 
   function updateDrawerWidth(){
