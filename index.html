@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup</title>
+  <title>Menu Mockup - Final Dinámico</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -29,7 +29,12 @@
     .chevron{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
     .chevron svg{width:18px;height:18px;stroke:var(--brand);stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
     .column-header{padding:14px 16px 8px;font-weight:900;color:var(--brand);font-size:18px;display:flex;align-items:center;gap:10px}
+    .view-all{display:block;padding:0 16px 12px;color:var(--brand);text-decoration:underline;font-weight:650;font-size:14px}
+    .back-only{border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center}
     .divider{border-top:1px solid #e5e7eb;margin:8px 0;}
+    .tag{font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:8px;white-space:nowrap}
+    .tag.new{background:#e6f2fa;color:var(--brand)}
+    .tag.trending{background:#eafaf1;color:#0a8f4e}
     .promo-card{ margin:16px; border-radius:14px; overflow:hidden; position:relative; background:#0b5ed7; box-shadow:0 10px 25px rgba(0,0,0,.12); }
     .promo-img{ width:100%; height:160px; object-fit:cover; display:block; }
     .promo-link{ position:absolute; inset:0; display:block; }
@@ -56,6 +61,7 @@
 </aside>
 
 <script>
+  // CONFIGURACIÓN DE GOOGLE SHEETS
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
   const GID_BANNERS = "1300813141";
@@ -65,6 +71,13 @@
 
   const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
+
+  // CONFIGURACIÓN DE UI (RESTAURADA)
+  const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
+  const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "electrodomesticos y hogar":"🏠", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "ofertas y campanas":"🏷️", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
+  const FEATURED_CATS = [{ name:"Camillas", tag:"trending" }, { name:"Sillas de ruedas", tag:"new" }, { name:"Diagnóstico", tag:null }, { name:"Mobiliario", tag:null }];
+  const SPECIALTIES_ITEMS = [{ name:"Fisioterapia", icon:"🦵" }, { name:"Estética", icon:"✨" }, { name:"Peluquería y Barbería", icon:"💈" }, { name:"SPA & Wellness", icon:"🧖" }, { name:"Medicina", icon:"🩺" }];
+  const OFFERS_ITEMS = [{ name:"Ofertas del momento" }, { name:"Más vendidos" }, { name:"Promociones" }];
 
   let menuTree = [];
   let banners = [];
@@ -76,6 +89,9 @@
   document.getElementById("openBtn").onclick = () => toggleMenu(true);
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
+
+  const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/\s+/g," ");
+  function displayName(name){ return String(name||"").replace(/\s+Total\s*$/i,"").trim(); }
 
   function toggleMenu(open){
     if(open){
@@ -89,11 +105,9 @@
     }
   }
 
-  const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
-
   async function loadAllData(){
     statusEl.style.display="block";
-    statusEl.textContent="Cargando categorías y banners...";
+    statusEl.textContent="Cargando menú dinámico...";
     try {
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
       const catCsv = await catRes.text();
@@ -105,7 +119,7 @@
       statusEl.style.display="none";
       renderRootMenu();
     } catch(e) {
-      statusEl.innerHTML = `❌ Error: ${e.message}`;
+      statusEl.innerHTML = `❌ Error de conexión`;
     }
   }
 
@@ -141,18 +155,27 @@
     csv.split(/\r?\n/).forEach(line => {
       const parts = line.replace(/"/g, "").split(">").map(p => p.trim()).filter(Boolean);
       let current = root;
-      parts.forEach((name, i) => {
+      parts.forEach((rawName, i) => {
+        const name = displayName(rawName);
         let node = current.find(n => n.name === name);
         if(!node){
-          node = {name, children: [], path: parts.slice(0, i+1).join(" > ")};
+          node = {name, children: [], path: parts.slice(0, i+1).map(displayName).join(" > ")};
           current.push(node);
         }
         current = node.children;
       });
     });
+    // Ordenar nivel 1
+    const rank = new Map(TOP_ORDER.map((n,i)=>[norm(n), i]));
+    root.sort((a,b)=>{
+      const ra = rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999;
+      const rb = rank.has(norm(b.name)) ? rank.get(norm(b.name)) : 999;
+      return ra - rb || a.name.localeCompare(b.name);
+    });
     menuTree = root;
   }
 
+  // Lógica de Banners Dinámicos
   function findBanner(query){
     return banners.find(b => 
       norm(b.scope) === norm(query.scope) && 
@@ -169,18 +192,49 @@
             </div>`;
   }
 
+  // RENDERS DE SECCIONES
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
     const col = document.createElement("div");
     col.className = "column";
     
-    let html = `<ul><li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li></ul>`;
+    let html = `<ul>
+      <li class="item" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
+      <li class="item" onclick="renderOffers()"><span class="label"><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
+      <li class="item" onclick="renderAllCategories()"><span class="label"><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
+      <li class="divider"></li>
+      ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}</span></li>`).join('')}
+    </ul>`;
     
     const bRoot = findBanner({scope: 'root'});
     if(bRoot) html += renderBanner(bRoot);
 
     col.innerHTML = html;
+    container.appendChild(col);
+    updateDrawerWidth();
+  }
+
+  function renderSpecialties(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML = "";
+    const col = document.createElement("div");
+    col.className = "column";
+    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Especialidades</div><ul>
+      ${SPECIALTIES_ITEMS.map(it => `<li class="item"><span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span></li>`).join('')}
+    </ul>`;
+    container.appendChild(col);
+    updateDrawerWidth();
+  }
+
+  function renderOffers(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML = "";
+    const col = document.createElement("div");
+    col.className = "column";
+    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Ofertas</div><ul>
+      ${OFFERS_ITEMS.map(it => `<li class="item"><span class="label"><span class="text">${it.name}</span></span></li>`).join('')}
+    </ul>`;
     container.appendChild(col);
     updateDrawerWidth();
   }
@@ -196,11 +250,15 @@
 
     const col = document.createElement("div");
     col.className = "column";
-    col.innerHTML = `<div class="column-header">${level > 0 ? BACK_CHEVRON_SVG : ''}${level === 0 ? 'Categorías' : parent.name}</div><ul></ul>`;
+    
+    // Header y enlace "Ver todo"
+    let headerHtml = `<div class="column-header">${level === 0 ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías` : parent.name}</div>`;
+    if(level > 0) headerHtml += `<a class="view-all" href="#${norm(parent.name)}">Ver ${parent.name}</a>`;
+    col.innerHTML = headerHtml + "<ul></ul>";
     
     const ul = col.querySelector("ul");
 
-    // Banner al inicio de la columna de hijos
+    // Banner de cabecera de categoría (ej: "Cuidado personal y salud")
     if(parent) {
       const bChild = findBanner({scope: 'category_children', parent: parent.name});
       if(bChild) col.insertAdjacentHTML('beforeend', renderBanner(bChild, 'small'));
@@ -209,15 +267,23 @@
     items.forEach(item => {
       const li = document.createElement("li");
       li.className = "item";
-      li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>${item.children.length ? CHEVRON_SVG : ''}`;
+      const icon = level === 0 ? (ICON_MAP[norm(item.name)] || "") : "";
+      li.innerHTML = `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ""}<span class="text">${item.name}</span></span>${item.children.length ? CHEVRON_SVG : ''}`;
+      
       li.onclick = () => {
+        const wasActive = li.classList.contains("active");
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
-        li.classList.add("active");
-        if(item.children.length) render(item.children, level + 1, item);
+        if(item.children.length && wasActive) {
+          Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
+        } else {
+          li.classList.add("active");
+          if(item.children.length) render(item.children, level + 1, item);
+        }
+        updateDrawerWidth();
       };
       ul.appendChild(li);
 
-      // Banner después de un ítem específico
+      // Banner "After Item" (ej: después de "Vestuario desechable")
       if(parent) {
         const bAfter = findBanner({scope: 'after_item', parent: parent.name, after: item.name});
         if(bAfter) {
