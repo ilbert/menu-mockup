@@ -18,7 +18,7 @@
     #drawer{position:fixed;inset:0 auto 0 0;background:#fff;z-index:1001;display:none;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.12);width:auto;max-width:96vw}
     .drawer-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)}
     .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
-    #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd}
+    #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd; color: #856404; display: none;}
 
     /* scroll horizontal funcional pero sin barra visible */
     #columns-container{display:flex;flex:1;overflow-x:auto;overflow-y:hidden;background:#fff;scrollbar-width:none;-ms-overflow-style:none}
@@ -78,62 +78,49 @@
 
 <aside id="drawer">
   <div class="drawer-header">
-    <span></span>
+    <span>MENU</span>
     <button class="close-x" id="closeBtn" aria-label="Cerrar">✕</button>
   </div>
-  <div id="status">Cargando categorías desde Google Sheets...</div>
+  <div id="status"></div>
   <div id="columns-container"></div>
 </aside>
 
 <script>
-  // ====== URLs ======
+  // ====== CONFIGURACIÓN CORREGIDA ======
+  // ID extraído de tu URL: 1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
-  const GID_CATEGORIES = "0";
+  
+  // GID 0 = Generalmente es la "Hoja 1" (Categorías)
+  const GID_CATEGORIES = "0"; 
+  
+  // GID 1300813141 = Pestaña "banner" (Confirmado por tu link)
   const GID_BANNERS = "1300813141";
 
-  // Importante: para fetch en GitHub Pages debe ser "pub?output=csv"
+  // URLs de exportación CSV
   const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?gid=${GID_CATEGORIES}&single=true&output=csv&_=${Date.now()}`;
   const BANNERS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?gid=${GID_BANNERS}&single=true&output=csv&_=${Date.now()}`;
 
+  // Iconos SVG
   const CHEVRON_SVG = `<span class="chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" aria-hidden="true" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
-  // ====== Orden NIVEL 1 (sin "Total") ======
+  // ====== Orden y Mapeos ======
   const TOP_ORDER = [
-    "Camillas",
-    "Mobiliario",
-    "Sillas de ruedas",
-    "Aparatología  y equipos",
-    "Esterilización y autoclaves",
-    "Material médico",
-    "Cuidado personal y salud",
-    "Desechables y consumibles",
-    "Ayudas técnicas para personas mayores",
-    "Vestuario y seguridad"
+    "Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos",
+    "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud",
+    "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"
   ];
 
-  // Iconos del primer nivel (sin "Total")
   const ICON_MAP = {
-    "aparatologia y equipos":"📁",
-    "ayudas tecnicas para personas mayores":"🧓",
-    "camillas":"🛏️",
-    "cuidado personal y salud":"🧴",
-    "desechables y consumibles":"🧻",
-    "diagnostico":"🩺",
-    "electrodomesticos y hogar":"🏠",
-    "esterilizacion y autoclaves":"🧼",
-    "instrumental":"🧰",
-    "material medico":"📦",
-    "mobiliario":"🪑",
-    "ofertas y campanas":"🏷️",
-    "sillas de ruedas":"🦽",
-    "vestuario y seguridad":"🦺"
+    "aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓",
+    "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻",
+    "diagnostico":"🩺", "electrodomesticos y hogar":"🏠", "esterilizacion y autoclaves":"🧼",
+    "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑",
+    "ofertas y campanas":"🏷️", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"
   };
 
-  // Iconos para menú raíz
   const ROOT_ICON_MAP = { "especialidades": "⭐" };
 
-  // Submenús root (sin navegar árbol)
   const OFFERS_ITEMS = [
     { name:"Ofertas del momento", children:[] },
     { name:"Más vendidos", children:[] },
@@ -156,25 +143,14 @@
   ];
 
   // ====== Helpers ======
-  const norm = (s) => String(s||"")
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-    .toLowerCase().trim().replace(/\s+/g," ");
-
-  function displayName(name){
-    return String(name||"").replace(/\s+Total\s*$/i,"").trim();
-  }
-
+  const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/\s+/g," ");
+  function displayName(name){ return String(name||"").replace(/\s+Total\s*$/i,"").trim(); }
   const getIconForFirstLevel = (name) => ICON_MAP[norm(displayName(name))] || "";
-
+  
   function slugifyPath(s){
-    return String(s||"")
-      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-      .toLowerCase().trim()
-      .replace(/\s+/g,"-")
-      .replace(/[^a-z0-9\-\/ >]+/g,"")
-      .replace(/\s*>\s*/g,"/")
-      .replace(/\/+/g,"/")
-      .replace(/^-+|-+$/g,"");
+    return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim()
+      .replace(/\s+/g,"-").replace(/[^a-z0-9\-\/ >]+/g,"")
+      .replace(/\s*>\s*/g,"/").replace(/\/+/g,"/").replace(/^-+|-+$/g,"");
   }
 
   function sortChildrenAlpha(nodes){
@@ -232,7 +208,7 @@
     }
   }
 
-  // ====== CSV parsing robusta ======
+  // ====== CSV Parsing ======
   function parseCSV(text){
     const rows = [];
     let cur = "", row = [], inQ = false;
@@ -270,26 +246,33 @@
     return out;
   }
 
+  // ====== Carga de datos ======
   async function loadAllData(){
     if (location.protocol === "file:") {
       statusEl.style.display="block";
-      statusEl.textContent="⚠️ Abre este archivo desde un servidor (GitHub Pages / localhost). No funciona con file://";
+      statusEl.innerHTML="⚠️ <b>Error:</b> Abre este archivo desde un servidor (GitHub Pages, localhost).<br>No funciona con doble click (file://).";
       return;
     }
 
     statusEl.style.display="block";
-    statusEl.textContent="Cargando categorías y banners desde Google Sheets...";
+    statusEl.textContent="Cargando datos...";
+    statusEl.style.background="#fff3cd"; 
+    statusEl.style.color="#856404";
 
     try{
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
-      if(!catRes.ok) throw new Error("No se pudo leer el CSV de categorías");
-      if(!banRes.ok) throw new Error("No se pudo leer el CSV de banners");
+      
+      // Chequeo de errores HTTP
+      if(!catRes.ok) throw new Error(`Error ${catRes.status} al leer Categorías`);
+      if(!banRes.ok) throw new Error(`Error ${banRes.status} al leer Banners`);
 
       const catCsv = await catRes.text();
       const banCsv = await banRes.text();
 
-      if(catCsv.trim().startsWith("<")) throw new Error("Categorías: Sheets devolvió HTML (publicación/permisos)");
-      if(banCsv.trim().startsWith("<")) throw new Error("Banners: Sheets devolvió HTML (publicación/permisos)");
+      // Chequeo si devolvió HTML (significa que no está publicado o pide login)
+      if(catCsv.trim().startsWith("<!doctype") || catCsv.trim().startsWith("<html")) {
+        throw new Error("Google Sheets devolvió una página de Login/Error en lugar de CSV.<br><b>Asegúrate de: Archivo > Compartir > Publicar en la web</b>");
+      }
 
       buildTree(catCsv);
 
@@ -305,10 +288,13 @@
 
       statusEl.style.display="none";
       renderRootMenu();
+
     }catch(e){
       statusEl.style.display="block";
-      statusEl.textContent="⚠️ Error cargando datos. Revisa consola.";
-      console.error("Error cargando datos:", e);
+      statusEl.style.background = "#f8d7da";
+      statusEl.style.color = "#721c24";
+      statusEl.innerHTML = `❌ <b>Ocurrió un error:</b><br>${e.message}`;
+      console.error("Detalle del error:", e);
     }
   }
 
@@ -320,12 +306,8 @@
     for (const line of lines) {
       const clean = line.replace(/"/g, "").trim();
       if (!clean) continue;
-
-      const parts = clean
-        .split(">")
-        .map(p => p.trim().replace(/\s+/g, " "))
-        .filter(Boolean);
-
+      // Separa por ">"
+      const parts = clean.split(">").map(p => p.trim().replace(/\s+/g, " ")).filter(Boolean);
       if (parts.length < 1) continue;
 
       const key = parts.map(p => norm(displayName(p))).join(">");
@@ -351,7 +333,7 @@
     sortChildrenAlpha(menuTree);
   }
 
-  // ====== Banners dinámicos ======
+  // ====== Banners ======
   function findBanner(query){
     const qScope = norm(query.scope || "");
     const qParent = norm(query.parent || "");
@@ -370,14 +352,11 @@
     card.className = "promo-card" + (size === "small" ? " small" : "");
     const safeTitle = b.title ? b.title : "Promoción";
     const href = b.href ? b.href : "#";
-    card.innerHTML = `
-      <img class="promo-img" src="${b.img}" alt="${safeTitle}">
-      <a class="promo-link" href="${href}" aria-label="${safeTitle}"></a>
-    `;
+    card.innerHTML = `<img class="promo-img" src="${b.img}" alt="${safeTitle}"><a class="promo-link" href="${href}"></a>`;
     return card;
   }
 
-  // ====== Render Root ======
+  // ====== Render Logic ======
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML="";
@@ -407,7 +386,6 @@
       ul.appendChild(li);
     });
 
-    // Divider + destacadas
     const div = document.createElement("li");
     div.className = "divider";
     ul.appendChild(div);
@@ -415,16 +393,12 @@
     FEATURED_CATS.forEach(fc => {
       const fli = document.createElement("li");
       fli.className = "item";
-      fli.innerHTML =
-        `<span class="label"><span class="text">${fc.name}</span>` +
-        `${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==="new"?"Nuevo":"Trending"}</span>` : ""}` +
-        `</span>`;
+      fli.innerHTML = `<span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==="new"?"Nuevo":"Trending"}</span>` : ""}</span>`;
       ul.appendChild(fli);
     });
 
     col.appendChild(ul);
-
-    // Banner dinámico scope=root
+    // Banner Root
     const bRoot = findBanner({scope:"root"});
     const cardRoot = renderBannerCard(bRoot, "big");
     if(cardRoot) col.appendChild(cardRoot);
@@ -438,17 +412,14 @@
     container.innerHTML="";
     const col = document.createElement("div");
     col.className="column";
-
     const bar = document.createElement("div");
     bar.className="column-header";
     const back = document.createElement("button");
     back.className="back-only";
     back.innerHTML = BACK_CHEVRON_SVG;
     back.onclick = () => renderRootMenu();
-    const title = document.createElement("div");
-    title.textContent="Ofertas";
     bar.appendChild(back);
-    bar.appendChild(title);
+    bar.appendChild(document.createTextNode("Ofertas"));
     col.appendChild(bar);
 
     const ul = document.createElement("ul");
@@ -468,17 +439,14 @@
     container.innerHTML="";
     const col = document.createElement("div");
     col.className="column";
-
     const bar = document.createElement("div");
     bar.className="column-header";
     const back = document.createElement("button");
     back.className="back-only";
     back.innerHTML = BACK_CHEVRON_SVG;
     back.onclick = () => renderRootMenu();
-    const title = document.createElement("div");
-    title.textContent="Especialidades";
     bar.appendChild(back);
-    bar.appendChild(title);
+    bar.appendChild(document.createTextNode("Especialidades"));
     col.appendChild(bar);
 
     const ul = document.createElement("ul");
@@ -497,7 +465,6 @@
     render(menuTree, 0, null);
   }
 
-  // ====== Render categorías (multi-columna) ======
   function render(items, level, parentItem=null){
     const container = document.getElementById("columns-container");
     if(level===0) container.innerHTML = "";
@@ -512,26 +479,21 @@
       back.className="back-only";
       back.innerHTML = BACK_CHEVRON_SVG;
       back.onclick = () => renderRootMenu();
-      const title = document.createElement("div");
-      title.textContent="Todas las categorías";
       bar.appendChild(back);
-      bar.appendChild(title);
+      bar.appendChild(document.createTextNode("Todas las categorías"));
       col.appendChild(bar);
       updateDrawerWidth();
     } else if(parentItem){
       const h = document.createElement("div");
       h.className="column-header";
       h.textContent = displayName(parentItem.name);
-
       const a = document.createElement("a");
       a.className="view-all";
       a.href = "#" + slugifyPath(parentItem.path || parentItem.name);
       a.textContent = "Ver " + displayName(parentItem.name);
-
       col.appendChild(h);
       col.appendChild(a);
 
-      // banner dinámico: category_children (se inserta en la columna de hijos)
       const bChild = findBanner({scope:"category_children", parent: parentItem.name});
       if(bChild){
         const card = renderBannerCard(bChild, "small");
@@ -545,16 +507,12 @@
       const hasChild = item.children && item.children.length>0;
       const li = document.createElement("li");
       li.className="item";
-
       const icon = (level===0) ? getIconForFirstLevel(item.name) : "";
-      li.innerHTML =
-        `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ""}<span class="text">${displayName(item.name)}</span></span>` +
-        `${hasChild ? CHEVRON_SVG : ""}`;
+      
+      li.innerHTML = `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ""}<span class="text">${displayName(item.name)}</span></span>${hasChild ? CHEVRON_SVG : ""}`;
 
       li.onclick = () => {
         const wasActive = li.classList.contains("active");
-
-        // borra columnas a la derecha siempre
         const cols = Array.from(container.querySelectorAll(".column"));
         cols.slice(level+1).forEach(c=>c.remove());
 
@@ -575,7 +533,6 @@
 
       ul.appendChild(li);
 
-      // banner dinámico: after_item (se inserta justo después del item "after")
       if(parentItem){
         const bAfter = findBanner({scope:"after_item", parent: parentItem.name, after: item.name});
         if(bAfter){
