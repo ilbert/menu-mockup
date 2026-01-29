@@ -106,7 +106,7 @@
 
   // Iconos para items del menú raíz (debajo de Ofertas, etc.)
   const ROOT_ICON_MAP = {
-    "especialidades": "🧩"
+    "especialidades": "⭐"
   };
 
   const OFFERS_ITEMS = [
@@ -274,19 +274,22 @@
     const ul = document.createElement("ul");
 
     const rootItems = [
-      { name:"Todas las categorías", type:"all" },
-      { name:"Ofertas", type:"offers" }
+      { name:"Especialidades", type:"specialties" },
+      { name:"Ofertas", type:"offers" },
+      { name:"Todas las categorías", type:"all" }
     ];
 
     rootItems.forEach(item => {
       const li = document.createElement("li");
       li.className="item";
-      li.innerHTML = `<span class="label"><span class="text">${item.name}</span></span>${CHEVRON_SVG}`;
+      const rootIcon = (item.type==="specialties") ? (ROOT_ICON_MAP["especialidades"] || "") : "";
+      li.innerHTML = `<span class="label">${rootIcon ? `<span class="icon">${rootIcon}</span>` : ""}<span class="text">${item.name}</span></span>${CHEVRON_SVG}`;
       li.onclick = () => {
         Array.from(ul.children).forEach(el=>el.classList.remove("active"));
         li.classList.add("active");
-        if(item.type==="all") renderAllCategories();
-        else renderOffers();
+        if(item.type==="specialties") renderSpecialties();
+        else if(item.type==="offers") renderOffers();
+        else renderAllCategories();
       };
       ul.appendChild(li);
 
@@ -295,21 +298,6 @@
         const div = document.createElement("li");
         div.className="divider";
         ul.appendChild(div);
-
-        
-        // Especialidades (con icono + flecha)
-        const spLi = document.createElement("li");
-        spLi.className = "item";
-        const spIcon = ROOT_ICON_MAP["especialidades"] || "";
-        spLi.innerHTML =
-          `<span class="label">${spIcon ? `<span class="icon">${spIcon}</span>` : ""}<span class="text">Especialidades</span></span>` +
-          `${CHEVRON_SVG}`;
-        spLi.onclick = () => {
-          Array.from(ul.children).forEach(el=>el.classList.remove("active"));
-          spLi.classList.add("active");
-          renderSpecialties();
-        };
-        ul.appendChild(spLi);
 
         FEATURED_CATS.forEach(fc => {
           const fli = document.createElement("li");
