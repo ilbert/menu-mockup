@@ -47,35 +47,12 @@
     .tag.new{background:#e6f2fa;color:var(--brand)}
     .tag.trending{background:#eafaf1;color:#0a8f4e}
   
-    /* Banner promo en menú principal */
-    .promo-card{
-      margin:16px;
-      border-radius:14px;
-      overflow:hidden;
-      position:relative;
-      background:#0b5ed7;
-      box-shadow:0 10px 25px rgba(0,0,0,.12);
-    }
-    .promo-img{
-      width:100%;
-      height:160px;
-      object-fit:cover;
-      display:block;
-    }
-    .promo-overlay{
-      position:absolute;
-      inset:0;
-      background:linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 55%, rgba(0,0,0,0) 100%);
-    }
-    .promo-link{
-      position:absolute;
-      inset:0;
-      display:block;
-    }
-
-  
-    .promo-card.small{ margin:12px 16px 8px; }
-    .promo-card.small .promo-img{ height:120px; }
+    /* Banners dinámicos */
+    .promo-card{margin:16px;border-radius:14px;overflow:hidden;position:relative;background:#fff;box-shadow:0 10px 25px rgba(0,0,0,.10);}
+    .promo-img{width:100%;height:160px;object-fit:cover;display:block;}
+    .promo-link{position:absolute;inset:0;display:block;}
+    .promo-card.small{margin:12px 16px 8px;}
+    .promo-card.small .promo-img{height:120px;}
     
   </style>
 </head>
@@ -97,11 +74,11 @@
 </aside>
 
 <script>
-
   // ✅ Tu CSV publicado
   const DATA_URL_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTB17XxLBUzcUlZZeEh-UPryJijWIBOlec4xgD3BZ9JnF_zy3zKPdlMZpfLpr8bEygm2z5fLhp-ZxFk/pub?gid=0&single=true&output=csv";
   const DATA_URL = DATA_URL_BASE + "&_=" + Date.now();
 
+  // Banners dinámicos (pestaña "banners")
   const BANNERS_SHEET_NAME = "banners";
   const BANNERS_URL_CANDIDATES = [
     DATA_URL_BASE.replace("gid=0&single=true&output=csv", `single=true&output=csv&sheet=${BANNERS_SHEET_NAME}`),
@@ -250,97 +227,440 @@
     }
   }
 
-    function parseCsv(text){
-    const rows=[]; let row=[]; let cur=""; let inQuotes=false;
-    for(let i=0;i<text.length;i++){
-      const ch=text[i], next=text[i+1];
-      if(ch === '"'){
-        if(inQuotes && next === '"'){ cur+='"'; i++; }
-        else inQuotes = !inQuotes;
-      } else if(ch === ',' && !inQuotes){
-        row.push(cur); cur="";
-      } else if((ch==='\n' || ch==='\r') && !inQuotes){
-        if(ch==='\r' && next==='\n') i++;
-        row.push(cur);
-        if(row.some(c=>c.trim()!=="")) rows.push(row);
-        row=[]; cur="";
-      } else cur+=ch;
-    }
-    if(cur.length || row.length){
+  function parseCsv(text){
+  const rows=[]; let row=[]; let cur=""; let inQuotes=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i], next=text[i+1];
+    if(ch === '"'){
+      if(inQuotes && next === '"'){ cur+='"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if(ch === ',' && !inQuotes){
+      row.push(cur); cur="";
+    } else if((ch==='\n' || ch==='\r') && !inQuotes){
+      if(ch==='\r' && next==='\n') i++;
       row.push(cur);
       if(row.some(c=>c.trim()!=="")) rows.push(row);
-    }
-    return rows.map(r=>r.map(c=>c.trim()));
+      row=[]; cur="";
+    } else cur+=ch;
   }
-
-  function rowsToObjects(rows){
-    if(!rows.length) return [];
-    const header = rows[0].map(h=>norm(h));
-    const objs=[];
-    for(let i=1;i<rows.length;i++){
-      const o={};
-      rows[i].forEach((v,idx)=>{ o[header[idx]||("col"+idx)] = (v||"").replace(/^"|"$/g,"").trim(); });
-      if(Object.values(o).every(v=>!v)) continue;
-      objs.push(o);
-    }
-    return objs;
+  if(cur.length || row.length){
+    row.push(cur);
+    if(row.some(c=>c.trim()!=="")) rows.push(row);
   }
+  return rows.map(r=>r.map(c=>c.trim()));
+}
 
-  async function loadBanners(){
-    for(const baseUrl of BANNERS_URL_CANDIDATES){
-      const url = baseUrl + "&_=" + Date.now();
-      try{
-        const res = await fetch(url);
-        if(!res.ok) continue;
-        const txt = await res.text();
-        if(txt.trim().startsWith("<")) continue;
-        const rows = parseCsv(txt);
-        const objs = rowsToObjects(rows);
-        if(objs.length && (objs[0].scope || objs.find(x=>x.scope))){
-          bannersConfig = objs;
-          return;
-        }
-      }catch(e){}
-    }
-    bannersConfig = [];
+function rowsToObjects(rows){
+  if(!rows.length) return [];
+  const header = rows[0].map(h => norm(h));
+  const objs=[];
+  for(let i=1;i<rows.length;i++){
+    const o={};
+    rows[i].forEach((v,idx)=>{ o[header[idx]||("col"+idx)] = (v||"").replace(/^"|"$/g,"").trim(); });
+    if(Object.values(o).every(v=>!v)) continue;
+    objs.push(o);
   }
+  return objs;
+}
 
-  function findBanner({scope,parent,after}){
-    const sc = scope ? norm(scope) : "";
-    const p = parent ? norm(displayName(parent)) : "";
-    const a = after ? norm(displayName(after)) : "";
-
-    // Si hay duplicados en la hoja, gana la ÚLTIMA fila
-    for(let i=bannersConfig.length-1; i>=0; i--){
-      const b = bannersConfig[i];
-      if(norm(b.scope) !== sc) continue;
-      if(p && norm(displayName(b.parent)) !== p) continue;
-      if(a && norm(displayName(b.after)) !== a) continue;
-      return b;
-    }
-    return null;
+async function fetchWithTimeout(url, ms){
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(), ms);
+  try{
+    const res = await fetch(url, {signal: ctrl.signal});
+    return res;
+  } finally {
+    clearTimeout(t);
   }
+}
+
+async function loadBanners(){
+  // No rompe el menú: si falla, bannersConfig=[]
+  for(const baseUrl of BANNERS_URL_CANDIDATES){
+    const url = baseUrl + "&_=" + Date.now();
+    try{
+      const res = await fetchWithTimeout(url, 8000);
+      if(!res.ok) continue;
+      const txt = await res.text();
+      if(txt.trim().startsWith("<")) continue;
+      const objs = rowsToObjects(parseCsv(txt));
+      if(objs.length){
+        bannersConfig = objs;
+        return;
+      }
+    }catch(e){ /* probar siguiente */ }
+  }
+  bannersConfig = [];
+}
+
+function findBanner({scope,parent,after}){
+  const sc = scope ? norm(scope) : "";
+  const p = parent ? norm(displayName(parent)) : "";
+  const a = after ? norm(displayName(after)) : "";
+  // Si hay duplicados, gana la última fila
+  for(let i=bannersConfig.length-1; i>=0; i--){
+    const b = bannersConfig[i];
+    if(norm(b.scope) !== sc) continue;
+    if(p && norm(displayName(b.parent)) !== p) continue;
+    if(a && norm(displayName(b.after)) !== a) continue;
+    return b;
+  }
+  return null;
+}
 
 function renderBannerCard(b, extraClass){
-    const img0 = b.img || b.image || "";
-    if(!img0) return null;
+  if(!b) return null;
+  const img0 = b.img || b.image || "";
+  if(!img0) return null;
+  const img = img0 + (img0.includes('?') ? '&' : '?') + '_=' + Date.now();
+  const href = b.href || b.link || "#";
+  const alt = b.title || b.alt || "Promo";
+  const card = document.createElement("div");
+  card.className = "promo-card" + (extraClass ? (" " + extraClass) : "");
+  card.innerHTML = `<img class="promo-img" src="${img}" alt="${alt}"><a class="promo-link" href="${href}" aria-label="${alt}"></a>`;
+  return card;
+}
 
-    // Cache-buster: si cambias la URL en Sheets, se refresca seguro
-    const img = img0 + (img0.includes('?') ? '&' : '?') + '_=' + Date.now();
+async function loadData(){
+    const status = document.getElementById("status");
+    if (location.protocol === "file:") {
+      status.style.display="block";
+      status.textContent="⚠️ Abre este archivo desde un servidor (GitHub Pages / localhost). No funciona con file://";
+      return;
+    }
+    try {
+      const res = await fetch(DATA_URL);
+      if(!res.ok) throw new Error("No se pudo leer el CSV");
+      const csv = await res.text();
+      if(csv.trim().startsWith("<")) throw new Error("Sheets devolvió HTML (permisos/publicación)");
+      buildTree(csv);
+      await loadBanners();
+      status.style.display="none";
+      renderRootMenu();
+    } catch(e) {
+      status.style.display="block";
+      status.textContent="⚠️ Error cargando datos. Revisa consola.";
+      console.error(e);
+    }
+  }
 
-    const href = b.href || b.link || "#";
-    const alt = b.title || b.alt || "Promo";
-    const card = document.createElement("div");
-    card.className = "promo-card" + (extraClass ? (" " + extraClass) : "");
-    card.innerHTML = `
-      <img class="promo-img" src="${img}" alt="${alt}">
-      <a class="promo-link" href="${href}" aria-label="${alt}"></a>
-    `;
-    return card;
+  function buildTree(csv){
+    const root = [];
+
+    // 1) Normaliza y deduplica rutas (Set)
+    const seen = new Set();
+
+    const lines = csv.split(/\r?\n/);
+    for (const line of lines) {
+      const clean = line.replace(/"/g, "").trim();
+      if (!clean) continue;
+
+      // Normaliza separadores y espacios
+      const parts = clean
+        .split(">")
+        .map(p => p.trim().replace(/\s+/g, " "))
+        .filter(Boolean);
+
+      if (parts.length < 1) continue;
+
+      // Clave canonical para dedupe (sin acentos + minúsculas + sin "Total")
+      const key = parts.map(p => norm(displayName(p))).join(">");
+
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      // 2) Construye el árbol usando textos "bonitos" (sin Total)
+      let current = root;
+      parts.forEach((rawName, i) => {
+        const name = displayName(rawName);
+        let node = current.find(n => n.name === name);
+        if (!node) {
+          node = {
+            name,
+            children: [],
+            path: parts.slice(0, i+1).map(displayName).join(" > ")
+          };
+          current.push(node);
+        } else if (!node.path) {
+          node.path = parts.slice(0, i+1).map(displayName).join(" > ");
+        }
+        current = node.children;
+      });
+    }
+
+    menuTree = root;
+
+    // ✅ Ordena nivel 1 como quieres (sin Total), y el resto alfabético
+    sortTopLevel(menuTree);
+    sortChildrenAlpha(menuTree);
+  }
+
+  function renderRootMenu(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML="";
+    const col = document.createElement("div");
+    col.className="column";
+    const ul = document.createElement("ul");
+
+    const rootItems = [
+      { name:"Especialidades", type:"specialties" },
+      { name:"Ofertas", type:"offers" },
+      { name:"Todas las categorías", type:"all" }
+    ];
+
+    rootItems.forEach(item => {
+      const li = document.createElement("li");
+      li.className="item";
+      const rootIcon = (item.type==="specialties") ? (ROOT_ICON_MAP["especialidades"] || "") : "";
+      li.innerHTML = `<span class="label">${rootIcon ? `<span class="icon">${rootIcon}</span>` : ""}<span class="text">${item.name}</span></span>${CHEVRON_SVG}`;
+      li.onclick = () => {
+        Array.from(ul.children).forEach(el=>el.classList.remove("active"));
+        li.classList.add("active");
+        if(item.type==="specialties") renderSpecialties();
+        else if(item.type==="offers") renderOffers();
+        else renderAllCategories();
+    updateDrawerWidth();
+  };
+      ul.appendChild(li);
+
+      if(parentItem){
+        const bAfter = findBanner({scope:"after_item", parent: parentItem.name, after: item.name});
+        const afterCard = renderBannerCard(bAfter, "small");
+        if(afterCard){
+          const liB = document.createElement('li');
+          liB.style.borderBottom='none';
+          liB.appendChild(afterCard);
+          ul.appendChild(liB);
+        }
+      }
+
+    });
+
+    
+    // línea + destacadas (se muestran debajo de "Todas las categorías", pero asociadas a Ofertas)
+    const div = document.createElement("li");
+    div.className = "divider";
+    ul.appendChild(div);
+
+    FEATURED_CATS.forEach(fc => {
+      const fli = document.createElement("li");
+      fli.className = "item";
+      fli.innerHTML =
+        `<span class="label"><span class="text">${fc.name}</span>` +
+        `${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==="new"?"Nuevo":"Trending"}</span>` : ""}` +
+        `</span>`;
+      ul.appendChild(fli);
+    });
+
+    col.appendChild(ul);
+
+    const bRoot = findBanner({scope:"root"});
+    const rootCard = renderBannerCard(bRoot, "");
+    if(rootCard) col.appendChild(rootCard);
+
+    container.appendChild(col);
+  }
+
+  function renderOffers(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML="";
+    const col = document.createElement("div");
+    col.className="column";
+
+    const bar = document.createElement("div");
+    bar.className="column-header";
+    const back = document.createElement("button");
+    back.className="back-only";
+    back.innerHTML = BACK_CHEVRON_SVG;
+    back.onclick = () => renderRootMenu();
+    const title = document.createElement("div");
+    title.textContent="Ofertas";
+    bar.appendChild(back);
+    bar.appendChild(title);
+    col.appendChild(bar);
+
+    const ul = document.createElement("ul");
+    OFFERS_ITEMS.forEach(it=>{
+      const li=document.createElement("li");
+      li.className="item";
+      li.innerHTML = `<span class="label">${it.icon ? `<span class="icon">${it.icon}</span>` : ``}<span class="text">${it.name}</span></span>`;
+      ul.appendChild(li);
+
+      if(parentItem){
+        const bAfter = findBanner({scope:"after_item", parent: parentItem.name, after: item.name});
+        const afterCard = renderBannerCard(bAfter, "small");
+        if(afterCard){
+          const liB = document.createElement('li');
+          liB.style.borderBottom='none';
+          liB.appendChild(afterCard);
+          ul.appendChild(liB);
+        }
+      }
+
+    updateDrawerWidth();
+  });
+    col.appendChild(ul);
+
+    const bRoot = findBanner({scope:"root"});
+    const rootCard = renderBannerCard(bRoot, "");
+    if(rootCard) col.appendChild(rootCard);
+
+    container.appendChild(col);
   }
 
 
+  function renderSpecialties(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML="";
+    const col = document.createElement("div");
+    col.className="column";
 
+    const bar = document.createElement("div");
+    bar.className="column-header";
+    const back = document.createElement("button");
+    back.className="back-only";
+    back.innerHTML = BACK_CHEVRON_SVG;
+    back.onclick = () => renderRootMenu();
+    const title = document.createElement("div");
+    title.textContent="Especialidades";
+    bar.appendChild(back);
+    bar.appendChild(title);
+    col.appendChild(bar);
+
+    const ul = document.createElement("ul");
+    SPECIALTIES_ITEMS.forEach(it=>{
+      const li=document.createElement("li");
+      li.className="item";
+      li.innerHTML = `<span class="label">${it.icon ? `<span class="icon">${it.icon}</span>` : ``}<span class="text">${it.name}</span></span>`;
+      ul.appendChild(li);
+
+      if(parentItem){
+        const bAfter = findBanner({scope:"after_item", parent: parentItem.name, after: item.name});
+        const afterCard = renderBannerCard(bAfter, "small");
+        if(afterCard){
+          const liB = document.createElement('li');
+          liB.style.borderBottom='none';
+          liB.appendChild(afterCard);
+          ul.appendChild(liB);
+        }
+      }
+
+    updateDrawerWidth();
+  });
+    col.appendChild(ul);
+
+    const bRoot = findBanner({scope:"root"});
+    const rootCard = renderBannerCard(bRoot, "");
+    if(rootCard) col.appendChild(rootCard);
+
+    container.appendChild(col);
+    updateDrawerWidth();
+  }
+
+  function renderAllCategories(){
+    render(menuTree, 0, null);
+  }
+
+  function render(items, level, parentItem=null){
+    const container = document.getElementById("columns-container");
+
+    // al entrar en nivel 0, sustituye el root
+    if(level===0) container.innerHTML = "";
+
+    const col = document.createElement("div");
+    col.className="column";
+
+    if(level===0){
+      const bar = document.createElement("div");
+      bar.className="column-header";
+      const back = document.createElement("button");
+      back.className="back-only";
+      back.innerHTML = BACK_CHEVRON_SVG;
+      back.onclick = () => renderRootMenu();
+      const title = document.createElement("div");
+      title.textContent="Todas las categorías";
+      bar.appendChild(back);
+      bar.appendChild(title);
+      col.appendChild(bar);
+    updateDrawerWidth();
+  } else if(parentItem){
+      const h = document.createElement("div");
+      h.className="column-header";
+      h.textContent = displayName(parentItem.name);
+
+      const a = document.createElement("a");
+      a.className="view-all";
+      a.href = "#" + slugifyPath(parentItem.path || parentItem.name);
+      a.textContent = "Ver " + displayName(parentItem.name);
+
+      col.appendChild(h);
+      col.appendChild(a);
+
+      const bChild = findBanner({scope:"category_children", parent: parentItem.name});
+      const childCard = renderBannerCard(bChild, "small");
+      if(childCard) col.appendChild(childCard);
+
+    }
+
+    const ul = document.createElement("ul");
+
+    items.forEach(item=>{
+      const hasChild = item.children && item.children.length>0;
+      const li = document.createElement("li");
+      li.className="item";
+
+      const icon = (level===0) ? getIconForFirstLevel(item.name) : "";
+      li.innerHTML =
+        `<span class="label">${icon ? `<span class="icon">${icon}</span>` : ""}<span class="text">${displayName(item.name)}</span></span>` +
+        `${hasChild ? CHEVRON_SVG : ""}`;
+
+      // ✅ Toggle: si vuelves a clicar la misma categoría con hijos, cierra el nivel a la derecha
+      li.onclick = () => {
+        const wasActive = li.classList.contains("active");
+
+        // borra columnas a la derecha siempre
+        const cols = Array.from(container.querySelectorAll(".column"));
+        cols.slice(level+1).forEach(c=>c.remove());
+
+        if (hasChild && wasActive) {
+          li.classList.remove("active");
+          updateDrawerWidth();
+          return;
+        }
+
+        // activar en esta columna
+        Array.from(ul.children).forEach(el=>el.classList.remove("active"));
+        li.classList.add("active");
+
+        if (hasChild) {
+          render(item.children, level+1, item);
+        }
+        updateDrawerWidth();
+      };
+
+      ul.appendChild(li);
+
+      if(parentItem){
+        const bAfter = findBanner({scope:"after_item", parent: parentItem.name, after: item.name});
+        const afterCard = renderBannerCard(bAfter, "small");
+        if(afterCard){
+          const liB = document.createElement('li');
+          liB.style.borderBottom='none';
+          liB.appendChild(afterCard);
+          ul.appendChild(liB);
+        }
+      }
+
+    });
+
+    col.appendChild(ul);
+
+    const bRoot = findBanner({scope:"root"});
+    const rootCard = renderBannerCard(bRoot, "");
+    if(rootCard) col.appendChild(rootCard);
+
+    container.appendChild(col);
+  }
 </script>
 </body>
 </html>
