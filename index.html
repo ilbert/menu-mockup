@@ -47,7 +47,7 @@
     .tag.new{background:#e6f2fa;color:var(--brand)}
     .tag.trending{background:#eafaf1;color:#0a8f4e}
   
-    /* Banner promo en menú principal */
+    /* Banner promo */
     .promo-card{
       margin:16px;
       border-radius:14px;
@@ -62,18 +62,15 @@
       object-fit:cover;
       display:block;
     }
-    .promo-overlay{ display:none; }
     .promo-link{
       position:absolute;
       inset:0;
       display:block;
     }
-
-  
     .promo-card.small{ margin:12px 16px 8px; }
     .promo-card.small .promo-img{ height:120px; }
-    
-  </style>
+
+</style>
 </head>
 <body>
 <header>
@@ -93,9 +90,14 @@
 </aside>
 
 <script>
+
   // ✅ Tu CSV publicado
   const DATA_URL_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTB17XxLBUzcUlZZeEh-UPryJijWIBOlec4xgD3BZ9JnF_zy3zKPdlMZpfLpr8bEygm2z5fLhp-ZxFk/pub?gid=0&single=true&output=csv";
   const DATA_URL = DATA_URL_BASE + "&_=" + Date.now();
+  const BANNERS_URL_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTB17XxLBUzcUlZZeEh-UPryJijWIBOlec4xgD3BZ9JnF_zy3zKPdlMZpfLpr8bEygm2z5fLhp-ZxFk/pub?gid=1300813141&single=true&output=csv";
+  const BANNERS_URL = BANNERS_URL_BASE + "&_=" + Date.now();
+  let bannersConfig = [];
+
 
   const CHEVRON_SVG = `<span class="chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" aria-hidden="true" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
@@ -237,7 +239,97 @@
     }
   }
 
-  async function loadData(){
+  
+function parseDelimited(text){
+  const firstLine = (text.split(/\r?\n/)[0] || "");
+  const delim = firstLine.includes("\t") ? "\t" : ",";
+  const rows = [];
+  let row = [];
+  let cur = "";
+  let inQuotes = false;
+
+  for(let i=0;i<text.length;i++){
+    const ch=text[i], next=text[i+1];
+    if(ch === '"'){
+      if(inQuotes && next === '"'){ cur+='"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if(ch === delim && !inQuotes){
+      row.push(cur); cur="";
+    } else if((ch==='\n' || ch==='\r') && !inQuotes){
+      if(ch==='\r' && next==='\n') i++;
+      row.push(cur);
+      if(row.some(c=>String(c).trim()!=="")) rows.push(row);
+      row=[]; cur="";
+    } else {
+      cur += ch;
+    }
+  }
+  if(cur.length || row.length){
+    row.push(cur);
+    if(row.some(c=>String(c).trim()!=="")) rows.push(row);
+  }
+  return rows.map(r=>r.map(c=>String(c||"").trim()));
+}
+
+function rowsToObjects(rows){
+  if(!rows.length) return [];
+  const header = rows[0].map(h=>norm(h));
+  const objs=[];
+  for(let i=1;i<rows.length;i++){
+    const o={};
+    rows[i].forEach((v,idx)=>{ o[header[idx]||("col"+idx)] = (v||"").trim(); });
+    if(Object.values(o).every(v=>!v)) continue;
+    objs.push(o);
+  }
+  return objs;
+}
+
+async function loadBanners(){
+  try{
+    const res = await fetch(BANNERS_URL);
+    if(!res.ok) throw new Error("No se pudo leer banners CSV");
+    const txt = await res.text();
+    if(txt.trim().startsWith("<")) throw new Error("Banners devolvió HTML (no publicado)");
+    const rows = parseDelimited(txt);
+    bannersConfig = rowsToObjects(rows);
+  }catch(e){
+    bannersConfig = [];
+    console.warn("Banners no cargados:", e);
+  }
+}
+
+function findBanner(params){
+  const sc = params.scope ? norm(params.scope) : "";
+  const p = params.parent ? norm(displayName(params.parent)) : "";
+  const a = params.after ? norm(displayName(params.after)) : "";
+
+  for(let i=bannersConfig.length-1;i>=0;i--){
+    const b=bannersConfig[i];
+    if(norm(b.scope) !== sc) continue;
+    if(p && norm(displayName(b.parent)) !== p) continue;
+    if(a && norm(displayName(b.after)) !== a) continue;
+    return b;
+  }
+  return null;
+}
+
+function renderBannerCard(b, extraClass){
+  const img0 = b.img || "";
+  if(!img0) return null;
+  const img = img0 + (img0.includes('?') ? '&' : '?') + '_=' + Date.now();
+  const href = b.href || "#";
+  const alt = b.title || "Promo";
+  const card = document.createElement("div");
+  card.className = "promo-card" + (extraClass ? (" " + extraClass) : "");
+  card.innerHTML = `
+    <img class="promo-img" src="${img}" alt="${alt}">
+    <a class="promo-link" href="${href}" aria-label="${alt}"></a>
+  `;
+  return card;
+}
+
+
+async function loadData(){
     const status = document.getElementById("status");
     if (location.protocol === "file:") {
       status.style.display="block";
@@ -250,6 +342,7 @@
       const csv = await res.text();
       if(csv.trim().startsWith("<")) throw new Error("Sheets devolvió HTML (permisos/publicación)");
       buildTree(csv);
+      await loadBanners();
       status.style.display="none";
       renderRootMenu();
     } catch(e) {
@@ -337,6 +430,17 @@
     updateDrawerWidth();
   };
       ul.appendChild(li);
+
+      if(parentItem){
+        const bAfter = findBanner({scope:"after_item", parent: parentItem.name, after: item.name});
+        if(bAfter){
+          const liBanner = document.createElement("li");
+          liBanner.style.borderBottom = "none";
+          const card = renderBannerCard(bAfter, "small");
+          if(card){ liBanner.appendChild(card); ul.appendChild(liBanner); }
+        }
+      }
+
     });
 
     
@@ -357,14 +461,8 @@
 
     col.appendChild(ul);
 
-    // Banner promo (solo menú principal)
-    const promo = document.createElement("div");
-    promo.className = "promo-card";
-    promo.innerHTML = `
-      <img class="promo-img" src="https://www.quirumed.com/media/wysiwyg/banners-nevera/081-245x135-homeIZ7.jpg" alt="Promo Quirumed">
-      <a class="promo-link" href="#promo" aria-label="Ver promoción"></a>
-    `;
-    col.appendChild(promo);
+    const bRoot = findBanner({scope:"root"});
+    if(bRoot){ const card = renderBannerCard(bRoot, ""); if(card) col.appendChild(card); }
 
     container.appendChild(col);
   }
@@ -393,6 +491,17 @@
       li.className="item";
       li.innerHTML = `<span class="label">${it.icon ? `<span class="icon">${it.icon}</span>` : ``}<span class="text">${it.name}</span></span>`;
       ul.appendChild(li);
+
+      if(parentItem){
+        const bAfter = findBanner({scope:"after_item", parent: parentItem.name, after: item.name});
+        if(bAfter){
+          const liBanner = document.createElement("li");
+          liBanner.style.borderBottom = "none";
+          const card = renderBannerCard(bAfter, "small");
+          if(card){ liBanner.appendChild(card); ul.appendChild(liBanner); }
+        }
+      }
+
     updateDrawerWidth();
   });
     col.appendChild(ul);
@@ -424,6 +533,17 @@
       li.className="item";
       li.innerHTML = `<span class="label">${it.icon ? `<span class="icon">${it.icon}</span>` : ``}<span class="text">${it.name}</span></span>`;
       ul.appendChild(li);
+
+      if(parentItem){
+        const bAfter = findBanner({scope:"after_item", parent: parentItem.name, after: item.name});
+        if(bAfter){
+          const liBanner = document.createElement("li");
+          liBanner.style.borderBottom = "none";
+          const card = renderBannerCard(bAfter, "small");
+          if(card){ liBanner.appendChild(card); ul.appendChild(liBanner); }
+        }
+      }
+
     updateDrawerWidth();
   });
     col.appendChild(ul);
@@ -470,16 +590,8 @@
       col.appendChild(h);
       col.appendChild(a);
 
-      // Banner específico en 2º nivel: Cuidado personal y salud
-      if (norm(displayName(parentItem.name)) === "cuidado personal y salud") {
-        const promo2 = document.createElement("div");
-        promo2.className = "promo-card small";
-        promo2.innerHTML = `
-          <img class="promo-img" src="https://www.quirumed.com/media/wysiwyg/banners-nevera/081-245x135-homeDE7.jpg" alt="Promo cuidado personal y salud">
-          <a class="promo-link" href="#cuidado-personal-y-salud" aria-label="Ver promoción"></a>
-        `;
-        col.appendChild(promo2);
-      }
+      const bChild = findBanner({scope:"category_children", parent: parentItem.name});
+      if(bChild){ const card = renderBannerCard(bChild, "small"); if(card) col.appendChild(card); }
 
     }
 
@@ -519,27 +631,16 @@
         updateDrawerWidth();
       };
 
-      
       ul.appendChild(li);
 
-      // Banner justo después de "Vestuario desechable" en Desechables y consumibles
-      if (
-        parentItem &&
-        norm(displayName(parentItem.name)) === "desechables y consumibles" &&
-        norm(displayName(item.name)) === "vestuario desechable"
-      ) {
-        const liBanner = document.createElement("li");
-        liBanner.style.borderBottom = "none";
-
-        const promo = document.createElement("div");
-        promo.className = "promo-card small";
-        promo.innerHTML = `
-          <img class="promo-img" src="https://www.quirumed.com/media/wysiwyg/banners-nevera/081-245x135-homeDE7.jpg" alt="Promo vestuario desechable">
-          <a class="promo-link" href="#vestuario-desechable" aria-label="Ver vestuario desechable"></a>
-        `;
-
-        liBanner.appendChild(promo);
-        ul.appendChild(liBanner);
+      if(parentItem){
+        const bAfter = findBanner({scope:"after_item", parent: parentItem.name, after: item.name});
+        if(bAfter){
+          const liBanner = document.createElement("li");
+          liBanner.style.borderBottom = "none";
+          const card = renderBannerCard(bAfter, "small");
+          if(card){ liBanner.appendChild(card); ul.appendChild(liBanner); }
+        }
       }
 
     });
@@ -547,6 +648,7 @@
     col.appendChild(ul);
     container.appendChild(col);
   }
+
 </script>
 </body>
 </html>
