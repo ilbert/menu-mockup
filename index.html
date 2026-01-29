@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Banner Correction</title>
+  <title>Menu Mockup - Banner Fix</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -61,6 +61,7 @@
 </aside>
 
 <script>
+  // IDs de tu documento según las capturas
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
   const GID_BANNERS = "1300813141";
@@ -71,6 +72,7 @@
   const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
+  // Configuración de niveles y estilos
   const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "electrodomesticos y hogar":"🏠", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "ofertas y campanas":"🏷️", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
   const FEATURED_CATS = [{ name:"Camillas", tag:"trending" }, { name:"Sillas de ruedas", tag:"new" }, { name:"Diagnóstico", tag:null }, { name:"Mobiliario", tag:null }];
@@ -105,7 +107,7 @@
 
   async function loadAllData(){
     statusEl.style.display="block";
-    statusEl.textContent="Cargando configuración...";
+    statusEl.textContent="Cargando menú...";
     try {
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
       const catCsv = await catRes.text();
@@ -117,7 +119,7 @@
       statusEl.style.display="none";
       renderRootMenu();
     } catch(e) {
-      statusEl.innerHTML = `❌ Error de carga`;
+      statusEl.innerHTML = `❌ Error de sincronización`;
     }
   }
 
@@ -148,6 +150,7 @@
     });
   }
 
+  // Ordenamiento alfabético a partir del nivel 2
   function sortNodesRecursively(nodes, level) {
     if (!nodes || nodes.length === 0) return;
     if (level === 0) {
@@ -263,10 +266,10 @@
     
     const ul = col.querySelector("ul");
 
-    // Banner de cabecera (scope: category_children)
+    // Banner de cabecera de columna
     if(parent) {
       const bChild = findBanner({scope: 'category_children', parent: parent.name});
-      if(bChild) col.insertAdjacentHTML('beforeend', renderBanner(bChild, 'small'));
+      if(bChild) col.insertAdjacentHTML('afterbegin', renderBanner(bChild, 'small'));
     }
 
     items.forEach(item => {
@@ -288,7 +291,7 @@
       };
       ul.appendChild(li);
 
-      // CORRECCIÓN: Insertar banner después del item específico (scope: after_item)
+      // Lógica de banner debajo de un item específico
       if(parent) {
         const bAfter = findBanner({scope: 'after_item', parent: parent.name, after: item.name});
         if(bAfter) {
