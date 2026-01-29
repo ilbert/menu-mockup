@@ -76,8 +76,6 @@
   const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "electrodomesticos y hogar":"🏠", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "ofertas y campanas":"🏷️", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
   const FEATURED_CATS = [{ name:"Camillas", tag:"trending" }, { name:"Sillas de ruedas", tag:"new" }, { name:"Diagnóstico", tag:null }, { name:"Mobiliario", tag:null }];
-  const SPECIALTIES_ITEMS = [{ name:"Fisioterapia", icon:"🦵" }, { name:"Estética", icon:"✨" }, { name:"Peluquería y Barbería", icon:"💈" }, { name:"SPA & Wellness", icon:"🧖" }, { name:"Medicina", icon:"🩺" }];
-  const OFFERS_ITEMS = [{ name:"Ofertas del momento" }, { name:"Más vendidos" }, { name:"Promociones" }];
 
   let menuTree = [];
   let banners = [];
@@ -114,7 +112,6 @@
       const banCsv = await banRes.text();
 
       buildTree(catCsv);
-      // Invertir banners para que la última línea mande
       banners = rowsToObjects(parseCSV(banCsv)).reverse();
       
       statusEl.style.display="none";
@@ -151,12 +148,11 @@
     });
   }
 
-  // LÓGICA DE ORDENAMIENTO RECURSIVA POR NIVEL
+  // ✅ CORRECCIÓN: ORDENAMIENTO ALFABÉTICO RECURSIVO NIVEL 2+
   function sortNodesRecursively(nodes, level) {
     if (!nodes || nodes.length === 0) return;
 
     if (level === 0) {
-      // Nivel 1: Respetar TOP_ORDER manual
       const rank = new Map(TOP_ORDER.map((n, i) => [norm(n), i]));
       nodes.sort((a, b) => {
         const ra = rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999;
@@ -164,11 +160,10 @@
         return ra - rb || a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
       });
     } else {
-      // Nivel 2 y superiores: Alfabético puro
+      // Orden alfabético puro para subcategorías
       nodes.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
     }
 
-    // Seguir ordenando hijos
     nodes.forEach(node => sortNodesRecursively(node.children, level + 1));
   }
 
@@ -216,8 +211,6 @@
     col.className = "column";
     
     let html = `<ul>
-      <li class="item" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
-      <li class="item" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
       <li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
       <li class="divider"></li>
       ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag === 'new' ? 'Nuevo' : 'Trending'}</span>` : ''}</span></li>`).join('')}
@@ -227,30 +220,6 @@
     if(bRoot) html += renderBanner(bRoot);
 
     col.innerHTML = html;
-    container.appendChild(col);
-    updateDrawerWidth();
-  }
-
-  function renderSpecialties(){
-    const container = document.getElementById("columns-container");
-    container.innerHTML = "";
-    const col = document.createElement("div");
-    col.className = "column";
-    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Especialidades</div><ul>
-      ${SPECIALTIES_ITEMS.map(it => `<li class="item"><span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span></li>`).join('')}
-    </ul>`;
-    container.appendChild(col);
-    updateDrawerWidth();
-  }
-
-  function renderOffers(){
-    const container = document.getElementById("columns-container");
-    container.innerHTML = "";
-    const col = document.createElement("div");
-    col.className = "column";
-    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Ofertas</div><ul>
-      ${OFFERS_ITEMS.map(it => `<li class="item"><span class="label"><span class="text">${it.name}</span></span></li>`).join('')}
-    </ul>`;
     container.appendChild(col);
     updateDrawerWidth();
   }
@@ -273,10 +242,10 @@
     
     const ul = col.querySelector("ul");
 
-    // Banner de cabecera de categoría
+    // Banner category_children (aparece arriba)
     if(parent) {
       const bChild = findBanner({scope: 'category_children', parent: parent.name});
-      if(bChild) col.insertAdjacentHTML('beforeend', renderBanner(bChild, 'small'));
+      if(bChild) col.insertAdjacentHTML('afterbegin', renderBanner(bChild, 'small'));
     }
 
     items.forEach(item => {
@@ -298,11 +267,12 @@
       };
       ul.appendChild(li);
 
-      // Banner "After Item"
+      // ✅ BANNER AFTER_ITEM (Aparece debajo del ítem específico)
       if(parent) {
         const bAfter = findBanner({scope: 'after_item', parent: parent.name, after: item.name});
         if(bAfter) {
           const bLi = document.createElement("li");
+          bLi.style.listStyle = "none";
           bLi.innerHTML = renderBanner(bAfter, 'small');
           ul.appendChild(bLi);
         }
