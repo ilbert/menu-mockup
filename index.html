@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Final Dinámico</title>
+  <title>Menu Mockup - Versión Final</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -61,7 +61,7 @@
 </aside>
 
 <script>
-  // CONFIGURACIÓN DE GOOGLE SHEETS
+  // CONFIGURACIÓN
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
   const GID_BANNERS = "1300813141";
@@ -72,7 +72,7 @@
   const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
-  // CONFIGURACIÓN DE UI (RESTAURADA)
+  // UI CONFIG
   const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "electrodomesticos y hogar":"🏠", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "ofertas y campanas":"🏷️", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
   const FEATURED_CATS = [{ name:"Camillas", tag:"trending" }, { name:"Sillas de ruedas", tag:"new" }, { name:"Diagnóstico", tag:null }, { name:"Mobiliario", tag:null }];
@@ -107,19 +107,20 @@
 
   async function loadAllData(){
     statusEl.style.display="block";
-    statusEl.textContent="Cargando menú dinámico...";
+    statusEl.textContent="Sincronizando con Google Sheets...";
     try {
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
       const catCsv = await catRes.text();
       const banCsv = await banRes.text();
 
       buildTree(catCsv);
-      banners = rowsToObjects(parseCSV(banCsv));
+      // Invertimos la lista para que al buscar, la "última" fila sea la primera encontrada
+      banners = rowsToObjects(parseCSV(banCsv)).reverse();
       
       statusEl.style.display="none";
       renderRootMenu();
     } catch(e) {
-      statusEl.innerHTML = `❌ Error de conexión`;
+      statusEl.innerHTML = `❌ Error de carga`;
     }
   }
 
@@ -165,7 +166,6 @@
         current = node.children;
       });
     });
-    // Ordenar nivel 1
     const rank = new Map(TOP_ORDER.map((n,i)=>[norm(n), i]));
     root.sort((a,b)=>{
       const ra = rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999;
@@ -175,8 +175,8 @@
     menuTree = root;
   }
 
-  // Lógica de Banners Dinámicos
   function findBanner(query){
+    // Al haber invertido la lista de banners en loadAllData, find() devolverá el último de la hoja
     return banners.find(b => 
       norm(b.scope) === norm(query.scope) && 
       (!query.parent || norm(b.parent) === norm(query.parent)) &&
@@ -192,7 +192,6 @@
             </div>`;
   }
 
-  // RENDERS DE SECCIONES
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
@@ -251,14 +250,12 @@
     const col = document.createElement("div");
     col.className = "column";
     
-    // Header y enlace "Ver todo"
     let headerHtml = `<div class="column-header">${level === 0 ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías` : parent.name}</div>`;
     if(level > 0) headerHtml += `<a class="view-all" href="#${norm(parent.name)}">Ver ${parent.name}</a>`;
     col.innerHTML = headerHtml + "<ul></ul>";
     
     const ul = col.querySelector("ul");
 
-    // Banner de cabecera de categoría (ej: "Cuidado personal y salud")
     if(parent) {
       const bChild = findBanner({scope: 'category_children', parent: parent.name});
       if(bChild) col.insertAdjacentHTML('beforeend', renderBanner(bChild, 'small'));
@@ -283,7 +280,6 @@
       };
       ul.appendChild(li);
 
-      // Banner "After Item" (ej: después de "Vestuario desechable")
       if(parent) {
         const bAfter = findBanner({scope: 'after_item', parent: parent.name, after: item.name});
         if(bAfter) {
