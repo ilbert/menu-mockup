@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockups</title>
+  <title>Menu Mockup</title>
   <style>
     :root{
       --brand:#034ca8;
@@ -59,7 +59,7 @@
 <body>
 <header>
   <button class="hamburger" id="openBtn">☰</button>
-  <div style="margin-left:15px;font-weight:900;color:var(--brand);">MENU MOCKUPS</div>
+  <div style="margin-left:15px;font-weight:900;color:var(--brand);">MENU MOCKUP</div>
 </header>
 
 <div id="overlay"></div>
@@ -74,6 +74,7 @@
 </aside>
 
 <script>
+
 
 
   // ✅ Tu CSV publicado
@@ -295,109 +296,41 @@ async function loadBanners(){
     bannersConfig = [];
   }
 
-function findBanner({scope,parent,after}){
-  const sc = scope ? norm(scope) : "";
-  const p = parent ? norm(displayName(parent)) : "";
-  const a = after ? norm(displayName(after)) : "";
-  // Si hay duplicados, gana la última fila
-  for(let i=bannersConfig.length-1; i>=0; i--){
-    const b = bannersConfig[i];
-    if(norm(b.scope) !== sc) continue;
-    if(p && norm(displayName(b.parent)) !== p) continue;
-    if(a && norm(displayName(b.after)) !== a) continue;
-    return b;
+function findBanner(params){
+    const scope = params.scope || "";
+    const parent = params.parent ? norm(displayName(params.parent)) : "";
+    const after = params.after ? norm(displayName(params.after)) : "";
+    const sc = scope ? norm(scope) : "";
+
+    // Si hay duplicados en la hoja, gana la ÚLTIMA fila
+    for (let i = bannersConfig.length - 1; i >= 0; i--) {
+      const b = bannersConfig[i];
+      if (norm(b.scope) !== sc) continue;
+      if (parent && norm(displayName(b.parent)) !== parent) continue;
+      if (after && norm(displayName(b.after)) !== after) continue;
+      return b;
+    }
+    return null;
   }
-  return null;
-}
 
 function renderBannerCard(b, extraClass){
-  if(!b) return null;
-  const img0 = b.img || b.image || "";
-  if(!img0) return null;
-  const img = img0 + (img0.includes('?') ? '&' : '?') + '_=' + Date.now();
-  const href = b.href || b.link || "#";
-  const alt = b.title || b.alt || "Promo";
-  const card = document.createElement("div");
-  card.className = "promo-card" + (extraClass ? (" " + extraClass) : "");
-  card.innerHTML = `<img class="promo-img" src="${img}" alt="${alt}"><a class="promo-link" href="${href}" aria-label="${alt}"></a>`;
-  return card;
-}
+    const img0 = b.img || b.image || "";
+    if(!img0) return null;
 
-async function loadData(){
-    const status = document.getElementById("status");
-    if (location.protocol === "file:") {
-      status.style.display="block";
-      status.textContent="⚠️ Abre este archivo desde un servidor (GitHub Pages / localhost). No funciona con file://";
-      return;
-    }
-    try {
-      const res = await fetch(DATA_URL);
-      if(!res.ok) throw new Error("No se pudo leer el CSV");
-      const csv = await res.text();
-      if(csv.trim().startsWith("<")) throw new Error("Sheets devolvió HTML (permisos/publicación)");
-      buildTree(csv);
-      await loadBanners();
-      status.style.display="none";
-      renderRootMenu();
-    } catch(e) {
-      status.style.display="block";
-      status.textContent="⚠️ Error cargando datos. Revisa consola.";
-      console.error(e);
-    }
+    const img = img0 + (img0.includes('?') ? '&' : '?') + '_=' + Date.now();
+    const href = b.href || b.link || "#";
+    const alt = b.title || b.alt || "Promo";
+
+    const card = document.createElement("div");
+    card.className = "promo-card" + (extraClass ? (" " + extraClass) : "");
+    card.innerHTML = `
+      <img class="promo-img" src="${img}" alt="${alt}">
+      <a class="promo-link" href="${href}" aria-label="${alt}"></a>
+    `;
+    return card;
   }
 
-  function buildTree(csv){
-    const root = [];
-
-    // 1) Normaliza y deduplica rutas (Set)
-    const seen = new Set();
-
-    const lines = csv.split(/\r?\n/);
-    for (const line of lines) {
-      const clean = line.replace(/"/g, "").trim();
-      if (!clean) continue;
-
-      // Normaliza separadores y espacios
-      const parts = clean
-        .split(">")
-        .map(p => p.trim().replace(/\s+/g, " "))
-        .filter(Boolean);
-
-      if (parts.length < 1) continue;
-
-      // Clave canonical para dedupe (sin acentos + minúsculas + sin "Total")
-      const key = parts.map(p => norm(displayName(p))).join(">");
-
-      if (seen.has(key)) continue;
-      seen.add(key);
-
-      // 2) Construye el árbol usando textos "bonitos" (sin Total)
-      let current = root;
-      parts.forEach((rawName, i) => {
-        const name = displayName(rawName);
-        let node = current.find(n => n.name === name);
-        if (!node) {
-          node = {
-            name,
-            children: [],
-            path: parts.slice(0, i+1).map(displayName).join(" > ")
-          };
-          current.push(node);
-        } else if (!node.path) {
-          node.path = parts.slice(0, i+1).map(displayName).join(" > ");
-        }
-        current = node.children;
-      });
-    }
-
-    menuTree = root;
-
-    // ✅ Ordena nivel 1 como quieres (sin Total), y el resto alfabético
-    sortTopLevel(menuTree);
-    sortChildrenAlpha(menuTree);
-  }
-
-  function renderRootMenu(){
+function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML="";
     const col = document.createElement("div");
@@ -663,6 +596,7 @@ async function loadData(){
 
     container.appendChild(col);
   }
+
 
 
 </script>
