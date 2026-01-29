@@ -381,11 +381,13 @@
     const banner = document.createElement("div");
     banner.className = "promo-banner";
     banner.innerHTML = `
-      <div class="promo-kicker">Fitness · Pilates</div>
-      <div class="promo-title">Pilates Reformers y equipamiento</div>
-      <div class="promo-sub">Reformers, Cadillac y accesorios para estudios y casa.</div>
-      <a class="promo-cta" href="#pilates-reformer">Ver Reformers ${CHEVRON_SVG}</a>
-      <div class="promo-badge">🏋️‍♀️</div>
+      <div class="promo-overlay"></div>
+      <div class="promo-content">
+        <span class="promo-ribbon">REBAJAS</span>
+        <div class="promo-title">Pilates Reformer & Fitness</div>
+        <div class="promo-sub">Estrena Reformer: ofertas y packs para estudio y casa.</div>
+        <a class="promo-cta" href="#pilates-reformer">Ver ofertas ${CHEVRON_SVG}</a>
+      </div>
     `;
     col.appendChild(banner);
 
