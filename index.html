@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Menu Mockup</title>
   <style>
-    :root{
-      --brand:#034ca8;
-      --border:#e6e8eb;
-      --bg:#f4f6f9;
-    }
+    :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);overflow:hidden}
     header{background:#fff;height:60px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border)}
@@ -19,38 +15,22 @@
     .drawer-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)}
     .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
     #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd; color: #856404; display: none;}
-
     #columns-container{display:flex;flex:1;overflow-x:auto;overflow-y:hidden;background:#fff;scrollbar-width:none;-ms-overflow-style:none}
     #columns-container::-webkit-scrollbar{height:0px}
-
     .column{flex:0 0 330px;border-right:1px solid #eee;overflow-y:auto;height:100%}
     @media (max-width:520px){.column{flex-basis:86vw}}
-
     ul{list-style:none;padding:0;margin:0}
     .item{padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;font-size:13px;border-bottom:1px solid #f3f4f6}
     .item:hover{background:#f7f9fc;color:var(--brand)}
     .item.active{background:#e6f2fa;color:var(--brand);font-weight:800;border-left:5px solid var(--brand)}
-
     .label{display:flex;align-items:center;gap:10px;min-width:0}
     .text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .icon{width:22px;height:22px;display:inline-grid;place-items:center;font-size:18px;flex:0 0 auto}
-
     .chevron{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
     .chevron svg{width:18px;height:18px;stroke:var(--brand);stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
-
     .column-header{padding:14px 16px 8px;font-weight:900;color:var(--brand);font-size:18px;display:flex;align-items:center;gap:10px}
-    .view-all{display:block;padding:0 16px 12px;color:var(--brand);text-decoration:underline;font-weight:650;font-size:14px}
-    .back-only{border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center}
-
     .divider{border-top:1px solid #e5e7eb;margin:8px 0;}
-    .tag{font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:8px;white-space:nowrap}
-    .tag.new{background:#e6f2fa;color:var(--brand)}
-    .tag.trending{background:#eafaf1;color:#0a8f4e}
-
-    .promo-card{
-      margin:16px; border-radius:14px; overflow:hidden; position:relative;
-      background:#0b5ed7; box-shadow:0 10px 25px rgba(0,0,0,.12);
-    }
+    .promo-card{ margin:16px; border-radius:14px; overflow:hidden; position:relative; background:#0b5ed7; box-shadow:0 10px 25px rgba(0,0,0,.12); }
     .promo-img{ width:100%; height:160px; object-fit:cover; display:block; }
     .promo-link{ position:absolute; inset:0; display:block; }
     .promo-card.small{ margin:12px 16px 8px; }
@@ -76,21 +56,15 @@
 </aside>
 
 <script>
-  // CONFIGURACIÓN CON EXPORT DIRECTO
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
   const GID_BANNERS = "1300813141";
 
-  // Usar /export?format=csv es más fiable para fetch que /pub
   const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_CATEGORIES}&_=${Date.now()}`;
   const BANNERS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_BANNERS}&_=${Date.now()}`;
 
   const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
-
-  const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
-  const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "electrodomesticos y hogar":"🏠", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "ofertas y campanas":"🏷️", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
-  const FEATURED_CATS = [{ name:"Camillas", tag:"trending" }, { name:"Sillas de ruedas", tag:"new" }, { name:"Diagnóstico", tag:null }];
 
   let menuTree = [];
   let banners = [];
@@ -115,25 +89,23 @@
     }
   }
 
+  const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+
   async function loadAllData(){
     statusEl.style.display="block";
-    statusEl.textContent="Conectando con Google Sheets...";
+    statusEl.textContent="Cargando categorías y banners...";
     try {
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
-      if(!catRes.ok || !banRes.ok) throw new Error("Error en respuesta de Google (Verifica que el documento tenga 'Cualquier persona con el enlace' en Compartir)");
-
       const catCsv = await catRes.text();
       const banCsv = await banRes.text();
 
-      if(catCsv.includes("<!doctype html>")) throw new Error("Google bloqueó el acceso. Cambia el acceso del botón azul 'Compartir' a 'Cualquier persona con el enlace'.");
-
       buildTree(catCsv);
       banners = rowsToObjects(parseCSV(banCsv));
+      
       statusEl.style.display="none";
       renderRootMenu();
     } catch(e) {
       statusEl.innerHTML = `❌ Error: ${e.message}`;
-      console.error(e);
     }
   }
 
@@ -181,13 +153,35 @@
     menuTree = root;
   }
 
+  function findBanner(query){
+    return banners.find(b => 
+      norm(b.scope) === norm(query.scope) && 
+      (!query.parent || norm(b.parent) === norm(query.parent)) &&
+      (!query.after || norm(b.after) === norm(query.after))
+    );
+  }
+
+  function renderBanner(b, size = 'big') {
+    if(!b || !b.img) return '';
+    return `<div class="promo-card ${size === 'small' ? 'small' : ''}">
+              <img class="promo-img" src="${b.img}">
+              <a class="promo-link" href="${b.href || '#'}"></a>
+            </div>`;
+  }
+
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
-    container.innerHTML = `<div class="column"><ul>
-      <li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
-      <li class="divider"></li>
-      ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag}</span>`:''}</span></li>`).join('')}
-    </ul></div>`;
+    container.innerHTML = "";
+    const col = document.createElement("div");
+    col.className = "column";
+    
+    let html = `<ul><li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li></ul>`;
+    
+    const bRoot = findBanner({scope: 'root'});
+    if(bRoot) html += renderBanner(bRoot);
+
+    col.innerHTML = html;
+    container.appendChild(col);
     updateDrawerWidth();
   }
 
@@ -202,10 +196,16 @@
 
     const col = document.createElement("div");
     col.className = "column";
-    const header = level === 0 ? "Categorías" : parent.name;
-    col.innerHTML = `<div class="column-header">${level > 0 ? BACK_CHEVRON_SVG : ''}${header}</div><ul></ul>`;
+    col.innerHTML = `<div class="column-header">${level > 0 ? BACK_CHEVRON_SVG : ''}${level === 0 ? 'Categorías' : parent.name}</div><ul></ul>`;
     
     const ul = col.querySelector("ul");
+
+    // Banner al inicio de la columna de hijos
+    if(parent) {
+      const bChild = findBanner({scope: 'category_children', parent: parent.name});
+      if(bChild) col.insertAdjacentHTML('beforeend', renderBanner(bChild, 'small'));
+    }
+
     items.forEach(item => {
       const li = document.createElement("li");
       li.className = "item";
@@ -216,6 +216,16 @@
         if(item.children.length) render(item.children, level + 1, item);
       };
       ul.appendChild(li);
+
+      // Banner después de un ítem específico
+      if(parent) {
+        const bAfter = findBanner({scope: 'after_item', parent: parent.name, after: item.name});
+        if(bAfter) {
+          const bLi = document.createElement("li");
+          bLi.innerHTML = renderBanner(bAfter, 'small');
+          ul.appendChild(bLi);
+        }
+      }
     });
 
     container.appendChild(col);
