@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Final Optimizado</title>
+  <title>Menu Mockup - Banner Correction</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -61,7 +61,6 @@
 </aside>
 
 <script>
-  // CONFIGURACIÓN DE GOOGLE SHEETS
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
   const GID_BANNERS = "1300813141";
@@ -72,7 +71,6 @@
   const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
-  // UI CONFIG
   const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "electrodomesticos y hogar":"🏠", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "ofertas y campanas":"🏷️", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
   const FEATURED_CATS = [{ name:"Camillas", tag:"trending" }, { name:"Sillas de ruedas", tag:"new" }, { name:"Diagnóstico", tag:null }, { name:"Mobiliario", tag:null }];
@@ -107,20 +105,19 @@
 
   async function loadAllData(){
     statusEl.style.display="block";
-    statusEl.textContent="Sincronizando menú...";
+    statusEl.textContent="Cargando configuración...";
     try {
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
       const catCsv = await catRes.text();
       const banCsv = await banRes.text();
 
       buildTree(catCsv);
-      // Invertir banners para que la última línea mande
       banners = rowsToObjects(parseCSV(banCsv)).reverse();
       
       statusEl.style.display="none";
       renderRootMenu();
     } catch(e) {
-      statusEl.innerHTML = `❌ Error de carga: Verifica la conexión`;
+      statusEl.innerHTML = `❌ Error de carga`;
     }
   }
 
@@ -151,12 +148,9 @@
     });
   }
 
-  // LÓGICA DE ORDENAMIENTO RECURSIVA POR NIVEL
   function sortNodesRecursively(nodes, level) {
     if (!nodes || nodes.length === 0) return;
-
     if (level === 0) {
-      // Nivel 1: Respetar TOP_ORDER manual
       const rank = new Map(TOP_ORDER.map((n, i) => [norm(n), i]));
       nodes.sort((a, b) => {
         const ra = rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999;
@@ -164,11 +158,8 @@
         return ra - rb || a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
       });
     } else {
-      // Nivel 2 y superiores: Alfabético puro
       nodes.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
     }
-
-    // Seguir ordenando hijos
     nodes.forEach(node => sortNodesRecursively(node.children, level + 1));
   }
 
@@ -188,7 +179,6 @@
         current = node.children;
       });
     });
-    
     sortNodesRecursively(root, 0);
     menuTree = root;
   }
@@ -268,12 +258,12 @@
     col.className = "column";
     
     let headerHtml = `<div class="column-header">${level === 0 ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías` : parent.name}</div>`;
-    if(level > 0) headerHtml += `<a class="view-all" href="#${norm(parent.name)}">Ver ${parent.name}</a>`;
+    if(level > 0) headerHtml += `<a class="view-all" href="#">Ver ${parent.name}</a>`;
     col.innerHTML = headerHtml + "<ul></ul>";
     
     const ul = col.querySelector("ul");
 
-    // Banner de cabecera de categoría
+    // Banner de cabecera (scope: category_children)
     if(parent) {
       const bChild = findBanner({scope: 'category_children', parent: parent.name});
       if(bChild) col.insertAdjacentHTML('beforeend', renderBanner(bChild, 'small'));
@@ -298,11 +288,12 @@
       };
       ul.appendChild(li);
 
-      // Banner "After Item"
+      // CORRECCIÓN: Insertar banner después del item específico (scope: after_item)
       if(parent) {
         const bAfter = findBanner({scope: 'after_item', parent: parent.name, after: item.name});
         if(bAfter) {
           const bLi = document.createElement("li");
+          bLi.style.listStyle = "none";
           bLi.innerHTML = renderBanner(bAfter, 'small');
           ul.appendChild(bLi);
         }
