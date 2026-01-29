@@ -75,18 +75,19 @@
 
 <script>
 
+
   // ✅ Tu CSV publicado
   const DATA_URL_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTB17XxLBUzcUlZZeEh-UPryJijWIBOlec4xgD3BZ9JnF_zy3zKPdlMZpfLpr8bEygm2z5fLhp-ZxFk/pub?gid=0&single=true&output=csv";
   const DATA_URL = DATA_URL_BASE + "&_=" + Date.now();
 
-  // Banners dinámicos (pestaña "banners")
-  const BANNERS_SHEET_NAME = "banners";
-  const BANNERS_URL_CANDIDATES = [
-    DATA_URL_BASE.replace("gid=0&single=true&output=csv", `single=true&output=csv&sheet=${BANNERS_SHEET_NAME}`),
-    DATA_URL_BASE.replace("gid=0&single=true&output=csv", `gid=0&single=true&output=csv&sheet=${BANNERS_SHEET_NAME}`),
-  ];
+  // Pestaña banners (gid)
+  const BANNERS_GID = "1300813141";
+  const BANNERS_URL = DATA_URL_BASE.replace("gid=0&single=true&output=csv", `gid=1300813141&single=true&output=csv`);
   let bannersConfig = [];
 
+
+  // Banners dinámicos (pestaña "banners")
+  
 
   const CHEVRON_SVG = `<span class="chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" aria-hidden="true" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
@@ -276,23 +277,23 @@ async function fetchWithTimeout(url, ms){
 }
 
 async function loadBanners(){
-  // No rompe el menú: si falla, bannersConfig=[]
-  for(const baseUrl of BANNERS_URL_CANDIDATES){
-    const url = baseUrl + "&_=" + Date.now();
     try{
-      const res = await fetchWithTimeout(url, 8000);
-      if(!res.ok) continue;
+      const url = BANNERS_URL + "&_=" + Date.now();
+      const res = await fetch(url);
+      if(!res.ok) throw new Error("No OK");
       const txt = await res.text();
-      if(txt.trim().startsWith("<")) continue;
-      const objs = rowsToObjects(parseCsv(txt));
+      if(txt.trim().startsWith("<")) throw new Error("HTML");
+      const rows = parseCsv(txt);
+      const objs = rowsToObjects(rows);
       if(objs.length){
         bannersConfig = objs;
         return;
       }
-    }catch(e){ /* probar siguiente */ }
+    }catch(e){
+      // No rompe el menú si banners falla
+    }
+    bannersConfig = [];
   }
-  bannersConfig = [];
-}
 
 function findBanner({scope,parent,after}){
   const sc = scope ? norm(scope) : "";
@@ -662,6 +663,7 @@ async function loadData(){
 
     container.appendChild(col);
   }
+
 
 </script>
 </body>
