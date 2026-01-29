@@ -73,6 +73,10 @@
       display:block;
     }
 
+  
+    .promo-card.small{ margin:12px 16px 8px; }
+    .promo-card.small .promo-img{ height:120px; }
+    
   </style>
 </head>
 <body>
@@ -470,6 +474,19 @@
 
       col.appendChild(h);
       col.appendChild(a);
+
+      // Banner específico en 2º nivel: Cuidado personal y salud
+      if (norm(displayName(parentItem.name)) === "cuidado personal y salud") {
+        const promo2 = document.createElement("div");
+        promo2.className = "promo-card small";
+        promo2.innerHTML = `
+          <img class="promo-img" src="https://www.quirumed.com/media/wysiwyg/banners-nevera/081-245x135-homeDE7.jpg" alt="Promo cuidado personal y salud">
+          <div class="promo-overlay"></div>
+          <a class="promo-link" href="#cuidado-personal-y-salud" aria-label="Ver promoción"></a>
+        `;
+        col.appendChild(promo2);
+      }
+
     }
 
     const ul = document.createElement("ul");
