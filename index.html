@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Corregido</title>
+  <title>Menu Mockup - Funcionalidad Corregida</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -169,9 +169,9 @@
     col.className = "column";
     
     col.innerHTML = `<ul>
-      <li class="item" id="item-spec" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
-      <li class="item" id="item-off" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
-      <li class="item" id="item-all" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
+      <li class="item" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
+      <li class="item" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
+      <li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
       <li class="divider"></li>
       ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}</span></li>`).join('')}
     </ul>`;
@@ -184,10 +184,8 @@
   }
 
   function renderSpecialties(){
-    clearActiveRoot();
-    document.getElementById("item-spec").classList.add("active");
     const container = document.getElementById("columns-container");
-    Array.from(container.querySelectorAll(".column")).slice(1).forEach(c => c.remove());
+    container.innerHTML = "";
     const col = document.createElement("div");
     col.className = "column";
     col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Especialidades</div><ul>
@@ -198,10 +196,8 @@
   }
 
   function renderOffers(){
-    clearActiveRoot();
-    document.getElementById("item-off").classList.add("active");
     const container = document.getElementById("columns-container");
-    Array.from(container.querySelectorAll(".column")).slice(1).forEach(c => c.remove());
+    container.innerHTML = "";
     const col = document.createElement("div");
     col.className = "column";
     col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Ofertas</div><ul>
@@ -211,27 +207,24 @@
     updateDrawerWidth();
   }
 
+  // ✅ AHORA SI: Al pulsar "Todas las categorías", reemplaza la columna por el listado Nivel 0
   function renderAllCategories(){
-    clearActiveRoot();
-    document.getElementById("item-all").classList.add("active");
     render(menuTree, 0); 
-  }
-
-  function clearActiveRoot() {
-    ["item-spec", "item-off", "item-all"].forEach(id => {
-      const el = document.getElementById(id);
-      if(el) el.classList.remove("active");
-    });
   }
 
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
-    // Eliminar columnas a la derecha (si level 0, borramos a partir de la 1)
-    Array.from(container.querySelectorAll(".column")).slice(level + 1).forEach(c => c.remove());
+    
+    // Si es nivel 0 (Todas las categorías), limpiamos todo el contenedor para que "sustituya" la vista
+    if(level === 0) container.innerHTML = "";
+    else {
+      // Si no es nivel 0, borramos solo las columnas a la derecha de la actual
+      Array.from(container.querySelectorAll(".column")).slice(level + 1).forEach(c => c.remove());
+    }
 
     const col = document.createElement("div");
     col.className = "column";
-    col.innerHTML = `<div class="column-header">${level===0 ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Categorías` : parent.name}</div><ul></ul>`;
+    col.innerHTML = `<div class="column-header">${level===0 ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías` : parent.name}</div><ul></ul>`;
     const ul = col.querySelector("ul");
 
     items.forEach(item => {
@@ -244,7 +237,7 @@
         const wasActive = li.classList.contains("active");
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
         if(item.children.length && wasActive) {
-          Array.from(container.querySelectorAll(".column")).slice(level+2).forEach(c => c.remove());
+          Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
           li.classList.remove("active");
         } else {
           li.classList.add("active");
