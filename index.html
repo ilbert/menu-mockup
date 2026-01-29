@@ -519,7 +519,29 @@
         updateDrawerWidth();
       };
 
+      
       ul.appendChild(li);
+
+      // Banner justo después de "Vestuario desechable" en Desechables y consumibles
+      if (
+        parentItem &&
+        norm(displayName(parentItem.name)) === "desechables y consumibles" &&
+        norm(displayName(item.name)) === "vestuario desechable"
+      ) {
+        const liBanner = document.createElement("li");
+        liBanner.style.borderBottom = "none";
+
+        const promo = document.createElement("div");
+        promo.className = "promo-card small";
+        promo.innerHTML = `
+          <img class="promo-img" src="https://www.quirumed.com/media/wysiwyg/banners-nevera/081-245x135-homeDE7.jpg" alt="Promo vestuario desechable">
+          <a class="promo-link" href="#vestuario-desechable" aria-label="Ver vestuario desechable"></a>
+        `;
+
+        liBanner.appendChild(promo);
+        ul.appendChild(liBanner);
+      }
+
     });
 
     col.appendChild(ul);
