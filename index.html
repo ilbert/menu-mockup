@@ -15,7 +15,7 @@
     header{background:#fff;height:60px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border)}
     .hamburger{width:42px;height:42px;border:1px solid var(--border);background:#fff;cursor:pointer;border-radius:8px;font-size:20px;color:var(--brand)}
     #overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:1000}
-    #drawer{position:fixed;inset:0 auto 0 0;background:#fff;z-index:1001;display:none;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.12);width:min(1100px,96vw)}
+    #drawer{position:fixed;inset:0 auto 0 0;background:#fff;z-index:1001;display:none;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.12);width:auto;max-width:96vw}
     .drawer-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)}
     .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
     #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd}
@@ -186,11 +186,12 @@
       drawer.style.display="flex";
       overlay.style.display="block";
       if(menuTree.length===0) loadData();
-      else renderRootMenu();
+      else { renderRootMenu();
+      updateDrawerWidth(); updateDrawerWidth(); }
     } else {
       drawer.style.display="none";
       overlay.style.display="none";
-      drawer.style.width = "min(1100px,96vw)";
+      drawer.style.width = "330px";
     }
   }
 
@@ -209,6 +210,7 @@
       buildTree(csv);
       status.style.display="none";
       renderRootMenu();
+      updateDrawerWidth();
     } catch(e) {
       status.style.display="block";
       status.textContent="⚠️ Error cargando datos. Revisa consola.";
@@ -327,6 +329,7 @@
     back.className="back-only";
     back.innerHTML = BACK_CHEVRON_SVG;
     back.onclick = () => renderRootMenu();
+      updateDrawerWidth();
     const title = document.createElement("div");
     title.textContent="Ofertas";
     bar.appendChild(back);
@@ -357,6 +360,7 @@
     back.className="back-only";
     back.innerHTML = BACK_CHEVRON_SVG;
     back.onclick = () => renderRootMenu();
+      updateDrawerWidth();
     const title = document.createElement("div");
     title.textContent="Especialidades";
     bar.appendChild(back);
@@ -395,6 +399,7 @@
       back.className="back-only";
       back.innerHTML = BACK_CHEVRON_SVG;
       back.onclick = () => renderRootMenu();
+      updateDrawerWidth();
       const title = document.createElement("div");
       title.textContent="Todas las categorías";
       bar.appendChild(back);
@@ -454,6 +459,9 @@
     col.appendChild(ul);
     container.appendChild(col);
   }
+
+
+  window.addEventListener('resize', () => { if (drawer.style.display === 'flex') updateDrawerWidth(); });
 </script>
 </body>
 </html>
