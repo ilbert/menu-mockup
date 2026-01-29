@@ -292,23 +292,22 @@
         else renderAllCategories();
       };
       ul.appendChild(li);
+    });
 
-      // línea + destacadas debajo de Ofertas (en root)
-      if(item.type==="offers") {
-        const div = document.createElement("li");
-        div.className="divider";
-        ul.appendChild(div);
+    
+    // línea + destacadas (se muestran debajo de "Todas las categorías", pero asociadas a Ofertas)
+    const div = document.createElement("li");
+    div.className = "divider";
+    ul.appendChild(div);
 
-        FEATURED_CATS.forEach(fc => {
-          const fli = document.createElement("li");
-          fli.className="item";
-          fli.innerHTML =
-            `<span class="label"><span class="text">${fc.name}</span>` +
-            `${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==="new"?"Nuevo":"Trending"}</span>` : ""}` +
-            `</span>`;
-          ul.appendChild(fli);
-        });
-      }
+    FEATURED_CATS.forEach(fc => {
+      const fli = document.createElement("li");
+      fli.className = "item";
+      fli.innerHTML =
+        `<span class="label"><span class="text">${fc.name}</span>` +
+        `${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==="new"?"Nuevo":"Trending"}</span>` : ""}` +
+        `</span>`;
+      ul.appendChild(fli);
     });
 
     col.appendChild(ul);
