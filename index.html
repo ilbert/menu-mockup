@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Versión Final</title>
+  <title>Menu Mockup - Orden Alfabético Nivel 2+</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -114,7 +114,6 @@
       const banCsv = await banRes.text();
 
       buildTree(catCsv);
-      // Invertimos la lista para que al buscar, la "última" fila sea la primera encontrada
       banners = rowsToObjects(parseCSV(banCsv)).reverse();
       
       statusEl.style.display="none";
@@ -151,6 +150,28 @@
     });
   }
 
+  // FUNCIÓN DE ORDENAMIENTO ACTUALIZADA
+  function sortNodes(nodes, level) {
+    if (level === 0) {
+      // Nivel 1: Respetar TOP_ORDER manual
+      const rank = new Map(TOP_ORDER.map((n, i) => [norm(n), i]));
+      nodes.sort((a, b) => {
+        const ra = rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999;
+        const rb = rank.has(norm(b.name)) ? rank.get(norm(b.name)) : 999;
+        return ra - rb || a.name.localeCompare(b.name);
+      });
+    } else {
+      // Nivel 2 en adelante: Orden Alfabético puro
+      nodes.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    // Aplicar recursivamente a los hijos
+    nodes.forEach(node => {
+      if (node.children && node.children.length > 0) {
+        sortNodes(node.children, level + 1);
+      }
+    });
+  }
+
   function buildTree(csv){
     const root = [];
     csv.split(/\r?\n/).forEach(line => {
@@ -166,17 +187,13 @@
         current = node.children;
       });
     });
-    const rank = new Map(TOP_ORDER.map((n,i)=>[norm(n), i]));
-    root.sort((a,b)=>{
-      const ra = rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999;
-      const rb = rank.has(norm(b.name)) ? rank.get(norm(b.name)) : 999;
-      return ra - rb || a.name.localeCompare(b.name);
-    });
+    
+    // Aplicar el nuevo sistema de ordenamiento
+    sortNodes(root, 0);
     menuTree = root;
   }
 
   function findBanner(query){
-    // Al haber invertido la lista de banners en loadAllData, find() devolverá el último de la hoja
     return banners.find(b => 
       norm(b.scope) === norm(query.scope) && 
       (!query.parent || norm(b.parent) === norm(query.parent)) &&
