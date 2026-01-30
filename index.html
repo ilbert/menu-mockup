@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Funcionalidad Corregida</title>
+  <title>Menu Mockup - Navegación Corregida</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -169,9 +169,9 @@
     col.className = "column";
     
     col.innerHTML = `<ul>
-      <li class="item" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
-      <li class="item" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
-      <li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
+      <li class="item" id="item-spec" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
+      <li class="item" id="item-off" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
+      <li class="item" id="item-all" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
       <li class="divider"></li>
       ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}</span></li>`).join('')}
     </ul>`;
@@ -207,19 +207,23 @@
     updateDrawerWidth();
   }
 
-  // ✅ AHORA SI: Al pulsar "Todas las categorías", reemplaza la columna por el listado Nivel 0
   function renderAllCategories(){
+    // Nivel 0 reemplaza todo
     render(menuTree, 0); 
   }
 
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
     
-    // Si es nivel 0 (Todas las categorías), limpiamos todo el contenedor para que "sustituya" la vista
-    if(level === 0) container.innerHTML = "";
-    else {
-      // Si no es nivel 0, borramos solo las columnas a la derecha de la actual
-      Array.from(container.querySelectorAll(".column")).slice(level + 1).forEach(c => c.remove());
+    // CORRECCIÓN CRÍTICA:
+    // Si estamos en nivel 0, limpiamos todo (funcionalidad de reemplazo)
+    // Si estamos en nivel > 0, limpiamos DESDE el nivel actual en adelante para evitar el apilamiento de hermanos.
+    if(level === 0) {
+        container.innerHTML = "";
+    } else {
+        // Antes era .slice(level + 1). Al poner .slice(level), forzamos que si ya existe
+        // una columna en la posición donde vamos a pintar, se elimine antes.
+        Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
     }
 
     const col = document.createElement("div");
@@ -235,11 +239,19 @@
       
       li.onclick = () => {
         const wasActive = li.classList.contains("active");
+        
+        // 1. Limpieza visual: Desmarcar todos los hermanos inmediatamente
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
+
         if(item.children.length && wasActive) {
+          // 2. Comportamiento Toggle (Cerrar):
+          // Si ya estaba activo, borramos sus hijos (nivel + 1 en adelante) y nos quedamos inactivos.
           Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
           li.classList.remove("active");
         } else {
+          // 3. Comportamiento Abrir:
+          // Marcar como activo y renderizar hijos.
+          // La función render() se encargará de borrar la columna hermana si existiera gracias al fix de arriba.
           li.classList.add("active");
           if(item.children.length) render(item.children, level + 1, item);
         }
