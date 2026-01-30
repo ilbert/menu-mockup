@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Versión B Final</title>
+  <title>Menu Mockup - Versión B (Icono Corregido)</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -62,10 +62,9 @@
   const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
-  // ORDEN NIVEL 1
   const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
   
-  // MAPA DE ICONOS (Añadido Aparatología)
+  // Normalizamos las llaves del mapa de iconos para evitar fallos por tildes
   const ICON_MAP = {
     "aparatologia y equipos":"🧰", 
     "ayudas tecnicas para personas mayores":"🧓", 
@@ -94,6 +93,7 @@
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
 
+  // Función de normalización robusta
   const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 
   async function loadAllData(){
@@ -224,6 +224,8 @@
     items.forEach(item => {
       const li = document.createElement("li");
       li.className = "item";
+      
+      // Aquí aplicamos norm() tanto al nombre del ítem como a la búsqueda en el mapa
       const normName = norm(item.name);
       const icon = level === 0 ? (ICON_MAP[normName] || "") : "";
       
