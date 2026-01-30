@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Menu Mockup - A/B Test</title>
+  <style>
+    :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);overflow:hidden}
+    header{background:#fff;height:60px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border)}
+    .hamburger{width:42px;height:42px;border:1px solid var(--border);background:#fff;cursor:pointer;border-radius:8px;font-size:20px;color:var(--brand)}
+    #overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:1000}
+    #drawer{position:fixed;inset:0 auto 0 0;background:#fff;z-index:1001;display:none;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.12);width:auto;max-width:96vw}
+    .drawer-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)}
+    .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
+    #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd;display:none}
+    #columns-container{display:flex;flex:1;overflow-x:auto;overflow-y:hidden;background:#fff;scrollbar-width:none;-ms-overflow-style:none}
+    .column{flex:0 0 330px;border-right:1px solid #eee;overflow-y:auto;height:100%}
+    @media (max-width:520px){.column{flex-basis:86vw}}
+    ul{list-style:none;padding:0;margin:0}
+    .item{padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;font-size:13px;border-bottom:1px solid #f3f4f6}
+    .item:hover{background:#f7f9fc;color:var(--brand)}
+    .item.active{background:#e6f2fa;color:var(--brand);font-weight:800;border-left:5px solid var(--brand)}
+    .label{display:flex;align-items:center;gap:10px;min-width:0}
+    .text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .icon{width:22px;height:22px;display:inline-grid;place-items:center;font-size:18px;flex:0 0 auto}
+    .chevron{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+    .chevron svg{width:18px;height:18px;stroke:var(--brand);stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .column-header{padding:14px 16px 8px;font-weight:900;color:var(--brand);font-size:18px;display:flex;align-items:center;gap:10px}
+    .back-only{border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center}
+    .divider{border-top:1px solid #e5e7eb;margin:8px 0;}
+    .tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:8px;white-space:nowrap}
+    .tag.new{background:#e6f2fa;color:var(--brand)}
+    .tag.trending{background:#eafaf1;color:#0a8f4e}
+    .promo-card{ margin:16px; border-radius:14px; overflow:hidden; position:relative; background:#f0f0f0; box-shadow:0 10px 25px rgba(0,0,0,.1); }
+    .promo-img{ width:100%; height:160px; object-fit:cover; display:block; }
+    .promo-link{ position:absolute; inset:0; display:block; }
+    .promo-card.small{ margin:12px 16px 8px; }
+    .promo-card.small .promo-img{ height:120px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="hamburger" id="openBtn">☰</button>
+  <div style="margin-left:15px;font-weight:900;color:var(--brand);">MENU MOCKUP (TEST <span id="ver-label"></span>)</div>
+</header>
+
+<div id="overlay"></div>
+
+<aside id="drawer">
+  <div class="drawer-header">
+    <span>MENU</span>
+    <button class="close-x" id="closeBtn">✕</button>
+  </div>
+  <div id="status"></div>
+  <div id="columns-container"></div>
+</aside>
+
+<script>
+  // ==========================================
+  // CONFIGURACIÓN DEL TEST A/B
+  // CAMBIA ESTO A 'A' o 'B' PARA VER LAS VERSIONES
+  const VERSION = 'A'; 
+  // ==========================================
+  
+  document.getElementById('ver-label').textContent = VERSION;
+
+  const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
+  const GID_CATEGORIES = "0"; 
+  const GID_BANNERS = "1300813141";
+
+  const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_CATEGORIES}&_=${Date.now()}`;
+  const BANNERS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_BANNERS}&_=${Date.now()}`;
+
+  const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
+  const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
+
+  const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
+  const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
+  const FEATURED_CATS = [{ name:"Camillas", tag:"trending" }, { name:"Sillas de ruedas", tag:"new" }, { name:"Diagnóstico", tag:null }, { name:"Mobiliario", tag:null }];
+  const SPECIALTIES_ITEMS = [{ name:"Fisioterapia", icon:"🦵" }, { name:"Estética", icon:"✨" }, { name:"Peluquería y Barbería", icon:"💈" }, { name:"SPA & Wellness", icon:"🧖" }, { name:"Medicina", icon:"🩺" }];
+  const OFFERS_ITEMS = [{ name:"Ofertas del momento" }, { name:"Más vendidos" }, { name:"Promociones" }];
+
+  let menuTree = [];
+  let bannersData = [];
+
+  const drawer = document.getElementById("drawer");
+  const overlay = document.getElementById("overlay");
+  const statusEl = document.getElementById("status");
+
+  document.getElementById("openBtn").onclick = () => toggleMenu(true);
+  document.getElementById("closeBtn").onclick = () => toggleMenu(false);
+  overlay.onclick = () => toggleMenu(false);
+
+  const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+  const displayName = (name) => String(name||"").replace(/\s+Total\s*$/i,"").trim();
+
+  async function loadAllData(){
+    statusEl.style.display="block";
+    statusEl.textContent="Cargando...";
+    try {
+      const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
+      const catCsv = await catRes.text();
+      const banCsv = await banRes.text();
+      buildTree(catCsv);
+      bannersData = rowsToObjects(parseCSV(banCsv)).reverse();
+      statusEl.style.display="none";
+      renderRootMenu();
+    } catch(e) { statusEl.textContent="Error de carga"; }
+  }
+
+  function parseCSV(text){
+    const rows = [];
+    let cur = "", row = [], inQ = false;
+    for (let i=0;i<text.length;i++){
+      const ch = text[i];
+      if (ch === '"') inQ = !inQ;
+      else if (ch === ',' && !inQ){ row.push(cur); cur=""; }
+      else if ((ch === '\n' || ch === '\r') && !inQ){
+        row.push(cur); cur="";
+        if (row.join("").trim()) rows.push(row);
+        row=[];
+      } else cur += ch;
+    }
+    row.push(cur); if(row.join("").trim()) rows.push(row);
+    return rows;
+  }
+
+  function rowsToObjects(rows){
+    if(!rows.length) return [];
+    const header = rows[0].map(h => h.trim().toLowerCase());
+    return rows.slice(1).map(row => {
+      const obj = {};
+      header.forEach((h, i) => obj[h] = (row[i] || "").trim());
+      return obj;
+    });
+  }
+
+  function buildTree(csv){
+    const root = [];
+    csv.split(/\r?\n/).forEach(line => {
+      const clean = line.replace(/"/g, "").trim();
+      if(!clean) return;
+      const parts = clean.split(">").map(p => p.trim()).filter(Boolean);
+      let current = root;
+      parts.forEach((rawName) => {
+        const name = displayName(rawName);
+        let node = current.find(n => n.name === name);
+        if(!node){
+          node = {name, children: []};
+          current.push(node);
+        }
+        current = node.children;
+      });
+    });
+    sortNodes(root, 0);
+    menuTree = root;
+  }
+
+  function sortNodes(nodes, level) {
+    if (!nodes) return;
+    if (level === 0) {
+      const rank = new Map(TOP_ORDER.map((n, i) => [norm(n), i]));
+      nodes.sort((a, b) => (rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999) - (rank.has(norm(b.name)) ? rank.get(norm(b.name)) : 999) || a.name.localeCompare(b.name));
+    } else {
+      nodes.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    nodes.forEach(n => sortNodes(n.children, level + 1));
+  }
+
+  function renderRootMenu(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML = "";
+    const col = document.createElement("div");
+    col.className = "column";
+    
+    let html = '<ul>';
+    
+    // 1. Siempre pintamos Especialidades y Ofertas
+    html += `<li class="item" id="item-spec" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>`;
+    html += `<li class="item" id="item-off" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>`;
+    html += `<li class="divider"></li>`;
+
+    // --- LOGICA TEST A/B ---
+    if (VERSION === 'A') {
+        // VERSION A: Listado completo de Categorías Nivel 1 aquí mismo
+        // Sin enlaces rápidos, sin "Todas las categorías"
+        menuTree.forEach((item, index) => {
+             const icon = ICON_MAP[norm(item.name)] || "";
+             // Nota: Ponemos un ID unico para poder activar/desactivar la clase
+             html += `<li class="item root-cat-item" data-idx="${index}"><span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}</li>`;
+        });
+    } else {
+        // VERSION B: La original (Enlace a Todas, enlaces rápidos)
+        html += `<li class="item" id="item-all" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>`;
+        html += `<li class="divider"></li>`;
+        html += FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}</span></li>`).join('');
+    }
+    // -----------------------
+
+    html += '</ul>';
+    
+    const b = bannersData.find(b => norm(b.scope) === 'root');
+    if(b) html += `<div class="promo-card"><img class="promo-img" src="${b.img}"><a class="promo-link" href="${b.href||'#'}"></a></div>`;
+
+    col.innerHTML = html;
+    container.appendChild(col);
+
+    // Asignar eventos CLICK para los items de la Version A después de crear el HTML
+    if (VERSION === 'A') {
+        const items = col.querySelectorAll('.root-cat-item');
+        items.forEach(li => {
+            li.onclick = () => {
+                const idx = li.getAttribute('data-idx');
+                const item = menuTree[idx];
+                
+                // Gestionar clase active visual
+                const allItems = col.querySelectorAll('.item');
+                allItems.forEach(i => i.classList.remove('active'));
+                
+                // Si ya estaba activo, cerramos (comportamiento toggle)
+                // Pero como es el root, quizás solo queramos abrir. 
+                // Usaremos la lógica estándar: abrir y marcar.
+                li.classList.add('active');
+                
+                // Renderizar hijos en la siguiente columna (nivel 0 -> renderiza nivel 1)
+                // Pasamos parent=item para que pinte el título arriba
+                if(item.children.length) render(item.children, 0, item);
+                else {
+                    // Si no tiene hijos, limpiamos columnas a la derecha
+                    Array.from(container.querySelectorAll(".column")).slice(1).forEach(c => c.remove());
+                    updateDrawerWidth();
+                }
+            };
+        });
+    }
+
+    updateDrawerWidth();
+}
+
+  function renderSpecialties(){
+    const container = document.getElementById("columns-container");
+    // Al ir a especialidades, si estamos en B, reemplazamos todo. Si estamos en A, también (es una vista "modal" lateral).
+    container.innerHTML = ""; 
+    
+    const col = document.createElement("div");
+    col.className = "column";
+    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Especialidades</div><ul>
+      ${SPECIALTIES_ITEMS.map(it => `<li class="item"><span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span></li>`).join('')}
+    </ul>`;
+    container.appendChild(col);
+    updateDrawerWidth();
+  }
+
+  function renderOffers(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML = ""; 
+    const col = document.createElement("div");
+    col.className = "column";
+    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Ofertas</div><ul>
+      ${OFFERS_ITEMS.map(it => `<li class="item"><span class="label"><span class="text">${it.name}</span></span></li>`).join('')}
+    </ul>`;
+    container.appendChild(col);
+    updateDrawerWidth();
+  }
+
+  function renderAllCategories(){
+    // Solo usado en versión B
+    render(menuTree, 0); 
+  }
+
+  function render(items, level, parent=null){
+    const container = document.getElementById("columns-container");
+    
+    // LÓGICA CRÍTICA PARA EL TEST A/B
+    if(VERSION === 'B' && level === 0) {
+        // En versión B, el nivel 0 reemplaza todo (como una página nueva)
+        container.innerHTML = "";
+    } else {
+        // En versión A (o niveles profundos de B), borramos desde la columna actual hacia la derecha
+        // Si estamos en root (level 0) y clickamos algo, queremos borrar la columna 1 en adelante y crear una nueva columna 1.
+        // Así que slice(level + 1) es correcto aquí porque 'level' es el del padre que dispara la acción.
+        // PERO tenemos el fix del "hermano" anterior.
+        // Si estamos en root (level 0), queremos poner una columna al lado (columna 1).
+        // Si ya hay una columna 1, la borramos.
+        // Array.from(...).slice(level + 1) borraría desde la columna 2 si level es 0. 
+        // NECESITAMOS BORRAR DESDE level + 1 si la columna base es 0? 
+        // No, columnas son indices 0, 1, 2...
+        // Si clicko en root (col 0), quiero borrar col 1, 2, 3...
+        // slice(1) borra desde el indice 1.
+        // level = 0. slice(level + 1) = slice(1). CORRECTO para A.
+        
+        // REVISIÓN DEL FIX ANTERIOR: "slice(level)"
+        // En el fix anterior usamos slice(level) para niveles profundos (>0).
+        // Si level es 0 (Root A), slice(0) borraría el propio Root. MAL.
+        
+        let startDelete = level + 1;
+        // Si no es la root version A, aplicamos la lógica de borrar hermanos
+        if (!(VERSION === 'A' && level === 0)) {
+             startDelete = level; // Fix anterior para cerrar hermanos
+             // Pero cuidado: si level=1 (estoy en columna 1), slice(1) borra la columna 1. Correcto para reemplazarla.
+        } 
+        
+        // En VERSION A, level 0: startDelete = 1. Borramos la columna hija anterior si existe.
+        Array.from(container.querySelectorAll(".column")).slice(startDelete).forEach(c => c.remove());
+    }
+
+    const col = document.createElement("div");
+    col.className = "column";
+    
+    // Header diferente según si es la vista "Todas las categorías" (B) o una subcategoría normal
+    let headerHTML = parent ? parent.name : `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías`;
+    
+    col.innerHTML = `<div class="column-header">${headerHTML}</div><ul></ul>`;
+    const ul = col.querySelector("ul");
+
+    items.forEach(item => {
+      const li = document.createElement("li");
+      li.className = "item";
+      // Iconos solo en nivel 0 de versión B (en A ya los pintamos en el root manual)
+      const icon = (VERSION === 'B' && level === 0) ? (ICON_MAP[norm(item.name)] || "") : "";
+      
+      li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
+      
+      li.onclick = () => {
+        const wasActive = li.classList.contains("active");
+        
+        Array.from(ul.children).forEach(l => l.classList.remove("active"));
+
+        if(item.children.length && wasActive) {
+          // Cerrar
+          // Aquí level es el de la columna ACTUAL creada.
+          // Si cierro, borro las siguientes.
+          // La columna actual es (level + 1) relativo al padre? 
+          // No, 'level' en recursión aumenta.
+          // Mejor calculamos índice real en DOM.
+          const myColIndex = Array.from(container.children).indexOf(col);
+          Array.from(container.querySelectorAll(".column")).slice(myColIndex + 1).forEach(c => c.remove());
+          li.classList.remove("active");
+        } else {
+          // Abrir
+          li.classList.add("active");
+          // Si estamos en render, estamos creando el nivel X. Los hijos serán X+1.
+          // En la llamada recursiva pasamos level + 1.
+          // Pero ojo con el fix de slice.
+          // Si estamos en Version B nivel 0 (que actuaba como root), al llamar hijos pasamos 0+1 = 1.
+          // Si estamos en Version A nivel 0 (root real), llamamos hijos con 0. Dentro de render, level 0.
+          // Al crear esta columna, estamos en un nivel relativo.
+          
+          // Simplificación: pasamos el índice de columna actual del DOM como nivel base
+          const currentDomLevel = Array.from(container.children).indexOf(col);
+          if(item.children.length) render(item.children, currentDomLevel + 1, item);
+        }
+        updateDrawerWidth();
+      };
+      ul.appendChild(li);
+
+      if(parent){
+        const bAfter = bannersData.find(b => norm(b.scope) === 'after_item' && norm(b.parent) === norm(parent.name) && norm(b.after) === norm(item.name));
+        if(bAfter) {
+          const bLi = document.createElement("li");
+          bLi.innerHTML = `<div class="promo-card small"><img class="promo-img" src="${bAfter.img}"><a class="promo-link" href="${bAfter.href||'#'}"></a></div>`;
+          ul.appendChild(bLi);
+        }
+      }
+    });
+
+    if(parent){
+      const bChild = bannersData.find(b => norm(b.scope) === 'category_children' && norm(b.parent) === norm(parent.name));
+      if(bChild) {
+        col.insertAdjacentHTML('beforeend', `<div class="promo-card small"><img class="promo-img" src="${bChild.img}"><a class="promo-link" href="${bChild.href||'#'}"></a></div>`);
+      }
+    }
+
+    container.appendChild(col);
+    updateDrawerWidth();
+  }
+
+  function toggleMenu(open){
+    drawer.style.display = open ? "flex" : "none";
+    overlay.style.display = open ? "block" : "none";
+    if(open && menuTree.length===0) loadAllData();
+    else if(open) renderRootMenu();
+  }
+
+  function updateDrawerWidth(){
+    const count = document.querySelectorAll(".column").length;
+    drawer.style.width = Math.min(count * 330, window.innerWidth * 0.95) + "px";
+  }
+</script>
+</body>
+</html>
