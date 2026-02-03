@@ -47,6 +47,45 @@
   <div style="margin-left:15px;font-weight:900;color:var(--brand);">MENU MOCKUP</div>
 </header>
 
+<!-- ===== Panel de test (CSV local) ===== -->
+<div id="abpanel" style="
+  position:fixed; top:10px; right:10px; z-index:2000;
+  background:#fff; border:1px solid #e6e8eb; border-radius:12px;
+  padding:10px; box-shadow:0 10px 25px rgba(0,0,0,.12);
+  font-size:12px; width:340px; max-width:92vw;">
+  <div style="font-weight:900;color:#034ca8;margin-bottom:6px;">Test de encontrabilidad (CSV local)</div>
+
+  <label style="display:block;margin-bottom:6px;">
+    Tarea:
+    <select id="taskSelect" style="width:100%;padding:8px;border-radius:10px;border:1px solid #e6e8eb;">
+      <option value="">-- elige una tarea --</option>
+    </select>
+  </label>
+
+  <div style="display:flex; gap:8px;">
+    <button id="btnStartTask" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#034ca8;color:#fff;font-weight:800;cursor:pointer;">
+      Iniciar
+    </button>
+    <button id="btnFailTask" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
+      No lo encuentro
+    </button>
+  </div>
+
+  <div style="display:flex; gap:8px; margin-top:8px;">
+    <button id="btnDownloadCSV" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
+      Descargar CSV
+    </button>
+    <button id="btnResetLog" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
+      Borrar log
+    </button>
+  </div>
+
+  <div id="taskHint" style="margin-top:8px;color:#555;"></div>
+  <div id="taskTimer" style="margin-top:6px;font-weight:900;"></div>
+  <div id="taskLast" style="margin-top:6px;color:#666;font-size:11px;"></div>
+</div>
+<!-- ==================================== -->
+
 <div id="overlay"></div>
 
 <aside id="drawer">
@@ -60,7 +99,7 @@
 
 <script>
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
-  const GID_CATEGORIES = "0"; 
+  const GID_CATEGORIES = "0";
   const GID_BANNERS = "1300813141";
 
   const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_CATEGORIES}&_=${Date.now()}`;
@@ -75,6 +114,113 @@
   const SPECIALTIES_ITEMS = [{ name:"Fisioterapia", icon:"🦵" }, { name:"Estética", icon:"✨" }, { name:"Peluquería y Barbería", icon:"💈" }, { name:"SPA & Wellness", icon:"🧖" }, { name:"Medicina", icon:"🩺" }];
   const OFFERS_ITEMS = [{ name:"Ofertas del momento" }, { name:"Más vendidos" }, { name:"Promociones" }];
 
+  // ===== Tracking local → CSV descargable =====
+  const VERSION = "FIN"; // cambia a "A"/"B" si lo necesitas
+  const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
+
+  let TASK = null;
+  let START_TS = 0;
+  let CLICK_PATH = [];
+  let TIMER_INT = null;
+
+  const EVENTS = [];
+
+  const TASKS = [
+    { id:"presoterapia", label:"Encontrar Presoterapia", target:"presoterapia", hint:"Llega a Presoterapia." },
+    { id:"camilla_electrica", label:"Encontrar Camilla eléctrica", target:"camilla electrica", hint:"Llega a Camilla eléctrica." },
+    { id:"silla_ruedas_electrica", label:"Encontrar Silla de ruedas eléctrica", target:"silla de ruedas electrica", hint:"Llega a Silla de ruedas eléctrica." },
+    { id:"autoclave_clase_b", label:"Encontrar Autoclave clase B", target:"autoclave clase b", hint:"Llega a Autoclave clase B." },
+  ];
+
+  function norm2(s){
+    return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+  }
+  function nowISO(){ return new Date().toISOString(); }
+
+  function track(eventName, extra = {}) {
+    const row = {
+      ts_iso: nowISO(),
+      version: VERSION,
+      session_id: SESSION_ID,
+      task_id: TASK?.id || "",
+      task_label: TASK?.label || "",
+      target: TASK?.target || "",
+      event: eventName,
+      label: extra.label || "",
+      level: (typeof extra.level === "number") ? extra.level : "",
+      path: extra.path || CLICK_PATH.join(" > "),
+      ms_from_start: START_TS ? (Date.now() - START_TS) : "",
+      url: location.href
+    };
+    EVENTS.push(row);
+
+    const last = document.getElementById("taskLast");
+    if (last) last.textContent = `Último: ${row.event}${row.label ? " → " + row.label : ""}`;
+  }
+
+  function startTask(taskId){
+    TASK = TASKS.find(t => t.id === taskId) || null;
+    CLICK_PATH = [];
+    START_TS = Date.now();
+    track("task_start");
+
+    const hint = document.getElementById("taskHint");
+    const timer = document.getElementById("taskTimer");
+    if (hint) hint.textContent = TASK ? TASK.hint : "";
+    if (timer) timer.textContent = "Tiempo: 0.0s";
+
+    if (TIMER_INT) clearInterval(TIMER_INT);
+    TIMER_INT = setInterval(() => {
+      if (!START_TS || !timer) return;
+      timer.textContent = "Tiempo: " + ((Date.now()-START_TS)/1000).toFixed(1) + "s";
+    }, 100);
+  }
+
+  function failTask(){
+    if(!TASK || !START_TS) return;
+    track("task_fail");
+  }
+
+  function isSuccessClick(itemName){
+    if(!TASK || !START_TS) return false;
+    const clicked = norm2(itemName);
+    const target = norm2(TASK.target);
+    return clicked === target || clicked.includes(target) || target.includes(clicked);
+  }
+
+  function escapeCSV(v){
+    const s = String(v ?? "");
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+
+  function downloadCSV(){
+    if (!EVENTS.length) {
+      alert("No hay eventos todavía.");
+      return;
+    }
+    const headers = Object.keys(EVENTS[0]);
+    const lines = [
+      headers.join(","),
+      ...EVENTS.map(r => headers.map(h => escapeCSV(r[h])).join(","))
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    const ts = new Date().toISOString().replace(/[:.]/g,"-");
+    a.href = URL.createObjectURL(blob);
+    a.download = `menu_test_${VERSION}_${SESSION_ID}_${ts}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function resetLog(){
+    EVENTS.length = 0;
+    alert("Log borrado.");
+  }
+  // ===========================================
+
   let menuTree = [];
   let bannersData = [];
 
@@ -85,6 +231,25 @@
   document.getElementById("openBtn").onclick = () => toggleMenu(true);
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
+
+  // UI panel wiring
+  const taskSelect = document.getElementById("taskSelect");
+  TASKS.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t.id;
+    opt.textContent = t.label;
+    taskSelect.appendChild(opt);
+  });
+
+  document.getElementById("btnStartTask").onclick = () => {
+    const id = taskSelect.value;
+    if(!id) return;
+    startTask(id);
+    toggleMenu(true);
+  };
+  document.getElementById("btnFailTask").onclick = () => failTask();
+  document.getElementById("btnDownloadCSV").onclick = () => downloadCSV();
+  document.getElementById("btnResetLog").onclick = () => resetLog();
 
   const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
   const displayName = (name) => String(name||"").replace(/\s+Total\s*$/i,"").trim();
@@ -167,7 +332,7 @@
     container.innerHTML = "";
     const col = document.createElement("div");
     col.className = "column";
-    
+
     col.innerHTML = `<ul>
       <li class="item" id="item-spec" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
       <li class="item" id="item-off" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
@@ -175,7 +340,7 @@
       <li class="divider"></li>
       ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}</span></li>`).join('')}
     </ul>`;
-    
+
     const b = bannersData.find(b => norm(b.scope) === 'root');
     if(b) col.innerHTML += `<div class="promo-card"><img class="promo-img" src="${b.img}"><a class="promo-link" href="${b.href||'#'}"></a></div>`;
 
@@ -208,22 +373,16 @@
   }
 
   function renderAllCategories(){
-    // Nivel 0 reemplaza todo
-    render(menuTree, 0); 
+    render(menuTree, 0);
   }
 
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
-    
-    // CORRECCIÓN CRÍTICA:
-    // Si estamos en nivel 0, limpiamos todo (funcionalidad de reemplazo)
-    // Si estamos en nivel > 0, limpiamos DESDE el nivel actual en adelante para evitar el apilamiento de hermanos.
+
     if(level === 0) {
-        container.innerHTML = "";
+      container.innerHTML = "";
     } else {
-        // Antes era .slice(level + 1). Al poner .slice(level), forzamos que si ya existe
-        // una columna en la posición donde vamos a pintar, se elimine antes.
-        Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
+      Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
     }
 
     const col = document.createElement("div");
@@ -236,22 +395,25 @@
       li.className = "item";
       const icon = level === 0 ? (ICON_MAP[norm(item.name)] || "") : "";
       li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
-      
+
       li.onclick = () => {
+        // ===== tracking click =====
+        CLICK_PATH.push(item.name);
+        track("click_item", { label: item.name, level });
+
+        if (isSuccessClick(item.name)) {
+          track("task_success", { label: item.name, level });
+        }
+        // ==========================
+
         const wasActive = li.classList.contains("active");
-        
-        // 1. Limpieza visual: Desmarcar todos los hermanos inmediatamente
+
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
 
         if(item.children.length && wasActive) {
-          // 2. Comportamiento Toggle (Cerrar):
-          // Si ya estaba activo, borramos sus hijos (nivel + 1 en adelante) y nos quedamos inactivos.
           Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
           li.classList.remove("active");
         } else {
-          // 3. Comportamiento Abrir:
-          // Marcar como activo y renderizar hijos.
-          // La función render() se encargará de borrar la columna hermana si existiera gracias al fix de arriba.
           li.classList.add("active");
           if(item.children.length) render(item.children, level + 1, item);
         }
@@ -281,6 +443,9 @@
   }
 
   function toggleMenu(open){
+    if(open) track("menu_open");
+    else track("menu_close");
+
     drawer.style.display = open ? "flex" : "none";
     overlay.style.display = open ? "block" : "none";
     if(open && menuTree.length===0) loadAllData();
