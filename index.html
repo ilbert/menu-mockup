@@ -38,6 +38,9 @@
     .promo-link{ position:absolute; inset:0; display:block; }
     .promo-card.small{ margin:12px 16px 8px; }
     .promo-card.small .promo-img{ height:120px; }
+
+    /* Panel test */
+    #abpanel * { box-sizing:border-box; }
   </style>
 </head>
 <body>
@@ -86,6 +89,36 @@
 </div>
 <!-- ==================================== -->
 
+<!-- ===== Cartel de tarea completada ===== -->
+<div id="doneOverlay" style="
+  position:fixed; inset:0; z-index:3000; display:none;
+  background:rgba(0,0,0,.55);">
+  <div style="
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:#fff; border:1px solid #e6e8eb; border-radius:16px;
+    width:min(520px,92vw); padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.25);
+    text-align:center;">
+    <div id="doneTitle" style="font-weight:1000;font-size:18px;color:#034ca8;">
+      ✅ Tarea completada
+    </div>
+    <div id="doneDetail" style="margin-top:8px;color:#333;font-size:13px;"></div>
+    <div id="doneTime" style="margin-top:10px;font-weight:900;"></div>
+
+    <div style="display:flex; gap:10px; margin-top:14px;">
+      <button id="btnDoneClose" style="
+        flex:1; padding:10px; border-radius:12px; border:1px solid #e6e8eb;
+        background:#034ca8; color:#fff; font-weight:900; cursor:pointer;">
+        Seguir
+      </button>
+    </div>
+
+    <div style="margin-top:10px; font-size:11px; color:#666;">
+      Ya puedes cambiar de tarea o descargar el CSV.
+    </div>
+  </div>
+</div>
+<!-- ====================================== -->
+
 <div id="overlay"></div>
 
 <aside id="drawer">
@@ -126,10 +159,10 @@
   const EVENTS = [];
 
   const TASKS = [
-    { id:"presoterapia", label:"Encontrar Presoterapia", target:"presoterapia", hint:"Llega a Presoterapia." },
-    { id:"camilla_electrica", label:"Encontrar Camilla eléctrica", target:"camilla electrica", hint:"Llega a Camilla eléctrica." },
-    { id:"silla_ruedas_electrica", label:"Encontrar Silla de ruedas eléctrica", target:"silla de ruedas electrica", hint:"Llega a Silla de ruedas eléctrica." },
-    { id:"autoclave_clase_b", label:"Encontrar Autoclave clase B", target:"autoclave clase b", hint:"Llega a Autoclave clase B." },
+    { id:"presoterapia", label:"Encontrar Presoterapia", target:"presoterapia", hint:"Llega a Presoterapia (destino final, sin subcategorías)." },
+    { id:"camilla_electrica", label:"Encontrar Camilla eléctrica", target:"camilla electrica", hint:"Llega a Camilla eléctrica (destino final, sin subcategorías)." },
+    { id:"silla_ruedas_electrica", label:"Encontrar Silla de ruedas eléctrica", target:"silla de ruedas electrica", hint:"Llega a Silla de ruedas eléctrica (destino final, sin subcategorías)." },
+    { id:"autoclave_clase_b", label:"Encontrar Autoclave clase B", target:"autoclave clase b", hint:"Llega a Autoclave clase B (destino final, sin subcategorías)." },
   ];
 
   function norm2(s){
@@ -181,11 +214,17 @@
     track("task_fail");
   }
 
-  function isSuccessClick(itemName){
+  // ✅ éxito SOLO si el item coincide y NO tiene hijos (destino final)
+  function isSuccessClick(item){
     if(!TASK || !START_TS) return false;
-    const clicked = norm2(itemName);
+
+    const clicked = norm2(item.name);
     const target = norm2(TASK.target);
-    return clicked === target || clicked.includes(target) || target.includes(clicked);
+
+    const nameMatches = clicked === target || clicked.includes(target) || target.includes(clicked);
+    const isLeaf = !item.children || item.children.length === 0;
+
+    return nameMatches && isLeaf;
   }
 
   function escapeCSV(v){
@@ -219,6 +258,24 @@
     EVENTS.length = 0;
     alert("Log borrado.");
   }
+
+  function showCompletedBanner(foundName){
+    const overlayEl = document.getElementById("doneOverlay");
+    const detail = document.getElementById("doneDetail");
+    const timeEl = document.getElementById("doneTime");
+
+    const seconds = START_TS ? ((Date.now() - START_TS)/1000).toFixed(1) : "";
+
+    if (detail) detail.textContent = `Encontrado: ${foundName}`;
+    if (timeEl) timeEl.textContent = seconds ? `Tiempo: ${seconds}s` : "";
+
+    if (overlayEl) overlayEl.style.display = "block";
+  }
+
+  function hideCompletedBanner(){
+    const overlayEl = document.getElementById("doneOverlay");
+    if (overlayEl) overlayEl.style.display = "none";
+  }
   // ===========================================
 
   let menuTree = [];
@@ -250,6 +307,11 @@
   document.getElementById("btnFailTask").onclick = () => failTask();
   document.getElementById("btnDownloadCSV").onclick = () => downloadCSV();
   document.getElementById("btnResetLog").onclick = () => resetLog();
+
+  document.getElementById("btnDoneClose").onclick = () => hideCompletedBanner();
+  document.getElementById("doneOverlay").onclick = (e) => {
+    if (e.target && e.target.id === "doneOverlay") hideCompletedBanner();
+  };
 
   const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
   const displayName = (name) => String(name||"").replace(/\s+Total\s*$/i,"").trim();
@@ -401,24 +463,29 @@
         CLICK_PATH.push(item.name);
         track("click_item", { label: item.name, level });
 
-        if (isSuccessClick(item.name)) {
+        if (isSuccessClick(item)) {
           track("task_success", { label: item.name, level });
+          showCompletedBanner(item.name);
         }
         // ==========================
 
         const wasActive = li.classList.contains("active");
 
+        // Limpieza visual: desmarcar hermanos
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
 
         if(item.children.length && wasActive) {
+          // Toggle cerrar
           Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
           li.classList.remove("active");
         } else {
+          // Abrir
           li.classList.add("active");
           if(item.children.length) render(item.children, level + 1, item);
         }
         updateDrawerWidth();
       };
+
       ul.appendChild(li);
 
       if(parent){
@@ -443,8 +510,7 @@
   }
 
   function toggleMenu(open){
-    if(open) track("menu_open");
-    else track("menu_close");
+    track(open ? "menu_open" : "menu_close");
 
     drawer.style.display = open ? "flex" : "none";
     overlay.style.display = open ? "block" : "none";
