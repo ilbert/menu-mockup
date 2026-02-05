@@ -246,10 +246,10 @@
   const OFFERS_ITEMS = [{ name:"Ofertas del momento" }, { name:"Más vendidos" }, { name:"Promociones" }];
 
   // ===================== TEST =====================
-  const VERSION = "FIN"; // A/B/FIN: identifica variante del menú (para A/B testing)
+  const VERSION = "FIN"; // A/B/FIN: variante del menú
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
-  // ✅ EDITA AQUÍ LAS RUTAS EXACTAS (cada click se compara con el final de esta ruta)
+  // ✅ EDITA AQUÍ LAS RUTAS EXACTAS (ruta actual == ruta objetivo)
   const TASKS = [
     {
       id:"camilla_electrica",
@@ -268,7 +268,7 @@
     {
       id:"autoclave_clase_b",
       label:"Autoclave clase B",
-      route:["Esterilización y autoclaves","Autoclaves","Autoclaves clase B"],
+      route:["Esterilización y autoclaves","Autoclaves clase B"],
       goal:"Encuentra la categoría de autoclaves clase B en el menú.",
       info:"Autoclave clase B: esterilizador de vapor con prevacío/postvacío, apto para instrumental hueco/poroso (dental, clínica, estética avanzada)."
     }
@@ -285,7 +285,10 @@
   let PAUSE_TS = 0;
   let PAUSED_TOTAL_MS = 0;
 
-  let CLICK_PATH = [];
+  // ✅ Ruta REAL por niveles (breadcrumb) + clicks totales
+  let NAV_PATH = [];
+  let CLICK_COUNT = 0;
+
   let TIMER_INT = null;
   let TASK_DONE = false;
 
@@ -309,7 +312,7 @@
 
   function setPathNow(){
     const el = document.getElementById("pathNow");
-    if (el) el.textContent = CLICK_PATH.join(" > ");
+    if (el) el.textContent = NAV_PATH.join(" > ");
   }
 
   function setTaskLabelPanel(){
@@ -318,7 +321,6 @@
   }
 
   function track(eventName, extra = {}) {
-    // url eliminada
     const row = {
       ts_iso: nowISO(),
       version: VERSION,
@@ -329,7 +331,7 @@
       event: eventName,
       label: extra.label || "",
       level: (typeof extra.level === "number") ? extra.level : "",
-      path: extra.path || CLICK_PATH.join(" > "),
+      path: extra.path || NAV_PATH.join(" > "),
       ms_from_start: (START_TS && TASK_ACTIVE) ? effectiveElapsedMs() : ""
     };
     EVENTS.push(row);
@@ -374,8 +376,10 @@
   }
 
   function startThisTaskNow(){
-    CLICK_PATH = [];
+    NAV_PATH = [];
+    CLICK_COUNT = 0;
     TASK_DONE = false;
+    setPathNow();
 
     START_TS = Date.now();
     PAUSED = false;
@@ -424,22 +428,23 @@
     document.getElementById("btnResume").style.display = "none";
   }
 
+  // ✅ Éxito SOLO si NAV_PATH == TASK.route (match exacto)
   function isSuccessPath(){
     if(!TASK || !TASK.route || !TASK.route.length) return false;
-    const current = CLICK_PATH.map(norm2);
+
+    const current = NAV_PATH.map(norm2);
     const target = TASK.route.map(norm2);
-    if (current.length < target.length) return false;
+
+    if (current.length !== target.length) return false;
 
     for (let i = 0; i < target.length; i++) {
-      const curVal = current[current.length - target.length + i];
-      const tarVal = target[i];
-      if (curVal !== tarVal) return false;
+      if (current[i] !== target[i]) return false;
     }
     return true;
   }
 
   function isInefficient(){
-    return CLICK_PATH.length > MAX_CLICKS_OK;
+    return CLICK_COUNT > MAX_CLICKS_OK;
   }
 
   function showCompletedBanner(message, title="✅ Resultado"){
@@ -452,10 +457,10 @@
     const timeEl = document.getElementById("doneTime");
 
     const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
-    const routeStr = CLICK_PATH.join(" > ");
+    const routeStr = NAV_PATH.join(" > ");
 
     if (titleEl) titleEl.textContent = title;
-    if (detail) detail.textContent = `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_PATH.length}`;
+    if (detail) detail.textContent = `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}`;
     if (timeEl) timeEl.textContent = seconds ? `Tiempo: ${seconds}s` : "";
     if (overlayEl) overlayEl.style.display = "block";
   }
@@ -506,8 +511,8 @@
     TASK_DONE = true;
 
     const tms = effectiveElapsedMs();
-    TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_PATH.length };
-    track("task_fail", { path: CLICK_PATH.join(" > ") });
+    TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT };
+    track("task_fail", { path: NAV_PATH.join(" > ") });
 
     showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
   }
@@ -668,11 +673,11 @@
         y: canvas.height/2 + (Math.random()*70-35),
         vx: (Math.random()*8-4),
         vy: (Math.random()*-10-5),
-        g: 0.18 + Math.random()*0.15,   // ↓ gravedad más baja
+        g: 0.18 + Math.random()*0.15,
         s: 4 + Math.random()*5,
         r: Math.random()*Math.PI,
         vr: (Math.random()*0.16-0.08),
-        life: 130 + Math.random()*80,   // ↑ vida más larga
+        life: 130 + Math.random()*80,
         hue: Math.floor(Math.random()*360)
       });
     }
@@ -697,7 +702,6 @@
         ctx.restore();
       });
 
-      // más lento (más frames)
       if (t < 160){
         requestAnimationFrame(frame);
       } else {
@@ -719,7 +723,6 @@
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
 
-  // Load data helpers
   const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
   const displayName = (name) => String(name||"").replace(/\s+Total\s*$/i,"").trim();
 
@@ -862,18 +865,27 @@
       li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
 
       li.onclick = () => {
+        const wasActive = li.classList.contains("active");
+
+        // ===== tracking breadcrumb REAL por nivel =====
         if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE) {
-          CLICK_PATH.push(item.name);
+          // actualiza ruta real por niveles
+          NAV_PATH = NAV_PATH.slice(0, level);
+          NAV_PATH[level] = item.name;
+
+          // click count total
+          CLICK_COUNT++;
+
           setPathNow();
-          track("click_item", { label: item.name, level });
+          track("click_item", { label: item.name, level, path: NAV_PATH.join(" > ") });
 
           if (isSuccessPath()) {
             TASK_DONE = true;
             const tms = effectiveElapsedMs();
             const status = isInefficient() ? "success_inefficient" : "success";
 
-            TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks: CLICK_PATH.length };
-            track("task_success", { label: item.name, level, path: CLICK_PATH.join(" > "), inefficient: status === "success_inefficient" });
+            TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks: CLICK_COUNT };
+            track("task_success", { label: item.name, level, path: NAV_PATH.join(" > "), inefficient: status === "success_inefficient" });
 
             if (status === "success_inefficient") {
               showCompletedBanner("✅ Ruta correcta (con desvíos)", "🟡 Correcta con desvíos");
@@ -882,14 +894,23 @@
             }
           }
         }
+        // ==============================================
 
-        const wasActive = li.classList.contains("active");
+        // UI state (abrir/cerrar)
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
 
         if(item.children.length && wasActive) {
+          // cerrar
           Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
           li.classList.remove("active");
+
+          // al cerrar, elimina niveles inferiores del breadcrumb
+          if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE) {
+            NAV_PATH = NAV_PATH.slice(0, level);
+            setPathNow();
+          }
         } else {
+          // abrir
           li.classList.add("active");
           if(item.children.length) render(item.children, level + 1, item);
         }
