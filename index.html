@@ -90,6 +90,7 @@
     }
     .item:hover{background:#f7f9fc;color:var(--brand)}
 
+    /* ✅ Selección normal en azul (como antes) */
     .item.active{
       background:#e6f2fa;
       color:var(--brand);
@@ -109,7 +110,6 @@
     .back-only{border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center}
     .divider{border-top:1px solid #e5e7eb;margin:8px 0;}
 
-    /* UI helpers */
     code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
 
     .btn{
@@ -121,7 +121,6 @@
     }
     .btn:active{ transform:translateY(1px); }
     .btnPrimary{background:linear-gradient(180deg, var(--brand2), var(--brand));color:#fff;border-color:transparent;}
-    .btnGhost{background:#fff;color:#111;}
     .btnWarn{background:linear-gradient(180deg, #ffcf6b, #ffb020);border-color:transparent;color:#3a2400;}
     .btnDanger{background:linear-gradient(180deg, #ff6b6b, #e11d48);border-color:transparent;color:#fff;}
 
@@ -137,10 +136,8 @@
       box-shadow:var(--shadow);
     }
 
-    /* confetti canvas */
     #confettiCanvas{ position:fixed; inset:0; z-index:9999; pointer-events:none; display:none; }
 
-    /* spinner */
     .spinner{
       width:34px;height:34px;border-radius:50%;
       border:4px solid #dbe7ff;border-top-color: var(--brand);
@@ -149,7 +146,7 @@
     }
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* Modo “desvíos” */
+    /* ✅ Si hay desvíos: marca naranja SOLO el item activo */
     #drawer.struggling .item.active{
       background:var(--warnBg) !important;
       color:var(--warnText) !important;
@@ -163,9 +160,7 @@
       font-weight:1000 !important;
     }
 
-    /* ===========================
-       MODALES RESPONSIVE
-       =========================== */
+    /* ===== MODALES RESPONSIVE ===== */
     .modalOverlay{
       position:fixed; inset:0;
       background:linear-gradient(180deg, rgba(3,76,168,.55), rgba(0,0,0,.55));
@@ -182,11 +177,8 @@
     }
 
     @media (max-width:720px){
-      body{ overflow:auto; } /* permite scroll cuando el modal ocupe toda la pantalla */
-      .modalOverlay{
-        padding:0;
-        background:linear-gradient(180deg, rgba(3,76,168,.50), rgba(0,0,0,.58));
-      }
+      body{ overflow:auto; }
+      .modalOverlay{ padding:0; }
       .modalCard{
         position:fixed;
         left:0; top:0;
@@ -202,11 +194,7 @@
       .chip{font-size:12px}
     }
 
-    /* ===========================
-       PANEL TEST RESPONSIVE
-       Desktop: tarjeta flotante
-       Mobile: barra inferior
-       =========================== */
+    /* ===== PANEL RESPONSIVE ===== */
     #abpanel{
       position:fixed;
       top:12px; right:12px;
@@ -219,7 +207,6 @@
       background:#fff;
       border:1px solid var(--border);
     }
-
     @media (max-width:720px){
       #abpanel{
         top:auto; right:0; left:0; bottom:0;
@@ -228,12 +215,9 @@
         padding:12px 12px calc(12px + env(safe-area-inset-bottom));
         box-shadow:0 -16px 40px rgba(0,0,0,.18);
       }
-      #drawer{
-        max-width:100vw;
-      }
-      /* deja hueco para el panel */
-      #drawer{ padding-bottom:84px; }
-      #columns-container{ padding-bottom:84px; }
+      #drawer{ max-width:100vw; }
+      #drawer{ padding-bottom:92px; }
+      #columns-container{ padding-bottom:92px; }
     }
 
     .kpiRow{
@@ -260,7 +244,7 @@
   <div style="margin-left:12px;font-weight:1000;color:var(--brand);letter-spacing:.2px;">MENU MOCKUP</div>
 </header>
 
-<!-- ===== INICIO (modal responsive) ===== -->
+<!-- ===== INICIO ===== -->
 <div id="taskIntroOverlay" class="modalOverlay">
   <div class="card modalCard">
     <div style="display:flex;align-items:flex-start;gap:14px;">
@@ -273,12 +257,11 @@
 
       <div style="flex:1;">
         <div class="chip">Test de usabilidad del menú web</div>
-        <div style="margin-top:10px;font-weight:1000;font-size:clamp(24px, 3.6vw, 34px);color:#0b1b3a;line-height:1.08;">
+        <div style="margin-top:10px;font-weight:1000;font-size:clamp(26px, 3.8vw, 36px);color:#0b1b3a;line-height:1.08;">
           Test de usabilidad del menú web
         </div>
-        <div style="margin-top:10px;color:#334155;line-height:1.55;font-size:clamp(15px, 2.2vw, 17px);max-width:90ch;">
-          Vas a realizar <b>3 tareas</b>: encontrar categorías dentro del menú.
-          Verás instrucciones antes de cada tarea.
+        <div style="margin-top:10px;color:#334155;line-height:1.6;font-size:clamp(15px, 2.2vw, 17px);max-width:90ch;">
+          Vas a realizar <b>3 tareas</b> de encontrabilidad: encontrar categorías dentro del menú.
           <b>El cronómetro empieza</b> cuando pulses “Comenzar tarea”.
         </div>
       </div>
@@ -287,21 +270,21 @@
     <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:18px;">
       <div style="border:1px solid var(--border);border-radius:18px;padding:16px;background:#fbfcfe;">
         <div style="font-weight:1000;color:#0f172a;font-size:16px;">Qué tienes que hacer</div>
-        <ol style="margin:12px 0 0 20px;color:#334155;line-height:1.7;font-size:clamp(14px, 2.1vw, 16px);">
+        <ol style="margin:12px 0 0 20px;color:#334155;line-height:1.8;font-size:clamp(14px, 2.1vw, 16px);">
           <li>Pulsa <b>Empezar</b>.</li>
           <li>Lee la tarea y pulsa <b>Comenzar tarea</b>.</li>
           <li>Navega hasta la <b>ruta correcta</b>.</li>
           <li>Si te interrumpen, usa <b>Pausa</b> y luego <b>Reanudar</b>.</li>
-          <li>Al terminar, se descargará un <b>Excel</b>.</li>
+          <li>Al finalizar, se descargará un <b>Excel</b> automáticamente.</li>
         </ol>
         <div style="margin-top:10px;color:#64748b;font-size:13px;">
-          Consejo: no hay truco; navega como lo harías en una web real.
+          Consejo: navega como lo harías normalmente en una web real.
         </div>
       </div>
 
       <div style="border:1px solid var(--border);border-radius:18px;padding:16px;background:#fff;">
         <div style="font-weight:1000;color:#0f172a;font-size:16px;">Tareas incluidas</div>
-        <ul id="introTaskList" style="margin:12px 0 0 20px;color:#334155;line-height:1.7;font-size:clamp(14px, 2.1vw, 16px);"></ul>
+        <ul id="introTaskList" style="margin:12px 0 0 20px;color:#334155;line-height:1.8;font-size:clamp(14px, 2.1vw, 16px);"></ul>
       </div>
     </div>
 
@@ -313,15 +296,15 @@
   </div>
 </div>
 
-<!-- ===== Pantalla tarea ===== -->
+<!-- ===== INSTRUCCIONES DE TAREA ===== -->
 <div id="nextTaskOverlay" class="modalOverlay" style="z-index:3500;">
   <div class="card modalCard" style="text-align:center; width:min(900px,92vw);">
     <div class="chip">Siguiente tarea</div>
     <div id="nextTitle" style="margin-top:10px;font-weight:1000;font-size:clamp(18px, 3vw, 22px);color:#0b1b3a;"></div>
 
     <div style="margin-top:14px;border:1px solid var(--border);border-radius:18px;padding:16px;background:#fbfcfe; text-align:left;">
-      <div id="nextGoal" style="color:#0f172a;font-size:clamp(14px, 2.2vw, 16px);line-height:1.6;"></div>
-      <div id="nextInfo" style="margin-top:10px;color:#475569;line-height:1.6;font-size:clamp(14px, 2.2vw, 16px);"></div>
+      <div id="nextGoal" style="color:#0f172a;font-size:clamp(14px, 2.2vw, 16px);line-height:1.65;"></div>
+      <div id="nextInfo" style="margin-top:10px;color:#475569;line-height:1.65;font-size:clamp(14px, 2.2vw, 16px);"></div>
       <div id="nextRoute" style="margin-top:12px;color:#0f172a;font-size:13px;">
         <b>Ruta objetivo:</b>
         <code style="background:#fff;border:1px solid var(--border);padding:4px 8px;border-radius:10px;"></code>
@@ -340,7 +323,7 @@
   </div>
 </div>
 
-<!-- ===== Final ===== -->
+<!-- ===== FINAL ===== -->
 <div id="finalOverlay" class="modalOverlay" style="z-index:5000; background:linear-gradient(180deg, rgba(3,76,168,.65), rgba(0,0,0,.60));">
   <div class="card modalCard" style="text-align:center; width:min(760px,92vw);">
     <div class="chip">Test finalizado</div>
@@ -350,7 +333,7 @@
   </div>
 </div>
 
-<!-- ===== Panel test (responsive) ===== -->
+<!-- ===== PANEL EN CURSO ===== -->
 <div id="abpanel" class="card">
   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
     <div style="font-weight:1000;color:var(--brand);font-size:14px;">Test en curso</div>
@@ -386,7 +369,7 @@
   </div>
 </div>
 
-<!-- ===== Completado ===== -->
+<!-- ===== COMPLETADO ===== -->
 <div id="doneOverlay" style="position:fixed; inset:0; z-index:3000; display:none; background:rgba(0,0,0,.55); padding:16px;">
   <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(620px,92vw); padding:20px; text-align:center;">
     <div id="doneTitle" style="font-weight:1000;font-size:20px;color:#0b1b3a;">✅ Resultado</div>
@@ -410,6 +393,7 @@
 </aside>
 
 <script>
+  // ========= CONFIG =========
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
   const GID_BANNERS = "1300813141";
@@ -424,6 +408,7 @@
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
   const FEATURED_CATS = [{ name:"Camillas" }, { name:"Sillas de ruedas" }, { name:"Diagnóstico" }, { name:"Mobiliario" }];
 
+  // "version" es el nombre de la variante del test (A/B/FIN). Puedes poner "A" o "B" para comparar.
   const VERSION = "FIN";
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
@@ -442,6 +427,7 @@
     }
   ];
 
+  // ========= STATE =========
   let taskIndex = 0;
   let TASK = null;
 
@@ -466,12 +452,15 @@
   let menuTree = [];
   let bannersData = [];
 
+  // ========= HELPERS =========
   const drawer = document.getElementById("drawer");
   const overlay = document.getElementById("overlay");
   const statusEl = document.getElementById("status");
 
-  function norm2(s){ return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim(); }
-  function nowISO(){ return new Date().toISOString(); }
+  const norm2 = (s)=> String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+  const nowISO = ()=> new Date().toISOString();
+  const norm = (s)=> String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+  const displayName = (name)=> String(name||"").replace(/\s+Total\s*$/i,"").trim();
 
   function effectiveElapsedMs(){
     if(!START_TS) return 0;
@@ -480,19 +469,16 @@
   }
 
   function setPathNow(){
-    const el = document.getElementById("pathNow");
-    if (el) el.textContent = NAV_PATH.join(" > ");
+    document.getElementById("pathNow").textContent = NAV_PATH.join(" > ");
   }
 
   function setTaskLabelPanel(){
-    const lbl = document.getElementById("taskNowLabel");
-    if (lbl) lbl.textContent = TASK ? `${taskIndex+1}/${TASKS.length} · ${TASK.label}` : "(sin tarea)";
+    document.getElementById("taskNowLabel").textContent = TASK ? `${taskIndex+1}/${TASKS.length} · ${TASK.label}` : "(sin tarea)";
   }
 
   function setDetourBadge(){
     const b = document.getElementById("detourBadge");
     const k = document.getElementById("detourKpi");
-    if (!b || !k) return;
     if (DETOURS > 0){
       b.style.display = "inline-flex";
       k.style.display = "inline-flex";
@@ -501,6 +487,12 @@
       b.style.display = "none";
       k.style.display = "none";
     }
+  }
+
+  function updateStruggleUI(){
+    if (TASK_ACTIVE && !TASK_DONE && DETOURS > 0) drawer.classList.add("struggling");
+    else drawer.classList.remove("struggling");
+    setDetourBadge();
   }
 
   function track(eventName, extra = {}) {
@@ -519,10 +511,11 @@
       detours: (typeof extra.detours === "number") ? extra.detours : DETOURS
     };
     EVENTS.push(row);
-    const last = document.getElementById("taskLast");
-    if (last) last.textContent = `Último: ${row.event}${row.label ? " → " + row.label : ""} · Desvíos: ${DETOURS}`;
+    document.getElementById("taskLast").textContent =
+      `Último: ${row.event}${row.label ? " → " + row.label : ""} · Desvíos: ${DETOURS}`;
   }
 
+  // ========= UI FLOW =========
   function fillIntroTaskList(){
     const ul = document.getElementById("introTaskList");
     ul.innerHTML = "";
@@ -531,11 +524,6 @@
       li.textContent = `${i+1}. ${t.label} — ${t.goal}`;
       ul.appendChild(li);
     });
-  }
-
-  function showMainIntro(){
-    fillIntroTaskList();
-    document.getElementById("taskIntroOverlay").style.display = "block";
   }
 
   function showNextTaskScreen(){
@@ -556,12 +544,6 @@
     document.getElementById("nextTaskOverlay").style.display = "none";
   }
 
-  function updateStruggleUI(){
-    if (TASK_ACTIVE && !TASK_DONE && DETOURS > 0) drawer.classList.add("struggling");
-    else drawer.classList.remove("struggling");
-    setDetourBadge();
-  }
-
   function startThisTaskNow(){
     NAV_PATH = [];
     CLICK_COUNT = 0;
@@ -580,9 +562,9 @@
     track("task_start", { detours: DETOURS });
     setTaskLabelPanel();
 
-    const timer = document.getElementById("taskTimer");
     if (TIMER_INT) clearInterval(TIMER_INT);
     TIMER_INT = setInterval(() => {
+      const timer = document.getElementById("taskTimer");
       if (!timer) return;
       if (!TASK_ACTIVE) { timer.textContent = "⏱ Tiempo: —"; return; }
       timer.textContent =
@@ -615,12 +597,10 @@
     PAUSE_TS = 0;
     track("task_resume");
     document.getElementById("btnPause").style.display = "block";
-    document.getElementById("btnResume").style.display = "block";
     document.getElementById("btnResume").style.display = "none";
   }
 
   function isSuccessPath(){
-    if(!TASK?.route?.length) return false;
     const current = NAV_PATH.map(norm2);
     const target  = TASK.route.map(norm2);
     if (current.length !== target.length) return false;
@@ -629,13 +609,12 @@
   }
 
   function registerDetourIfAny(level, clickedName){
-    if (!TASK?.route?.length) return;
     const expected = TASK.route[level];
     if (!expected) { DETOURS++; return; }
     if (norm2(clickedName) !== norm2(expected)) DETOURS++;
   }
 
-  function showCompletedBanner(message, title="✅ Resultado"){
+  function showCompletedBanner(message, title){
     hardPause();
     confettiBurstSlow();
 
@@ -687,7 +666,7 @@
     showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
   }
 
-  // ===================== Excel XML (.xls) =====================
+  // ========= EXCEL (.xls XML) =========
   function xmlEscape(s){
     return String(s ?? "")
       .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
@@ -699,6 +678,7 @@
     }</Row>`).join("");
     return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
   }
+
   function buildExcelXml(){
     const rowsSummary = [];
     const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
@@ -739,6 +719,7 @@
     const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
       "ts_iso","version","session_id","task_id","task_label","target_route","event","label","level","path","ms_from_start","detours"
     ];
+
     const rowsEvents = [];
     rowsEvents.push(headers.map(h => ({v:h, style:"sHeader"})));
     EVENTS.forEach(e => rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"}))));
@@ -760,6 +741,7 @@
  ${worksheetXml("Eventos", rowsEvents)}
 </Workbook>`;
   }
+
   function downloadExcelAuto(){
     const xml = buildExcelXml();
     const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
@@ -773,7 +755,7 @@
     URL.revokeObjectURL(a.href);
   }
 
-  // ===================== Confetti (lento) =====================
+  // ========= CONFETTI (lento) =========
   function confettiBurstSlow(){
     const canvas = document.getElementById("confettiCanvas");
     const ctx = canvas.getContext("2d");
@@ -781,10 +763,18 @@
     canvas.style.display = "block";
     const N = 200, parts = [];
     for (let i=0;i<N;i++){
-      parts.push({x:canvas.width/2+(Math.random()*140-70),y:canvas.height/2+(Math.random()*70-35),
-        vx:(Math.random()*8-4),vy:(Math.random()*-10-5),g:0.18+Math.random()*0.15,
-        s:4+Math.random()*5,r:Math.random()*Math.PI,vr:(Math.random()*0.16-0.08),
-        life:130+Math.random()*80,hue:Math.floor(Math.random()*360)});
+      parts.push({
+        x:canvas.width/2+(Math.random()*140-70),
+        y:canvas.height/2+(Math.random()*70-35),
+        vx:(Math.random()*6-3),
+        vy:(Math.random()*-9-4),
+        g:0.16+Math.random()*0.12,
+        s:4+Math.random()*5,
+        r:Math.random()*Math.PI,
+        vr:(Math.random()*0.12-0.06),
+        life:150+Math.random()*70,
+        hue:Math.floor(Math.random()*360)
+      });
     }
     let t=0;
     (function frame(){
@@ -792,34 +782,17 @@
       parts.forEach(p=>{
         p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.r+=p.vr; p.life--;
         ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
-        ctx.globalAlpha=Math.max(0,Math.min(1,p.life/160));
+        ctx.globalAlpha=Math.max(0,Math.min(1,p.life/190));
         ctx.fillStyle=`hsl(${p.hue},90%,55%)`;
         ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);
         ctx.restore();
       });
-      if (t<160) requestAnimationFrame(frame);
+      if (t<190) requestAnimationFrame(frame);
       else canvas.style.display="none";
     })();
   }
 
-  // ===================== Build tree =====================
-  const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
-  const displayName = (name) => String(name||"").replace(/\s+Total\s*$/i,"").trim();
-
-  async function loadAllData(){
-    statusEl.style.display="block";
-    statusEl.textContent="Cargando...";
-    try {
-      const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
-      const catCsv = await catRes.text();
-      const banCsv = await banRes.text();
-      buildTree(catCsv);
-      bannersData = rowsToObjects(parseCSV(banCsv)).reverse();
-      statusEl.style.display="none";
-      renderRootMenu();
-    } catch(e) { statusEl.textContent="Error de carga"; }
-  }
-
+  // ========= DATA LOAD =========
   function parseCSV(text){
     const rows = [];
     let cur = "", row = [], inQ = false;
@@ -836,7 +809,6 @@
     row.push(cur); if(row.join("").trim()) rows.push(row);
     return rows;
   }
-
   function rowsToObjects(rows){
     if(!rows.length) return [];
     const header = rows[0].map(h => h.trim().toLowerCase());
@@ -846,7 +818,14 @@
       return obj;
     });
   }
-
+  function sortNodes(nodes, level) {
+    if (!nodes) return;
+    if (level === 0) {
+      const rank = new Map(TOP_ORDER.map((n, i) => [norm(n), i]));
+      nodes.sort((a, b) => (rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999) - (rank.has(norm(b.name)) ? rank.get(norm(b.name)) : 999) || a.name.localeCompare(b.name));
+    } else nodes.sort((a, b) => a.name.localeCompare(b.name));
+    nodes.forEach(n => sortNodes(n.children, level + 1));
+  }
   function buildTree(csv){
     const root = [];
     csv.split(/\r?\n/).forEach(line => {
@@ -865,16 +844,21 @@
     menuTree = root;
   }
 
-  function sortNodes(nodes, level) {
-    if (!nodes) return;
-    if (level === 0) {
-      const rank = new Map(TOP_ORDER.map((n, i) => [norm(n), i]));
-      nodes.sort((a, b) => (rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999) - (rank.has(norm(b.name)) ? rank.get(norm(b.name)) : 999) || a.name.localeCompare(b.name));
-    } else nodes.sort((a, b) => a.name.localeCompare(b.name));
-    nodes.forEach(n => sortNodes(n.children, level + 1));
+  async function loadAllData(){
+    statusEl.style.display="block";
+    statusEl.textContent="Cargando...";
+    try {
+      const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
+      const catCsv = await catRes.text();
+      const banCsv = await banRes.text();
+      buildTree(catCsv);
+      bannersData = rowsToObjects(parseCSV(banCsv)).reverse();
+      statusEl.style.display="none";
+      renderRootMenu();
+    } catch(e) { statusEl.textContent="Error de carga"; }
   }
 
-  // ===================== Render menu =====================
+  // ========= RENDER =========
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
@@ -886,12 +870,10 @@
       <li class="divider"></li>
       ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span></span></li>`).join('')}
     </ul>`;
-
     container.appendChild(col);
     updateDrawerWidth();
   }
-
-  function renderAllCategories(){ render(menuTree, 0); }
+  window.renderAllCategories = function(){ render(menuTree, 0); };
 
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
@@ -912,6 +894,7 @@
       li.onclick = () => {
         const wasActive = li.classList.contains("active");
 
+        // tracking navegación
         if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
           NAV_PATH = NAV_PATH.slice(0, level);
           NAV_PATH[level] = item.name;
@@ -934,25 +917,18 @@
             if (status === "success_inefficient") li.classList.add("found-warn");
             drawer.classList.remove("struggling");
 
-            if (status === "success_inefficient") {
-              showCompletedBanner("✅ Ruta correcta (pero NO a la primera)", "🟠 Correcta con desvíos");
-            } else {
-              showCompletedBanner("✅ Ruta correcta (a la primera)", "🟢 Tarea completada");
-            }
+            showCompletedBanner(
+              status === "success_inefficient" ? "✅ Es la correcta (pero NO a la primera)" : "✅ Es la correcta",
+              status === "success_inefficient" ? "🟠 Correcta con desvíos" : "🟢 Tarea completada"
+            );
           }
         }
 
-        // UI open/close
+        // UI abrir/cerrar
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
-
         if(item.children.length && wasActive) {
           Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
           li.classList.remove("active");
-
-          if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE) {
-            NAV_PATH = NAV_PATH.slice(0, level);
-            setPathNow();
-          }
         } else {
           li.classList.add("active");
           if(item.children.length) render(item.children, level + 1, item);
@@ -967,360 +943,23 @@
     updateDrawerWidth();
   }
 
-  // ===================== Menu open/close =====================
-  document.getElementById("openBtn").onclick = () => toggleMenu(true);
-  document.getElementById("closeBtn").onclick = () => toggleMenu(false);
-  overlay.onclick = () => toggleMenu(false);
-
+  // ========= MENU TOGGLE =========
   function toggleMenu(open){
     drawer.style.display = open ? "flex" : "none";
     overlay.style.display = open ? "block" : "none";
     if(open && menuTree.length===0) loadAllData();
     else if(open) renderRootMenu();
   }
-
   function updateDrawerWidth(){
     const count = document.querySelectorAll(".column").length;
     drawer.style.width = Math.min(count * 330, window.innerWidth * 0.95) + "px";
   }
 
-  // ===================== Tasks flow =====================
-  function showNextTaskScreen(){
-    TASK_ACTIVE = false;
-    hardPause();
+  // ========= WIRING =========
+  document.getElementById("openBtn").onclick = () => toggleMenu(true);
+  document.getElementById("closeBtn").onclick = () => toggleMenu(false);
+  overlay.onclick = () => toggleMenu(false);
 
-    TASK = TASKS[taskIndex];
-    setTaskLabelPanel();
-
-    document.getElementById("nextTitle").textContent = `${taskIndex+1}/${TASKS.length} · ${TASK.label}`;
-    document.getElementById("nextGoal").innerHTML = `<b>Qué buscar:</b> ${TASK.goal}`;
-    document.getElementById("nextInfo").innerHTML = `<b>Info:</b> ${TASK.info}`;
-    document.querySelector("#nextRoute code").textContent = TASK.route.join(" > ");
-    document.getElementById("nextTaskOverlay").style.display = "block";
-  }
-
-  function hideNextTaskScreen(){
-    document.getElementById("nextTaskOverlay").style.display = "none";
-  }
-
-  function hardPause(){
-    if (TASK_ACTIVE && !PAUSED) { PAUSED = true; PAUSE_TS = Date.now(); }
-  }
-
-  function pauseTask(){
-    if (!TASK_ACTIVE || !START_TS || PAUSED) return;
-    PAUSED = true;
-    PAUSE_TS = Date.now();
-    track("task_pause");
-    document.getElementById("btnPause").style.display = "none";
-    document.getElementById("btnResume").style.display = "block";
-  }
-
-  function resumeTask(){
-    if (!TASK_ACTIVE || !START_TS || !PAUSED) return;
-    PAUSED = false;
-    PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS);
-    PAUSE_TS = 0;
-    track("task_resume");
-    document.getElementById("btnPause").style.display = "block";
-    document.getElementById("btnResume").style.display = "none";
-  }
-
-  function isSuccessPath(){
-    if(!TASK?.route?.length) return false;
-    const current = NAV_PATH.map(norm2);
-    const target  = TASK.route.map(norm2);
-    if (current.length !== target.length) return false;
-    for (let i=0;i<target.length;i++) if (current[i] !== target[i]) return false;
-    return true;
-  }
-
-  function registerDetourIfAny(level, clickedName){
-    if (!TASK?.route?.length) return;
-    const expected = TASK.route[level];
-    if (!expected) { DETOURS++; return; }
-    if (norm2(clickedName) !== norm2(expected)) DETOURS++;
-  }
-
-  function updateStruggleUI(){
-    if (TASK_ACTIVE && !TASK_DONE && DETOURS > 0) drawer.classList.add("struggling");
-    else drawer.classList.remove("struggling");
-    setDetourBadge();
-  }
-
-  function startThisTaskNow(){
-    NAV_PATH = [];
-    CLICK_COUNT = 0;
-    DETOURS = 0;
-    TASK_DONE = false;
-    setPathNow();
-    drawer.classList.remove("struggling");
-    setDetourBadge();
-
-    START_TS = Date.now();
-    PAUSED = false;
-    PAUSE_TS = 0;
-    PAUSED_TOTAL_MS = 0;
-
-    TASK_ACTIVE = true;
-    track("task_start", { detours: DETOURS });
-    setTaskLabelPanel();
-
-    const timer = document.getElementById("taskTimer");
-    if (TIMER_INT) clearInterval(TIMER_INT);
-    TIMER_INT = setInterval(() => {
-      if (!timer) return;
-      if (!TASK_ACTIVE) { timer.textContent = "⏱ Tiempo: —"; return; }
-      timer.textContent =
-        "⏱ Tiempo: " + (effectiveElapsedMs()/1000).toFixed(1) + "s" +
-        (PAUSED ? " (pausa)" : "") +
-        (DETOURS>0 ? " · 🟠 con desvíos" : "");
-    }, 100);
-
-    hideNextTaskScreen();
-    toggleMenu(true);
-  }
-
-  function showCompletedBanner(message, title="✅ Resultado"){
-    hardPause();
-    confettiBurstSlow();
-
-    const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
-    const routeStr = NAV_PATH.join(" > ");
-
-    document.getElementById("doneTitle").textContent = title;
-    document.getElementById("doneDetail").textContent =
-      `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
-    document.getElementById("doneTime").textContent = seconds ? `Tiempo: ${seconds}s` : "";
-    document.getElementById("doneOverlay").style.display = "block";
-  }
-
-  function nextTaskFlow(){
-    document.getElementById("doneOverlay").style.display = "none";
-    if (TASK_ACTIVE) track("task_end");
-    TASK_ACTIVE = false;
-    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
-
-    taskIndex++;
-    if (taskIndex >= TASKS.length) finishAllTasks();
-    else showNextTaskScreen();
-  }
-
-  function finishAllTasks(){
-    TASK_ACTIVE = false;
-    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
-    track("tasks_finished");
-
-    document.getElementById("finalOverlay").style.display = "block";
-    setTimeout(() => {
-      try { downloadExcelAuto(); }
-      finally {
-        document.getElementById("finalSubtitle").textContent = "✅ Descarga iniciada. Ya puedes cerrar esta ventana.";
-        document.getElementById("finalSpinner").style.display = "none";
-      }
-    }, 80);
-  }
-
-  function failTask(){
-    if(!TASK_ACTIVE || TASK_DONE) return;
-    TASK_DONE = true;
-
-    const tms = effectiveElapsedMs();
-    TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT, detours: DETOURS };
-    track("task_fail");
-
-    drawer.classList.remove("struggling");
-    showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
-  }
-
-  // ===================== Excel XML (.xls) =====================
-  function xmlEscape(s){
-    return String(s ?? "")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;").replace(/'/g,"&apos;");
-  }
-  function worksheetXml(name, rows){
-    const rowXml = rows.map(r => `<Row>${
-      r.map(c => `<Cell${c.style?` ss:StyleID="${c.style}"`:``}><Data ss:Type="String">${xmlEscape(c.v)}</Data></Cell>`).join("")
-    }</Row>`).join("");
-    return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
-  }
-  function buildExcelXml(){
-    const rowsSummary = [];
-    const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
-
-    rowsSummary.push([{v:"Sesión", style:"sHeader"},{v:SESSION_ID, style:"sCell"}]);
-    rowsSummary.push([{v:"Variante (version)", style:"sHeader"},{v:VERSION, style:"sCell"}]);
-    rowsSummary.push([{v:"Tiempo total (s)", style:"sHeader"},{v:(totalMs/1000).toFixed(1), style:"sCell"}]);
-    rowsSummary.push([{v:"", style:"sCell"},{v:"", style:"sCell"}]);
-
-    rowsSummary.push([
-      {v:"Tarea", style:"sHeader"},
-      {v:"Resultado", style:"sHeader"},
-      {v:"Tiempo (s)", style:"sHeader"},
-      {v:"Clicks", style:"sHeader"},
-      {v:"Desvíos", style:"sHeader"},
-      {v:"Ruta objetivo", style:"sHeader"}
-    ]);
-
-    TASKS.forEach(t => {
-      const r = TASK_RESULTS[t.id];
-      const status = r?.status || "fail";
-      const det = (r?.detours ?? 0);
-      const isSuccess = status !== "fail" && det === 0;
-      const isWarn = status !== "fail" && det > 0;
-      const styleRow = isSuccess ? "sSuccess" : (isWarn ? "sWarn" : "sFail");
-      const labelRes = isSuccess ? "Encontrada" : (isWarn ? "Encontrada (con desvíos)" : "No encontrada");
-
-      rowsSummary.push([
-        {v:t.label, style:styleRow},
-        {v:labelRes, style:styleRow},
-        {v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},
-        {v: r ? String(r.clicks ?? "") : "", style:styleRow},
-        {v: r ? String(r.detours ?? "") : "", style:styleRow},
-        {v: t.route.join(" > "), style:styleRow}
-      ]);
-    });
-
-    const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
-      "ts_iso","version","session_id","task_id","task_label","target_route","event","label","level","path","ms_from_start","detours"
-    ];
-    const rowsEvents = [];
-    rowsEvents.push(headers.map(h => ({v:h, style:"sHeader"})));
-    EVENTS.forEach(e => rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"}))));
-
-    return `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:o="urn:schemas-microsoft-com:office:office"
- xmlns:x="urn:schemas-microsoft-com:office:excel"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
- <Styles>
-  <Style ss:ID="sHeader"><Font ss:Bold="1"/><Interior ss:Color="#E6F2FA" ss:Pattern="Solid"/></Style>
-  <Style ss:ID="sCell"></Style>
-  <Style ss:ID="sSuccess"><Interior ss:Color="#EAF7EE" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#0A7A3A"/></Style>
-  <Style ss:ID="sWarn"><Interior ss:Color="#FFF7E6" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#8A4B00"/></Style>
-  <Style ss:ID="sFail"><Interior ss:Color="#FDECEC" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#B42318"/></Style>
- </Styles>
- ${worksheetXml("Resumen", rowsSummary)}
- ${worksheetXml("Eventos", rowsEvents)}
-</Workbook>`;
-  }
-  function downloadExcelAuto(){
-    const xml = buildExcelXml();
-    const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
-    const a = document.createElement("a");
-    const ts = new Date().toISOString().replace(/[:.]/g,"-");
-    a.href = URL.createObjectURL(blob);
-    a.download = `test_usabilidad_menu_${VERSION}_${SESSION_ID}_${ts}.xls`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
-  }
-
-  // ===================== Confetti (lento) =====================
-  function confettiBurstSlow(){
-    const canvas = document.getElementById("confettiCanvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    canvas.style.display = "block";
-    const N = 200, parts = [];
-    for (let i=0;i<N;i++){
-      parts.push({x:canvas.width/2+(Math.random()*140-70),y:canvas.height/2+(Math.random()*70-35),
-        vx:(Math.random()*8-4),vy:(Math.random()*-10-5),g:0.18+Math.random()*0.15,
-        s:4+Math.random()*5,r:Math.random()*Math.PI,vr:(Math.random()*0.16-0.08),
-        life:130+Math.random()*80,hue:Math.floor(Math.random()*360)});
-    }
-    let t=0;
-    (function frame(){
-      t++; ctx.clearRect(0,0,canvas.width,canvas.height);
-      parts.forEach(p=>{
-        p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.r+=p.vr; p.life--;
-        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
-        ctx.globalAlpha=Math.max(0,Math.min(1,p.life/160));
-        ctx.fillStyle=`hsl(${p.hue},90%,55%)`;
-        ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);
-        ctx.restore();
-      });
-      if (t<160) requestAnimationFrame(frame);
-      else canvas.style.display="none";
-    })();
-  }
-
-  // ===================== Build tree =====================
-  const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
-  const displayName = (name) => String(name||"").replace(/\s+Total\s*$/i,"").trim();
-
-  async function loadAllData(){
-    statusEl.style.display="block";
-    statusEl.textContent="Cargando...";
-    try {
-      const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
-      const catCsv = await catRes.text();
-      const banCsv = await banRes.text();
-      buildTree(catCsv);
-      bannersData = rowsToObjects(parseCSV(banCsv)).reverse();
-      statusEl.style.display="none";
-      renderRootMenu();
-    } catch(e) { statusEl.textContent="Error de carga"; }
-  }
-
-  function parseCSV(text){
-    const rows = [];
-    let cur = "", row = [], inQ = false;
-    for (let i=0;i<text.length;i++){
-      const ch = text[i];
-      if (ch === '"') inQ = !inQ;
-      else if (ch === ',' && !inQ){ row.push(cur); cur=""; }
-      else if ((ch === '\n' || ch === '\r') && !inQ){
-        row.push(cur); cur="";
-        if (row.join("").trim()) rows.push(row);
-        row=[];
-      } else cur += ch;
-    }
-    row.push(cur); if(row.join("").trim()) rows.push(row);
-    return rows;
-  }
-
-  function rowsToObjects(rows){
-    if(!rows.length) return [];
-    const header = rows[0].map(h => h.trim().toLowerCase());
-    return rows.slice(1).map(row => {
-      const obj = {};
-      header.forEach((h, i) => obj[h] = (row[i] || "").trim());
-      return obj;
-    });
-  }
-
-  function buildTree(csv){
-    const root = [];
-    csv.split(/\r?\n/).forEach(line => {
-      const clean = line.replace(/"/g, "").trim();
-      if(!clean) return;
-      const parts = clean.split(">").map(p => p.trim()).filter(Boolean);
-      let current = root;
-      parts.forEach((rawName) => {
-        const name = displayName(rawName);
-        let node = current.find(n => n.name === name);
-        if(!node){ node = {name, children: []}; current.push(node); }
-        current = node.children;
-      });
-    });
-    sortNodes(root, 0);
-    menuTree = root;
-  }
-
-  function sortNodes(nodes, level) {
-    if (!nodes) return;
-    if (level === 0) {
-      const rank = new Map(TOP_ORDER.map((n, i) => [norm(n), i]));
-      nodes.sort((a, b) => (rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999) - (rank.has(norm(b.name)) ? rank.get(norm(b.name)) : 999) || a.name.localeCompare(b.name));
-    } else nodes.sort((a, b) => a.name.localeCompare(b.name));
-    nodes.forEach(n => sortNodes(n.children, level + 1));
-  }
-
-  // ===== Init =====
   document.getElementById("btnIntroStart").onclick = () => {
     TEST_STARTED = true;
     document.getElementById("taskIntroOverlay").style.display = "none";
@@ -1328,16 +967,14 @@
     taskIndex = 0;
     showNextTaskScreen();
   };
+
   document.getElementById("btnStartThisTask").onclick = () => startThisTaskNow();
   document.getElementById("btnNextTask").onclick = () => nextTaskFlow();
   document.getElementById("btnFailTask").onclick = () => failTask();
   document.getElementById("btnPause").onclick = () => pauseTask();
   document.getElementById("btnResume").onclick = () => resumeTask();
 
-  document.getElementById("openBtn").onclick = () => toggleMenu(true);
-  document.getElementById("closeBtn").onclick = () => toggleMenu(false);
-  overlay.onclick = () => toggleMenu(false);
-
+  // ========= INIT =========
   fillIntroTaskList();
   document.getElementById("taskIntroOverlay").style.display = "block";
   loadAllData();
