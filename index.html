@@ -33,41 +33,24 @@
     .promo-card{ margin:16px; border-radius:14px; overflow:hidden; position:relative; background:#f0f0f0; box-shadow:0 10px 25px rgba(0,0,0,.1); }
     .promo-img{ width:100%; height:160px; object-fit:cover; display:block; }
     .promo-link{ position:absolute; inset:0; display:block; }
-    .promo-card.small{ margin:12px 16px 8px; }
-    .promo-card.small .promo-img{ height:120px; }
 
     /* UI helpers */
     #abpanel * { box-sizing:border-box; }
     code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
-    .btn{
-      padding:14px 18px;border-radius:16px;border:1px solid var(--border);
-      font-weight:1000;cursor:pointer;font-size:14px;
-    }
+    .btn{padding:14px 18px;border-radius:16px;border:1px solid var(--border);font-weight:1000;cursor:pointer;font-size:14px;}
     .btnPrimary{background:var(--brand);color:#fff;border-color:transparent;}
     .btnGhost{background:#fff;color:#111;}
-    .chip{
-      display:inline-flex;align-items:center;gap:8px;
-      background:#eef4ff;border:1px solid #d7e4ff;color:#123e8f;
-      padding:6px 10px;border-radius:999px;font-weight:1000;font-size:12px;
-    }
-    .card{
-      border:1px solid var(--border);border-radius:20px;background:#fff;
-      box-shadow:0 24px 60px rgba(0,0,0,.18);
-    }
+    .chip{display:inline-flex;align-items:center;gap:8px;background:#eef4ff;border:1px solid #d7e4ff;color:#123e8f;padding:6px 10px;border-radius:999px;font-weight:1000;font-size:12px;}
+    .card{border:1px solid var(--border);border-radius:20px;background:#fff;box-shadow:0 24px 60px rgba(0,0,0,.18);}
 
     /* confetti canvas */
     #confettiCanvas{ position:fixed; inset:0; z-index:9999; pointer-events:none; display:none; }
 
     /* spinner */
-    .spinner{
-      width:34px;height:34px;border-radius:50%;
-      border:4px solid #dbe7ff;border-top-color: var(--brand);
-      animation:spin 1s linear infinite;
-      margin:0 auto;
-    }
+    .spinner{width:34px;height:34px;border-radius:50%;border:4px solid #dbe7ff;border-top-color: var(--brand);animation:spin 1s linear infinite;margin:0 auto;}
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* ===== Señal visual cuando está costando ===== */
+    /* ===== Señal visual cuando ya hay desvíos ===== */
     #drawer.struggling .item.active{
       background:#fff7e6 !important;
       color:#8a4b00 !important;
@@ -92,21 +75,14 @@
   <div style="margin-left:15px;font-weight:900;color:var(--brand);">MENU MOCKUP</div>
 </header>
 
-<!-- ===== Pantalla grande bonita (Inicio) ===== -->
+<!-- Intro -->
 <div id="taskIntroOverlay" style="position:fixed; inset:0; z-index:4000; background:linear-gradient(180deg, rgba(3,76,168,.60), rgba(0,0,0,.55)); display:none;">
-  <div class="card" style="
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:min(860px,92vw); padding:18px 18px 16px;">
-    <div>
-      <div class="chip">Test de usabilidad del menú web</div>
-      <div style="margin-top:10px;font-weight:1000;font-size:22px;color:var(--brand);">
-        Test de usabilidad del menú web
-      </div>
-      <div style="margin-top:6px;color:#333;line-height:1.45;font-size:13px;max-width:80ch;">
-        Vas a realizar una serie de tareas: <b>encontrar categorías</b> navegando por el menú.
-        Antes de cada tarea verás qué buscar y una breve explicación del producto.
-        El cronómetro empezará <b>solo</b> cuando pulses “Comenzar tarea”.
-      </div>
+  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(860px,92vw); padding:18px 18px 16px;">
+    <div class="chip">Test de usabilidad del menú web</div>
+    <div style="margin-top:10px;font-weight:1000;font-size:22px;color:var(--brand);">Test de usabilidad del menú web</div>
+    <div style="margin-top:6px;color:#333;line-height:1.45;font-size:13px;max-width:80ch;">
+      Vas a realizar tareas de encontrabilidad. Antes de cada tarea verás instrucciones.
+      El cronómetro empieza cuando pulses “Comenzar tarea”.
     </div>
 
     <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px;">
@@ -115,82 +91,57 @@
         <ol style="margin:10px 0 0 18px;color:#333;line-height:1.5;font-size:13px;">
           <li>Pulsa <b>Empezar</b>.</li>
           <li>Lee la tarea y pulsa <b>Comenzar tarea</b>.</li>
-          <li>Navega por el menú hasta llegar a la <b>ruta correcta</b>.</li>
-          <li>Si te interrumpen, usa <b>Pausar</b> y luego <b>Reanudar</b>.</li>
-          <li>Al final se descargará automáticamente un Excel.</li>
+          <li>Navega hasta la <b>ruta correcta</b>.</li>
+          <li>Si te interrumpen, usa <b>Pausar</b>/<b>Reanudar</b>.</li>
+          <li>Al final se descargará un Excel.</li>
         </ol>
       </div>
-
       <div style="border:1px solid var(--border);border-radius:16px;padding:14px;background:#fff;">
         <div style="font-weight:1000;color:#111;">Tareas incluidas</div>
         <ul id="introTaskList" style="margin:10px 0 0 18px;color:#333;line-height:1.5;font-size:13px;"></ul>
-        <div style="margin-top:10px;color:#666;font-size:11px;">
-          Consejo: hazlo como lo harías normalmente.
-        </div>
+        <div style="margin-top:10px;color:#666;font-size:11px;">Consejo: hazlo como lo harías normalmente.</div>
       </div>
     </div>
 
     <div style="display:flex;justify-content:center;margin-top:16px;">
-      <button id="btnIntroStart" class="btn btnPrimary" style="min-width:min(520px,92vw);font-size:16px;padding:16px 22px;">
-        Empezar
-      </button>
+      <button id="btnIntroStart" class="btn btnPrimary" style="min-width:min(520px,92vw);font-size:16px;padding:16px 22px;">Empezar</button>
     </div>
   </div>
 </div>
 
-<!-- ===== Pantalla bonita para tarea (cronómetro parado aquí) ===== -->
+<!-- Next task -->
 <div id="nextTaskOverlay" style="position:fixed; inset:0; z-index:3500; background:linear-gradient(180deg, rgba(3,76,168,.55), rgba(0,0,0,.55)); display:none;">
-  <div class="card" style="
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:min(820px,92vw); padding:18px; text-align:center;">
-    <div class="chip" id="nextChip">Siguiente tarea</div>
+  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(820px,92vw); padding:18px; text-align:center;">
+    <div class="chip">Siguiente tarea</div>
     <div id="nextTitle" style="margin-top:10px;font-weight:1000;font-size:20px;color:var(--brand);"></div>
 
     <div style="margin-top:10px;border:1px solid var(--border);border-radius:16px;padding:14px;background:#fbfcfe; text-align:left;">
       <div id="nextGoal" style="color:#111;font-size:13px;"></div>
       <div id="nextInfo" style="margin-top:8px;color:#555;line-height:1.45;font-size:13px;"></div>
-      <div id="nextRoute" style="margin-top:10px;color:#333;font-size:12px;">
-        <b>Ruta objetivo:</b> <code></code>
-      </div>
+      <div id="nextRoute" style="margin-top:10px;color:#333;font-size:12px;"><b>Ruta objetivo:</b> <code></code></div>
     </div>
 
     <div style="display:flex;justify-content:center;margin-top:16px;">
-      <button id="btnStartThisTask" class="btn btnPrimary" style="min-width:min(520px,92vw);font-size:16px;padding:16px 22px;">
-        Comenzar tarea
-      </button>
-    </div>
-
-    <div style="margin-top:12px;color:#666;font-size:12px;">
-      El cronómetro empezará cuando pulses “Comenzar tarea”.
+      <button id="btnStartThisTask" class="btn btnPrimary" style="min-width:min(520px,92vw);font-size:16px;padding:16px 22px;">Comenzar tarea</button>
     </div>
   </div>
 </div>
 
-<!-- ===== Pantalla final (mientras descarga) ===== -->
+<!-- Final -->
 <div id="finalOverlay" style="position:fixed; inset:0; z-index:5000; background:linear-gradient(180deg, rgba(3,76,168,.65), rgba(0,0,0,.60)); display:none;">
-  <div class="card" style="
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:min(720px,92vw); padding:18px; text-align:center;">
+  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(720px,92vw); padding:18px; text-align:center;">
     <div class="chip">Test finalizado</div>
     <div style="margin-top:10px;font-weight:1000;font-size:22px;color:var(--brand);">✅ Test finalizado</div>
-    <div id="finalSubtitle" style="margin-top:8px;color:#333;font-size:13px;line-height:1.45;">
-      Estamos preparando tu archivo Excel…
-    </div>
-    <div style="margin-top:14px;">
-      <div class="spinner" id="finalSpinner"></div>
-    </div>
-    <div id="finalHint" style="margin-top:12px;color:#666;font-size:12px;">
+    <div id="finalSubtitle" style="margin-top:8px;color:#333;font-size:13px;line-height:1.45;">Estamos preparando tu archivo Excel…</div>
+    <div style="margin-top:14px;"><div class="spinner" id="finalSpinner"></div></div>
+    <div style="margin-top:12px;color:#666;font-size:12px;">
       Si tu navegador tiene activado “Preguntar dónde guardar”, podría mostrarse un diálogo.
     </div>
   </div>
 </div>
 
-<!-- ===== Panel pequeño (control) — SOLO Pausa y No lo encuentro ===== -->
-<div id="abpanel" style="
-  position:fixed; top:10px; right:10px; z-index:2000;
-  background:#fff; border:1px solid var(--border); border-radius:12px;
-  padding:10px; box-shadow:0 10px 25px rgba(0,0,0,.12);
-  font-size:12px; width:420px; max-width:92vw; display:none;">
+<!-- Small panel -->
+<div id="abpanel" style="position:fixed; top:10px; right:10px; z-index:2000; background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; box-shadow:0 10px 25px rgba(0,0,0,.12); font-size:12px; width:420px; max-width:92vw; display:none;">
   <div style="font-weight:1000;color:var(--brand);margin-bottom:6px;">Test en curso</div>
 
   <div style="display:flex; gap:8px; margin-bottom:6px;">
@@ -215,15 +166,12 @@
   </div>
 </div>
 
-<!-- ===== Cartel de tarea completada (con estado) ===== -->
+<!-- Completed banner -->
 <div id="doneOverlay" style="position:fixed; inset:0; z-index:3000; display:none; background:rgba(0,0,0,.55);">
-  <div class="card" style="
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:min(560px,92vw); padding:18px; text-align:center;">
+  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(560px,92vw); padding:18px; text-align:center;">
     <div id="doneTitle" style="font-weight:1000;font-size:18px;color:var(--brand);">✅ Resultado</div>
     <div id="doneDetail" style="margin-top:8px;color:#333;font-size:13px; white-space:pre-line;"></div>
     <div id="doneTime" style="margin-top:10px;font-weight:1000;"></div>
-
     <div style="display:flex; gap:10px; margin-top:14px;">
       <button id="btnNextTask" class="btn btnPrimary" style="flex:1;">Siguiente</button>
     </div>
@@ -259,36 +207,24 @@
   const OFFERS_ITEMS = [{ name:"Ofertas del momento" }, { name:"Más vendidos" }, { name:"Promociones" }];
 
   // ===================== TEST =====================
-  const VERSION = "FIN"; // A/B/FIN: variante del menú
+  const VERSION = "FIN";
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
-  // ✅ EDITA AQUÍ LAS RUTAS EXACTAS (ruta actual == ruta objetivo)
+  // ✅ RUTAS EXACTAS
   const TASKS = [
-    {
-      id:"camilla_electrica",
-      label:"Camilla eléctrica",
-      route:["Camillas","Camillas eléctricas"],
+    { id:"camilla_electrica", label:"Camilla eléctrica", route:["Camillas","Camillas eléctricas"],
       goal:"Encuentra la categoría de camillas eléctricas en el menú.",
       info:"Camilla eléctrica: camilla clínica con motor para ajustar altura/secciones; se usa en fisioterapia, clínica y exploración."
     },
-    {
-      id:"silla_ruedas_electrica",
-      label:"Silla de ruedas eléctrica",
-      route:["Sillas de ruedas","Sillas de ruedas eléctricas"],
+    { id:"silla_ruedas_electrica", label:"Silla de ruedas eléctrica", route:["Sillas de ruedas","Sillas de ruedas eléctricas"],
       goal:"Encuentra la categoría de sillas de ruedas eléctricas en el menú.",
       info:"Silla de ruedas eléctrica: motor y batería, control por joystick, pensada para movilidad reducida."
     },
-    {
-      id:"autoclave_clase_b",
-      label:"Autoclave clase B",
-      route:["Esterilización y autoclaves","Autoclaves","Autoclaves clase B"],
+    { id:"autoclave_clase_b", label:"Autoclave clase B", route:["Esterilización y autoclaves","Autoclaves","Autoclaves clase B"],
       goal:"Encuentra la categoría de autoclaves clase B en el menú.",
-      info:"Autoclave clase B: esterilizador de vapor con prevacío/postvacío, apto para instrumental hueco/poroso (dental, clínica, estética avanzada)."
+      info:"Autoclave clase B: esterilizador de vapor con prevacío/postvacío, apto para instrumental hueco/poroso."
     }
   ];
-
-  // Umbral para marcar "correcta pero con desvíos"
-  const MAX_CLICKS_OK = 5;
 
   let taskIndex = 0;
   let TASK = null;
@@ -298,9 +234,10 @@
   let PAUSE_TS = 0;
   let PAUSED_TOTAL_MS = 0;
 
-  // ✅ Ruta REAL por niveles (breadcrumb) + clicks totales
+  // ✅ Ruta real + clicks + desvíos
   let NAV_PATH = [];
   let CLICK_COUNT = 0;
+  let DETOURS = 0;          // <- si >0 => naranja (no a la primera)
 
   let TIMER_INT = null;
   let TASK_DONE = false;
@@ -311,7 +248,7 @@
   let TEST_STARTED = false;
   let TASK_ACTIVE = false;
 
-  // ============== Menu core ==============
+  // menu data
   let menuTree = [];
   let bannersData = [];
 
@@ -319,9 +256,7 @@
   const overlay = document.getElementById("overlay");
   const statusEl = document.getElementById("status");
 
-  function norm2(s){
-    return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
-  }
+  function norm2(s){ return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim(); }
   function nowISO(){ return new Date().toISOString(); }
 
   function effectiveElapsedMs(){
@@ -352,17 +287,17 @@
       label: extra.label || "",
       level: (typeof extra.level === "number") ? extra.level : "",
       path: extra.path || NAV_PATH.join(" > "),
-      ms_from_start: (START_TS && TASK_ACTIVE) ? effectiveElapsedMs() : ""
+      ms_from_start: (START_TS && TASK_ACTIVE) ? effectiveElapsedMs() : "",
+      detours: (typeof extra.detours === "number") ? extra.detours : DETOURS
     };
     EVENTS.push(row);
 
     const last = document.getElementById("taskLast");
-    if (last) last.textContent = `Último: ${row.event}${row.label ? " → " + row.label : ""}`;
+    if (last) last.textContent = `Último: ${row.event}${row.label ? " → " + row.label : ""} (desvíos: ${DETOURS})`;
   }
 
   function fillIntroTaskList(){
     const ul = document.getElementById("introTaskList");
-    if (!ul) return;
     ul.innerHTML = "";
     TASKS.forEach((t, i) => {
       const li = document.createElement("li");
@@ -395,19 +330,16 @@
     document.getElementById("nextTaskOverlay").style.display = "none";
   }
 
-  function isInefficient(){
-    return CLICK_COUNT > MAX_CLICKS_OK;
-  }
-
   function updateStruggleUI(){
-    if (!drawer) return;
-    if (TASK_ACTIVE && !TASK_DONE && isInefficient()) drawer.classList.add("struggling");
+    // 🟠 En cuanto hay 1 desvío, marcamos modo naranja
+    if (TASK_ACTIVE && !TASK_DONE && DETOURS > 0) drawer.classList.add("struggling");
     else drawer.classList.remove("struggling");
   }
 
   function startThisTaskNow(){
     NAV_PATH = [];
     CLICK_COUNT = 0;
+    DETOURS = 0;
     TASK_DONE = false;
     setPathNow();
     drawer.classList.remove("struggling");
@@ -418,7 +350,7 @@
     PAUSED_TOTAL_MS = 0;
 
     TASK_ACTIVE = true;
-    track("task_start");
+    track("task_start", { detours: DETOURS });
     setTaskLabelPanel();
 
     const timer = document.getElementById("taskTimer");
@@ -426,7 +358,7 @@
     TIMER_INT = setInterval(() => {
       if (!timer) return;
       if (!TASK_ACTIVE) { timer.textContent = "Tiempo: —"; return; }
-      timer.textContent = "Tiempo: " + (effectiveElapsedMs()/1000).toFixed(1) + "s" + (PAUSED ? " (pausa)" : "");
+      timer.textContent = "Tiempo: " + (effectiveElapsedMs()/1000).toFixed(1) + "s" + (PAUSED ? " (pausa)" : "") + (DETOURS>0 ? " · 🟠 con desvíos" : "");
     }, 100);
 
     hideNextTaskScreen();
@@ -434,10 +366,7 @@
   }
 
   function hardPause(){
-    if (TASK_ACTIVE && !PAUSED) {
-      PAUSED = true;
-      PAUSE_TS = Date.now();
-    }
+    if (TASK_ACTIVE && !PAUSED) { PAUSED = true; PAUSE_TS = Date.now(); }
   }
 
   function pauseTask(){
@@ -459,66 +388,54 @@
     document.getElementById("btnResume").style.display = "none";
   }
 
-  // ✅ Éxito SOLO si NAV_PATH == TASK.route (match exacto)
   function isSuccessPath(){
-    if(!TASK || !TASK.route || !TASK.route.length) return false;
-
+    if(!TASK?.route?.length) return false;
     const current = NAV_PATH.map(norm2);
-    const target = TASK.route.map(norm2);
-
+    const target  = TASK.route.map(norm2);
     if (current.length !== target.length) return false;
-
-    for (let i = 0; i < target.length; i++) {
-      if (current[i] !== target[i]) return false;
-    }
+    for (let i=0;i<target.length;i++) if (current[i] !== target[i]) return false;
     return true;
+  }
+
+  // ✅ Desvío = click que NO coincide con el elemento esperado en su nivel
+  function registerDetourIfAny(level, clickedName){
+    if (!TASK?.route?.length) return;
+
+    const expected = TASK.route[level];
+    if (!expected) {
+      // click en un nivel que no existe en la ruta objetivo
+      DETOURS++;
+      return;
+    }
+    if (norm2(clickedName) !== norm2(expected)) {
+      DETOURS++;
+    }
   }
 
   function showCompletedBanner(message, title="✅ Resultado"){
     hardPause();
     confettiBurstSlow();
 
-    const overlayEl = document.getElementById("doneOverlay");
-    const titleEl = document.getElementById("doneTitle");
-    const detail = document.getElementById("doneDetail");
-    const timeEl = document.getElementById("doneTime");
-
     const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
     const routeStr = NAV_PATH.join(" > ");
 
-    if (titleEl) titleEl.textContent = title;
-    if (detail) detail.textContent = `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}`;
-    if (timeEl) timeEl.textContent = seconds ? `Tiempo: ${seconds}s` : "";
-    if (overlayEl) overlayEl.style.display = "block";
+    document.getElementById("doneTitle").textContent = title;
+    document.getElementById("doneDetail").textContent = `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
+    document.getElementById("doneTime").textContent = seconds ? `Tiempo: ${seconds}s` : "";
+    document.getElementById("doneOverlay").style.display = "block";
   }
 
-  function hideCompletedBanner(){
-    document.getElementById("doneOverlay").style.display = "none";
-  }
+  function hideCompletedBanner(){ document.getElementById("doneOverlay").style.display = "none"; }
 
   function nextTaskFlow(){
     hideCompletedBanner();
-
     if (TASK_ACTIVE) track("task_end");
     TASK_ACTIVE = false;
     if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
 
     taskIndex++;
-    if (taskIndex >= TASKS.length) {
-      finishAllTasks();
-      return;
-    }
-    showNextTaskScreen();
-  }
-
-  function showFinalOverlay(){
-    document.getElementById("finalOverlay").style.display = "block";
-    document.getElementById("finalSubtitle").textContent = "Estamos preparando tu archivo Excel…";
-    document.getElementById("finalSpinner").style.display = "block";
-  }
-  function setFinalDownloadedState(){
-    document.getElementById("finalSubtitle").textContent = "✅ Descarga iniciada. Ya puedes cerrar esta ventana.";
-    document.getElementById("finalSpinner").style.display = "none";
+    if (taskIndex >= TASKS.length) finishAllTasks();
+    else showNextTaskScreen();
   }
 
   function finishAllTasks(){
@@ -526,10 +443,13 @@
     if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
     track("tasks_finished");
 
-    showFinalOverlay();
+    document.getElementById("finalOverlay").style.display = "block";
     setTimeout(() => {
       try { downloadExcelAuto(); }
-      finally { setTimeout(() => setFinalDownloadedState(), 350); }
+      finally {
+        document.getElementById("finalSubtitle").textContent = "✅ Descarga iniciada. Ya puedes cerrar esta ventana.";
+        document.getElementById("finalSpinner").style.display = "none";
+      }
     }, 50);
   }
 
@@ -538,8 +458,8 @@
     TASK_DONE = true;
 
     const tms = effectiveElapsedMs();
-    TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT };
-    track("task_fail", { path: NAV_PATH.join(" > ") });
+    TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT, detours: DETOURS };
+    track("task_fail");
 
     drawer.classList.remove("struggling");
     showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
@@ -548,22 +468,14 @@
   // ===================== Excel (XML .xls con pestañas) =====================
   function xmlEscape(s){
     return String(s ?? "")
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&apos;");
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&apos;");
   }
 
   function worksheetXml(name, rows){
-    const rowXml = rows.map(r => {
-      const cells = r.map(c => {
-        const style = c.style ? ` ss:StyleID="${c.style}"` : "";
-        const v = xmlEscape(c.v);
-        return `<Cell${style}><Data ss:Type="String">${v}</Data></Cell>`;
-      }).join("");
-      return `<Row>${cells}</Row>`;
-    }).join("");
+    const rowXml = rows.map(r => `<Row>${
+      r.map(c => `<Cell${c.style?` ss:StyleID="${c.style}"`:``}><Data ss:Type="String">${xmlEscape(c.v)}</Data></Cell>`).join("")
+    }</Row>`).join("");
     return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
   }
 
@@ -581,14 +493,19 @@
       {v:"Resultado", style:"sHeader"},
       {v:"Tiempo (s)", style:"sHeader"},
       {v:"Clicks", style:"sHeader"},
+      {v:"Desvíos", style:"sHeader"},
       {v:"Ruta objetivo", style:"sHeader"}
     ]);
 
     TASKS.forEach(t => {
       const r = TASK_RESULTS[t.id];
       const status = r?.status || "fail";
-      const isSuccess = status === "success";
-      const isWarn = status === "success_inefficient";
+
+      // ✅ ahora: verde SOLO si detours==0, naranja si detours>0
+      const det = (r?.detours ?? 0);
+      const isSuccess = status !== "fail" && det === 0;
+      const isWarn = status !== "fail" && det > 0;
+
       const styleRow = isSuccess ? "sSuccess" : (isWarn ? "sWarn" : "sFail");
       const labelRes = isSuccess ? "Encontrada" : (isWarn ? "Encontrada (con desvíos)" : "No encontrada");
 
@@ -597,79 +514,34 @@
         {v:labelRes, style:styleRow},
         {v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},
         {v: r ? String(r.clicks ?? "") : "", style:styleRow},
+        {v: r ? String(r.detours ?? "") : "", style:styleRow},
         {v: t.route.join(" > "), style:styleRow}
       ]);
     });
 
     const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
-      "ts_iso","version","session_id","task_id","task_label","target_route","event","label","level","path","ms_from_start"
+      "ts_iso","version","session_id","task_id","task_label","target_route","event","label","level","path","ms_from_start","detours"
     ];
     const rowsEvents = [];
     rowsEvents.push(headers.map(h => ({v:h, style:"sHeader"})));
     EVENTS.forEach(e => rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"}))));
 
-    const xml = `<?xml version="1.0"?>
+    return `<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
  xmlns:o="urn:schemas-microsoft-com:office:office"
  xmlns:x="urn:schemas-microsoft-com:office:excel"
  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
  <Styles>
-  <Style ss:ID="sHeader">
-    <Font ss:Bold="1"/>
-    <Interior ss:Color="#E6F2FA" ss:Pattern="Solid"/>
-    <Borders>
-      <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0D5DD"/>
-      <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0D5DD"/>
-      <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0D5DD"/>
-      <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D0D5DD"/>
-    </Borders>
-  </Style>
-  <Style ss:ID="sCell">
-    <Borders>
-      <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#ECEFF3"/>
-      <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#ECEFF3"/>
-      <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#ECEFF3"/>
-      <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#ECEFF3"/>
-    </Borders>
-  </Style>
-  <Style ss:ID="sSuccess">
-    <Interior ss:Color="#EAF7EE" ss:Pattern="Solid"/>
-    <Font ss:Bold="1" ss:Color="#0A7A3A"/>
-    <Borders>
-      <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CFE9D8"/>
-      <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CFE9D8"/>
-      <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CFE9D8"/>
-      <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CFE9D8"/>
-    </Borders>
-  </Style>
-  <Style ss:ID="sWarn">
-    <Interior ss:Color="#FFF7E6" ss:Pattern="Solid"/>
-    <Font ss:Bold="1" ss:Color="#8A4B00"/>
-    <Borders>
-      <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F3E2B8"/>
-      <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F3E2B8"/>
-      <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F3E2B8"/>
-      <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F3E2B8"/>
-    </Borders>
-  </Style>
-  <Style ss:ID="sFail">
-    <Interior ss:Color="#FDECEC" ss:Pattern="Solid"/>
-    <Font ss:Bold="1" ss:Color="#B42318"/>
-    <Borders>
-      <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F2C7C7"/>
-      <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F2C7C7"/>
-      <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F2C7C7"/>
-      <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F2C7C7"/>
-    </Borders>
-  </Style>
+  <Style ss:ID="sHeader"><Font ss:Bold="1"/><Interior ss:Color="#E6F2FA" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="sCell"></Style>
+  <Style ss:ID="sSuccess"><Interior ss:Color="#EAF7EE" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#0A7A3A"/></Style>
+  <Style ss:ID="sWarn"><Interior ss:Color="#FFF7E6" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#8A4B00"/></Style>
+  <Style ss:ID="sFail"><Interior ss:Color="#FDECEC" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#B42318"/></Style>
  </Styles>
-
  ${worksheetXml("Resumen", rowsSummary)}
  ${worksheetXml("Eventos", rowsEvents)}
-
 </Workbook>`;
-    return xml;
   }
 
   function downloadExcelAuto(){
@@ -685,61 +557,36 @@
     URL.revokeObjectURL(a.href);
   }
 
-  // ===================== Confetti (más lento) =====================
+  // ===================== Confetti (lento) =====================
   function confettiBurstSlow(){
     const canvas = document.getElementById("confettiCanvas");
     const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     canvas.style.display = "block";
-
-    const N = 200;
-    const parts = [];
+    const N = 200, parts = [];
     for (let i=0;i<N;i++){
-      parts.push({
-        x: canvas.width/2 + (Math.random()*140-70),
-        y: canvas.height/2 + (Math.random()*70-35),
-        vx: (Math.random()*8-4),
-        vy: (Math.random()*-10-5),
-        g: 0.18 + Math.random()*0.15,
-        s: 4 + Math.random()*5,
-        r: Math.random()*Math.PI,
-        vr: (Math.random()*0.16-0.08),
-        life: 130 + Math.random()*80,
-        hue: Math.floor(Math.random()*360)
-      });
+      parts.push({x:canvas.width/2+(Math.random()*140-70),y:canvas.height/2+(Math.random()*70-35),
+        vx:(Math.random()*8-4),vy:(Math.random()*-10-5),g:0.18+Math.random()*0.15,
+        s:4+Math.random()*5,r:Math.random()*Math.PI,vr:(Math.random()*0.16-0.08),
+        life:130+Math.random()*80,hue:Math.floor(Math.random()*360)});
     }
-
-    let t = 0;
-    function frame(){
-      t++;
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      parts.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += p.g;
-        p.r += p.vr;
-        p.life--;
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.r);
-        ctx.globalAlpha = Math.max(0, Math.min(1, p.life/160));
-        ctx.fillStyle = `hsl(${p.hue},90%,55%)`;
-        ctx.fillRect(-p.s/2, -p.s/2, p.s, p.s*0.6);
+    let t=0;
+    (function frame(){
+      t++; ctx.clearRect(0,0,canvas.width,canvas.height);
+      parts.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.r+=p.vr; p.life--;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+        ctx.globalAlpha=Math.max(0,Math.min(1,p.life/160));
+        ctx.fillStyle=`hsl(${p.hue},90%,55%)`;
+        ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);
         ctx.restore();
       });
-
-      if (t < 160){
-        requestAnimationFrame(frame);
-      } else {
-        canvas.style.display = "none";
-      }
-    }
-    requestAnimationFrame(frame);
+      if (t<160) requestAnimationFrame(frame);
+      else canvas.style.display="none";
+    })();
   }
 
-  // ===================== Data build =====================
+  // ===================== Build menu tree =====================
   const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
   const displayName = (name) => String(name||"").replace(/\s+Total\s*$/i,"").trim();
 
@@ -794,10 +641,7 @@
       parts.forEach((rawName) => {
         const name = displayName(rawName);
         let node = current.find(n => n.name === name);
-        if(!node){
-          node = {name, children: []};
-          current.push(node);
-        }
+        if(!node){ node = {name, children: []}; current.push(node); }
         current = node.children;
       });
     });
@@ -810,13 +654,11 @@
     if (level === 0) {
       const rank = new Map(TOP_ORDER.map((n, i) => [norm(n), i]));
       nodes.sort((a, b) => (rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999) - (rank.has(norm(b.name)) ? rank.get(norm(b.name)) : 999) || a.name.localeCompare(b.name));
-    } else {
-      nodes.sort((a, b) => a.name.localeCompare(b.name));
-    }
+    } else nodes.sort((a, b) => a.name.localeCompare(b.name));
     nodes.forEach(n => sortNodes(n.children, level + 1));
   }
 
-  // ===================== Render menu =====================
+  // ===================== Render =====================
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
@@ -831,40 +673,13 @@
       ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span></span></li>`).join('')}
     </ul>`;
 
-    const b = bannersData.find(b => norm(b.scope) === 'root');
-    if(b) col.innerHTML += `<div class="promo-card"><img class="promo-img" src="${b.img}"><a class="promo-link" href="${b.href||'#'}"></a></div>`;
-
     container.appendChild(col);
     updateDrawerWidth();
   }
 
-  function renderSpecialties(){
-    const container = document.getElementById("columns-container");
-    container.innerHTML = "";
-    const col = document.createElement("div");
-    col.className = "column";
-    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Especialidades</div><ul>
-      ${SPECIALTIES_ITEMS.map(it => `<li class="item"><span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span></li>`).join('')}
-    </ul>`;
-    container.appendChild(col);
-    updateDrawerWidth();
-  }
-
-  function renderOffers(){
-    const container = document.getElementById("columns-container");
-    container.innerHTML = "";
-    const col = document.createElement("div");
-    col.className = "column";
-    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Ofertas</div><ul>
-      ${OFFERS_ITEMS.map(it => `<li class="item"><span class="label"><span class="text">${it.name}</span></span></li>`).join('')}
-    </ul>`;
-    container.appendChild(col);
-    updateDrawerWidth();
-  }
-
-  function renderAllCategories(){
-    render(menuTree, 0);
-  }
+  function renderSpecialties(){ /* opcional */ renderRootMenu(); }
+  function renderOffers(){ /* opcional */ renderRootMenu(); }
+  function renderAllCategories(){ render(menuTree, 0); }
 
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
@@ -885,57 +700,51 @@
       li.onclick = () => {
         const wasActive = li.classList.contains("active");
 
-        // ===== tracking breadcrumb REAL por nivel =====
-        if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE) {
-          // actualiza ruta real por niveles
+        if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
+          // breadcrumb real
           NAV_PATH = NAV_PATH.slice(0, level);
           NAV_PATH[level] = item.name;
 
-          // click count total
+          // clicks + desvíos
           CLICK_COUNT++;
+          registerDetourIfAny(level, item.name);
           updateStruggleUI();
 
           setPathNow();
-          track("click_item", { label: item.name, level, path: NAV_PATH.join(" > ") });
+          track("click_item", { label:item.name, level, path:NAV_PATH.join(" > "), detours:DETOURS });
 
           if (isSuccessPath()) {
             TASK_DONE = true;
             const tms = effectiveElapsedMs();
-            const status = isInefficient() ? "success_inefficient" : "success";
 
-            TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks: CLICK_COUNT };
-            track("task_success", { label: item.name, level, path: NAV_PATH.join(" > "), inefficient: status === "success_inefficient" });
+            const status = (DETOURS > 0) ? "success_inefficient" : "success";
+            TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks:CLICK_COUNT, detours:DETOURS };
 
-            // ✅ marca naranja si hay desvíos
-            if (status === "success_inefficient") {
-              li.classList.add("found-warn");
-            }
+            track("task_success", { label:item.name, level, path:NAV_PATH.join(" > "), detours:DETOURS });
+
+            if (status === "success_inefficient") li.classList.add("found-warn");
             drawer.classList.remove("struggling");
 
             if (status === "success_inefficient") {
-              showCompletedBanner("✅ Ruta correcta (con desvíos)", "🟡 Correcta con desvíos");
+              showCompletedBanner("✅ Ruta correcta (pero NO a la primera)", "🟠 Correcta con desvíos");
             } else {
-              showCompletedBanner("✅ Ruta correcta", "🟢 Tarea completada");
+              showCompletedBanner("✅ Ruta correcta (a la primera)", "🟢 Tarea completada");
             }
           }
         }
-        // ==============================================
 
-        // UI state (abrir/cerrar)
+        // UI open/close
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
 
         if(item.children.length && wasActive) {
-          // cerrar
           Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
           li.classList.remove("active");
 
-          // al cerrar, elimina niveles inferiores del breadcrumb
           if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE) {
             NAV_PATH = NAV_PATH.slice(0, level);
             setPathNow();
           }
         } else {
-          // abrir
           li.classList.add("active");
           if(item.children.length) render(item.children, level + 1, item);
         }
@@ -980,7 +789,7 @@
     showNextTaskScreen();
   };
 
-  // ===================== Start =====================
+  // start
   showMainIntro();
   loadAllData();
 </script>
