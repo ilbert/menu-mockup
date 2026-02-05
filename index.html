@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Test de encontrabilidad</title>
+  <title>Menu Mockup - Test de usabilidad</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -36,15 +36,24 @@
     .promo-card.small{ margin:12px 16px 8px; }
     .promo-card.small .promo-img{ height:120px; }
 
-    /* overlays */
+    /* UI helpers */
     #abpanel * { box-sizing:border-box; }
     code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
     .btn{
-      padding:10px;border-radius:12px;border:1px solid var(--border);
-      font-weight:900;cursor:pointer;
+      padding:12px 14px;border-radius:14px;border:1px solid var(--border);
+      font-weight:900;cursor:pointer;font-size:13px;
     }
     .btnPrimary{background:var(--brand);color:#fff;}
     .btnGhost{background:#fff;color:#111;}
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;
+      background:#eef4ff;border:1px solid #d7e4ff;color:#123e8f;
+      padding:6px 10px;border-radius:999px;font-weight:900;font-size:12px;
+    }
+    .card{
+      border:1px solid var(--border);border-radius:18px;background:#fff;
+      box-shadow:0 24px 60px rgba(0,0,0,.18);
+    }
   </style>
 </head>
 <body>
@@ -54,42 +63,78 @@
   <div style="margin-left:15px;font-weight:900;color:var(--brand);">MENU MOCKUP</div>
 </header>
 
-<!-- ===== Intro Panel Grande ===== -->
-<div id="introOverlay" style="position:fixed; inset:0; z-index:4000; background:rgba(0,0,0,.55);">
-  <div style="
+<!-- ===== Pantalla grande bonita (Inicio / Pre-tarea) ===== -->
+<div id="taskIntroOverlay" style="position:fixed; inset:0; z-index:4000; background:linear-gradient(180deg, rgba(3,76,168,.60), rgba(0,0,0,.55)); display:none;">
+  <div class="card" style="
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    background:#fff; border:1px solid var(--border); border-radius:18px;
-    width:min(780px,92vw); padding:18px; box-shadow:0 24px 60px rgba(0,0,0,.28);">
-    <div style="font-weight:1000;font-size:20px;color:var(--brand);">Test de encontrabilidad del menú</div>
-    <div style="margin-top:10px;color:#222;line-height:1.4;font-size:13px;">
-      <b>Qué tienes que hacer:</b>
-      <ol style="margin:8px 0 0 18px;">
-        <li>Pulsa <b>Empezar</b>.</li>
-        <li>Para cada tarea, navega por el menú hasta encontrar la <b>ruta correcta</b>.</li>
-        <li>Cuando llegues, saldrá un cartel: <b>“Es la correcta”</b> y pasará a la siguiente tarea.</li>
-        <li>Si te interrumpen, puedes <b>Pausar</b> y luego <b>Reanudar</b>.</li>
-        <li>Al terminar la última tarea, el CSV se <b>descargará automáticamente</b>.</li>
-      </ol>
-      <div style="margin-top:10px;color:#555;">
-        Consejo: no hace falta “adivinar”. Solo navega como lo harías normalmente.
+    width:min(860px,92vw); padding:18px 18px 16px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+      <div>
+        <div class="chip" id="introChip">Test de usabilidad del menú web</div>
+        <div id="introTitle" style="margin-top:10px;font-weight:1000;font-size:22px;color:var(--brand);">
+          Test de usabilidad del menú web
+        </div>
+        <div id="introSubtitle" style="margin-top:6px;color:#333;line-height:1.45;font-size:13px;max-width:72ch;">
+          Navega por el menú y encuentra cada destino lo más rápido posible. No te preocupes si no conoces el producto:
+          verás una breve explicación antes de empezar cada tarea.
+        </div>
+      </div>
+      <button id="btnIntroCloseX" class="btn btnGhost" style="padding:10px 12px;">✕</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px;">
+      <div style="border:1px solid var(--border);border-radius:16px;padding:14px;background:#fbfcfe;">
+        <div style="font-weight:1000;color:#111;">Qué tienes que hacer</div>
+        <ol id="introSteps" style="margin:10px 0 0 18px;color:#333;line-height:1.5;font-size:13px;">
+          <li>Pulsa <b>Empezar</b>.</li>
+          <li>Lee la tarea y pulsa <b>Comenzar tarea</b> (ahí empieza el cronómetro).</li>
+          <li>Navega por el menú hasta llegar a la <b>ruta correcta</b>.</li>
+          <li>Si te interrumpen, usa <b>Pausar</b> y luego <b>Reanudar</b>.</li>
+          <li>Al terminar la última tarea, se descargará el CSV automáticamente.</li>
+        </ol>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;padding:14px;background:#fff;">
+        <div style="font-weight:1000;color:#111;">Tareas incluidas</div>
+        <ul id="introTaskList" style="margin:10px 0 0 18px;color:#333;line-height:1.5;font-size:13px;"></ul>
+        <div style="margin-top:10px;color:#666;font-size:11px;">
+          Consejo: hazlo como lo harías normalmente (sin “adivinar”).
+        </div>
       </div>
     </div>
 
-    <div style="margin-top:14px; padding:12px; border:1px dashed #cfd6df; border-radius:14px; background:#fbfcfe;">
-      <div style="font-weight:900;margin-bottom:6px;">Tareas incluidas</div>
-      <ul id="introTaskList" style="margin:0 0 0 18px; color:#333; font-size:13px;"></ul>
-      <div style="margin-top:8px; color:#666; font-size:11px;">
-        * Las rutas objetivo están definidas dentro del código en <code>TASKS</code> → <code>route:[...]</code>.
-      </div>
-    </div>
-
-    <div style="display:flex; gap:10px; margin-top:14px;">
+    <div style="display:flex;gap:10px;margin-top:14px;">
       <button id="btnIntroStart" class="btn btnPrimary" style="flex:1;">Empezar</button>
       <button id="btnIntroClose" class="btn btnGhost" style="flex:1;">Cerrar (sin empezar)</button>
     </div>
   </div>
 </div>
-<!-- ============================ -->
+<!-- ========================================= -->
+
+<!-- ===== Pantalla bonita para siguiente tarea (cronómetro parado aquí) ===== -->
+<div id="nextTaskOverlay" style="position:fixed; inset:0; z-index:3500; background:linear-gradient(180deg, rgba(3,76,168,.55), rgba(0,0,0,.55)); display:none;">
+  <div class="card" style="
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(820px,92vw); padding:18px;">
+    <div class="chip" id="nextChip">Siguiente tarea</div>
+    <div id="nextTitle" style="margin-top:10px;font-weight:1000;font-size:20px;color:var(--brand);"></div>
+
+    <div style="margin-top:10px;border:1px solid var(--border);border-radius:16px;padding:14px;background:#fbfcfe;">
+      <div id="nextGoal" style="color:#111;font-size:13px;"></div>
+      <div id="nextInfo" style="margin-top:8px;color:#555;line-height:1.45;font-size:13px;"></div>
+    </div>
+
+    <div style="margin-top:12px;color:#666;font-size:12px;">
+      El cronómetro <b>no</b> corre mientras lees esto. Empezará cuando pulses “Comenzar tarea”.
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button id="btnStartThisTask" class="btn btnPrimary" style="flex:1;">Comenzar tarea</button>
+      <button id="btnExitTest" class="btn btnGhost" style="flex:1;">Salir (sin descargar)</button>
+    </div>
+  </div>
+</div>
+<!-- ========================================= -->
 
 <!-- ===== Panel pequeño (control) ===== -->
 <div id="abpanel" style="
@@ -108,11 +153,10 @@
     Tarea: <span id="taskNowLabel" style="color:var(--brand);"></span>
   </div>
 
-  <div id="taskGoal" style="margin-top:4px;color:#111;"></div>
-  <div id="taskInfo" style="margin-top:6px;color:#555; line-height:1.35;"></div>
+  <div id="taskGoalSmall" style="margin-top:4px;color:#111;"></div>
+  <div id="taskInfoSmall" style="margin-top:6px;color:#555; line-height:1.35;"></div>
 
-  <div id="taskHint" style="margin-top:8px;color:#555;"></div>
-  <div id="taskTimer" style="margin-top:6px;font-weight:900;"></div>
+  <div id="taskTimer" style="margin-top:8px;font-weight:1000;"></div>
 
   <div style="margin-top:8px; font-size:11px; color:#444;">
     Ruta actual: <code id="pathNow" style="display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom;"></code>
@@ -134,21 +178,19 @@
 
 <!-- ===== Cartel de tarea completada ===== -->
 <div id="doneOverlay" style="position:fixed; inset:0; z-index:3000; display:none; background:rgba(0,0,0,.55);">
-  <div style="
+  <div class="card" style="
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    background:#fff; border:1px solid var(--border); border-radius:16px;
-    width:min(560px,92vw); padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.25);
-    text-align:center;">
+    width:min(560px,92vw); padding:18px; text-align:center;">
     <div style="font-weight:1000;font-size:18px;color:var(--brand);">✅ Es la correcta</div>
     <div id="doneDetail" style="margin-top:8px;color:#333;font-size:13px; white-space:pre-line;"></div>
-    <div id="doneTime" style="margin-top:10px;font-weight:900;"></div>
+    <div id="doneTime" style="margin-top:10px;font-weight:1000;"></div>
 
     <div style="display:flex; gap:10px; margin-top:14px;">
-      <button id="btnNextTask" class="btn btnPrimary" style="flex:1;">Siguiente tarea</button>
+      <button id="btnNextTask" class="btn btnPrimary" style="flex:1;">Siguiente</button>
     </div>
 
     <div style="margin-top:10px; font-size:11px; color:#666;">
-      Al terminar la última tarea se descargará el CSV automáticamente.
+      La siguiente tarea se mostrará con instrucciones (cronómetro parado).
     </div>
   </div>
 </div>
@@ -205,7 +247,7 @@
     {
       id:"autoclave_clase_b",
       label:"Autoclave clase B",
-      route:["Esterilización y autoclaves","Autoclaves clase B"], // <-- EDITA AQUÍ
+      route:["Esterilización y autoclaves","Autoclaves","Autoclaves clase B"], // <-- EDITA AQUÍ
       goal:"Encuentra la categoría de autoclaves clase B en el menú.",
       info:"Autoclave clase B: esterilizador de vapor con prevacío/postvacío, apto para instrumental hueco/poroso (dental, clínica, estética avanzada)."
     }
@@ -225,6 +267,7 @@
 
   const EVENTS = [];
   let TEST_STARTED = false;
+  let TASK_ACTIVE = false; // cronómetro y tracking solo cuando true
 
   function norm2(s){
     return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -233,7 +276,7 @@
 
   function effectiveElapsedMs(){
     if(!START_TS) return 0;
-    const now = PAUSED ? PAUSE_TS : Date.now();
+    const now = (PAUSED ? PAUSE_TS : Date.now());
     return Math.max(0, (now - START_TS) - PAUSED_TOTAL_MS);
   }
 
@@ -242,18 +285,16 @@
     if (el) el.textContent = CLICK_PATH.join(" > ");
   }
 
-  function setTaskUI(){
+  function setTaskSmallPanel(){
     const lbl = document.getElementById("taskNowLabel");
-    const goal = document.getElementById("taskGoal");
-    const info = document.getElementById("taskInfo");
-    const hint = document.getElementById("taskHint");
+    const goal = document.getElementById("taskGoalSmall");
+    const info = document.getElementById("taskInfoSmall");
     const timer = document.getElementById("taskTimer");
 
     if (lbl) lbl.textContent = TASK ? `${taskIndex+1}/${TASKS.length} · ${TASK.label}` : "(sin tarea)";
     if (goal) goal.innerHTML = TASK ? `<b>Qué buscar:</b> ${TASK.goal}` : "";
     if (info) info.innerHTML = TASK ? `<b>Info:</b> ${TASK.info}` : "";
-    if (hint) hint.textContent = TASK ? `Objetivo (ruta): ${TASK.route.join(" > ")}` : "";
-    if (timer) timer.textContent = "Tiempo: 0.0s";
+    if (timer) timer.textContent = TASK_ACTIVE ? "Tiempo: 0.0s" : "Tiempo: —";
     setPathNow();
   }
 
@@ -269,7 +310,7 @@
       label: extra.label || "",
       level: (typeof extra.level === "number") ? extra.level : "",
       path: extra.path || CLICK_PATH.join(" > "),
-      ms_from_start: START_TS ? effectiveElapsedMs() : "",
+      ms_from_start: (START_TS && TASK_ACTIVE) ? effectiveElapsedMs() : "",
       url: location.href
     };
     EVENTS.push(row);
@@ -278,8 +319,49 @@
     if (last) last.textContent = `Último: ${row.event}${row.label ? " → " + row.label : ""}`;
   }
 
-  function startCurrentTask(){
-    TASK = TASKS[taskIndex] || null;
+  function fillIntroTaskList(){
+    const ul = document.getElementById("introTaskList");
+    if (!ul) return;
+    ul.innerHTML = "";
+    TASKS.forEach((t, i) => {
+      const li = document.createElement("li");
+      li.textContent = `${i+1}. ${t.label} — ${t.goal}`;
+      ul.appendChild(li);
+    });
+  }
+
+  function showMainIntro(){
+    fillIntroTaskList();
+    document.getElementById("introTitle").textContent = "Test de usabilidad del menú web";
+    document.getElementById("taskIntroOverlay").style.display = "block";
+  }
+
+  function hideMainIntro(){
+    document.getElementById("taskIntroOverlay").style.display = "none";
+  }
+
+  function showNextTaskScreen(){
+    // cronómetro PARADO aquí
+    TASK_ACTIVE = false;
+    pauseHard();
+
+    const t = TASKS[taskIndex] || null;
+    TASK = t;
+
+    document.getElementById("nextTitle").textContent = `${taskIndex+1}/${TASKS.length} · ${t.label}`;
+    document.getElementById("nextGoal").innerHTML = `<b>Qué buscar:</b> ${t.goal}`;
+    document.getElementById("nextInfo").innerHTML = `<b>Info:</b> ${t.info}`;
+    document.getElementById("nextTaskOverlay").style.display = "block";
+
+    setTaskSmallPanel();
+  }
+
+  function hideNextTaskScreen(){
+    document.getElementById("nextTaskOverlay").style.display = "none";
+  }
+
+  function startThisTaskNow(){
+    // reinicia contador SOLO al pulsar este botón
     CLICK_PATH = [];
     TASK_DONE = false;
 
@@ -288,50 +370,33 @@
     PAUSE_TS = 0;
     PAUSED_TOTAL_MS = 0;
 
-    setTaskUI();
+    TASK_ACTIVE = true;
     track("task_start");
-
-    const btnPause = document.getElementById("btnPause");
-    const btnResume = document.getElementById("btnResume");
-    if (btnPause) btnPause.style.display = "block";
-    if (btnResume) btnResume.style.display = "none";
+    setTaskSmallPanel();
 
     const timer = document.getElementById("taskTimer");
     if (TIMER_INT) clearInterval(TIMER_INT);
     TIMER_INT = setInterval(() => {
-      if (!START_TS || !timer) return;
+      if (!timer) return;
+      if (!TASK_ACTIVE) { timer.textContent = "Tiempo: —"; return; }
       timer.textContent = "Tiempo: " + (effectiveElapsedMs()/1000).toFixed(1) + "s" + (PAUSED ? " (pausa)" : "");
     }, 100);
-  }
 
-  function finishAllTasks(){
-    TASK = null;
-    START_TS = 0;
-    if (TIMER_INT) clearInterval(TIMER_INT);
-    track("tasks_finished");
-
-    // descarga automática
-    downloadCSV(true);
-  }
-
-  function nextTask(){
-    taskIndex++;
-    if (taskIndex >= TASKS.length) {
-      finishAllTasks();
-      return;
-    }
+    // abrir menú y ocultar overlay
+    hideNextTaskScreen();
     toggleMenu(true);
-    startCurrentTask();
   }
 
-  function failTask(){
-    if(!TASK || !START_TS) return;
-    track("task_fail");
-    showCompletedBanner("❌ Marcada como 'No lo encuentro'");
+  function pauseHard(){
+    // pausa “dura” sin cambiar botones (para overlays)
+    if (TASK_ACTIVE && !PAUSED) {
+      PAUSED = true;
+      PAUSE_TS = Date.now();
+    }
   }
 
   function pauseTask(){
-    if (!TASK || !START_TS || PAUSED) return;
+    if (!TASK_ACTIVE || !START_TS || PAUSED) return;
     PAUSED = true;
     PAUSE_TS = Date.now();
     track("task_pause");
@@ -340,7 +405,7 @@
   }
 
   function resumeTask(){
-    if (!TASK || !START_TS || !PAUSED) return;
+    if (!TASK_ACTIVE || !START_TS || !PAUSED) return;
     PAUSED = false;
     PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS);
     PAUSE_TS = 0;
@@ -350,7 +415,7 @@
   }
 
   function isSuccessPath(){
-    if(!TASK || !START_TS || !TASK.route || !TASK.route.length) return false;
+    if(!TASK || !TASK.route || !TASK.route.length) return false;
     const current = CLICK_PATH.map(norm2);
     const target = TASK.route.map(norm2);
     if (current.length < target.length) return false;
@@ -361,6 +426,60 @@
       if (curVal !== tarVal) return false;
     }
     return true;
+  }
+
+  function showCompletedBanner(message){
+    // detener cronómetro mientras se lee el cartel de completado
+    pauseHard();
+
+    const overlayEl = document.getElementById("doneOverlay");
+    const detail = document.getElementById("doneDetail");
+    const timeEl = document.getElementById("doneTime");
+
+    const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
+    const routeStr = CLICK_PATH.join(" > ");
+
+    if (detail) detail.textContent = `${message}\nRuta: ${routeStr}`;
+    if (timeEl) timeEl.textContent = seconds ? `Tiempo: ${seconds}s` : "";
+    if (overlayEl) overlayEl.style.display = "block";
+  }
+
+  function hideCompletedBanner(){
+    document.getElementById("doneOverlay").style.display = "none";
+  }
+
+  function nextTaskFlow(){
+    hideCompletedBanner();
+
+    // registramos fin de tarea si estaba activa
+    if (TASK_ACTIVE) {
+      track("task_end");
+    }
+
+    TASK_ACTIVE = false;
+    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
+
+    taskIndex++;
+    if (taskIndex >= TASKS.length) {
+      finishAllTasks();
+      return;
+    }
+
+    // mostrar pantalla bonita con la siguiente tarea (cronómetro parado)
+    showNextTaskScreen();
+  }
+
+  function finishAllTasks(){
+    TASK_ACTIVE = false;
+    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
+    track("tasks_finished");
+    downloadCSV(true);
+  }
+
+  function failTask(){
+    if(!TASK_ACTIVE) return;
+    track("task_fail");
+    showCompletedBanner("❌ Marcada como 'No lo encuentro'");
   }
 
   function escapeCSV(v){
@@ -383,14 +502,13 @@
     const a = document.createElement("a");
     const ts = new Date().toISOString().replace(/[:.]/g,"-");
     a.href = URL.createObjectURL(blob);
-    a.download = `menu_test_${VERSION}_${SESSION_ID}_${ts}.csv`;
+    a.download = `menu_usabilidad_${VERSION}_${SESSION_ID}_${ts}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(a.href);
 
     if (isAuto) {
-      // aviso final bonito
       alert("✅ Test finalizado. Se ha descargado el CSV automáticamente.");
     }
   }
@@ -402,58 +520,14 @@
 
   function restartTasks(){
     taskIndex = 0;
-    toggleMenu(true);
-    startCurrentTask();
+    TASK = null;
+    TASK_ACTIVE = false;
+    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
+    CLICK_PATH = [];
+    showNextTaskScreen();
   }
 
-  function showCompletedBanner(message){
-    const overlayEl = document.getElementById("doneOverlay");
-    const detail = document.getElementById("doneDetail");
-    const timeEl = document.getElementById("doneTime");
-
-    const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
-    const routeStr = CLICK_PATH.join(" > ");
-
-    if (detail) detail.textContent = `${message}\nRuta: ${routeStr}`;
-    if (timeEl) timeEl.textContent = seconds ? `Tiempo: ${seconds}s` : "";
-    if (overlayEl) overlayEl.style.display = "block";
-  }
-
-  function hideCompletedBanner(){
-    const overlayEl = document.getElementById("doneOverlay");
-    if (overlayEl) overlayEl.style.display = "none";
-  }
-  // ============================================================
-
-  // ===== Intro list =====
-  function fillIntroList(){
-    const ul = document.getElementById("introTaskList");
-    if (!ul) return;
-    ul.innerHTML = "";
-    TASKS.forEach((t, i) => {
-      const li = document.createElement("li");
-      li.textContent = `${i+1}. ${t.label} — ${t.goal}`;
-      ul.appendChild(li);
-    });
-  }
-  fillIntroList();
-
-  // ===== Start flow =====
-  function beginTest(){
-    TEST_STARTED = true;
-    document.getElementById("introOverlay").style.display = "none";
-    document.getElementById("abpanel").style.display = "block";
-    toggleMenu(true);
-    // el menú carga al abrir; cuando termine loadAllData inicia tarea automáticamente si TEST_STARTED
-  }
-
-  document.getElementById("btnIntroStart").onclick = () => beginTest();
-  document.getElementById("btnIntroClose").onclick = () => {
-    document.getElementById("introOverlay").style.display = "none";
-    // no empezamos
-  };
-
-  // Panel buttons
+  // ===================== Wiring UI =====================
   document.getElementById("btnFailTask").onclick = () => failTask();
   document.getElementById("btnDownloadCSV").onclick = () => downloadCSV(false);
   document.getElementById("btnResetLog").onclick = () => resetLog();
@@ -461,18 +535,33 @@
   document.getElementById("btnPause").onclick = () => pauseTask();
   document.getElementById("btnResume").onclick = () => resumeTask();
 
-  document.getElementById("btnNextTask").onclick = () => {
-    hideCompletedBanner();
-    nextTask();
-  };
+  document.getElementById("btnNextTask").onclick = () => nextTaskFlow();
   document.getElementById("doneOverlay").onclick = (e) => {
-    if (e.target && e.target.id === "doneOverlay") {
-      hideCompletedBanner();
-      nextTask();
-    }
+    if (e.target && e.target.id === "doneOverlay") nextTaskFlow();
   };
 
-  // ===== Menu data + render =====
+  document.getElementById("btnStartThisTask").onclick = () => startThisTaskNow();
+  document.getElementById("btnExitTest").onclick = () => {
+    // salir: ocultar overlays y panel (no descargar)
+    document.getElementById("nextTaskOverlay").style.display = "none";
+    document.getElementById("abpanel").style.display = "none";
+    TEST_STARTED = false;
+    TASK_ACTIVE = false;
+    toggleMenu(false);
+  };
+
+  document.getElementById("btnIntroStart").onclick = () => {
+    TEST_STARTED = true;
+    hideMainIntro();
+    document.getElementById("abpanel").style.display = "block";
+    // primera pantalla de tarea (cronómetro parado)
+    taskIndex = 0;
+    showNextTaskScreen();
+  };
+  document.getElementById("btnIntroClose").onclick = () => hideMainIntro();
+  document.getElementById("btnIntroCloseX").onclick = () => hideMainIntro();
+
+  // ============== Menu core ==============
   let menuTree = [];
   let bannersData = [];
 
@@ -498,9 +587,6 @@
       bannersData = rowsToObjects(parseCSV(banCsv)).reverse();
       statusEl.style.display="none";
       renderRootMenu();
-
-      // SOLO iniciamos tarea si el usuario ha pulsado "Empezar"
-      if (TEST_STARTED && !TASK) startCurrentTask();
     } catch(e) { statusEl.textContent="Error de carga"; }
   }
 
@@ -629,8 +715,8 @@
       li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
 
       li.onclick = () => {
-        // ===== tracking (solo si test started + tarea activa + no pausa) =====
-        if (TEST_STARTED && TASK && START_TS && !TASK_DONE && !PAUSED) {
+        if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE) {
+          // tracking click
           CLICK_PATH.push(item.name);
           setPathNow();
           track("click_item", { label: item.name, level });
@@ -641,7 +727,6 @@
             showCompletedBanner("✅ Ruta correcta");
           }
         }
-        // ================================================================
 
         const wasActive = li.classList.contains("active");
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
@@ -664,7 +749,6 @@
   }
 
   function toggleMenu(open){
-    if (TEST_STARTED) track(open ? "menu_open" : "menu_close");
     drawer.style.display = open ? "flex" : "none";
     overlay.style.display = open ? "block" : "none";
     if(open && menuTree.length===0) loadAllData();
@@ -675,6 +759,9 @@
     const count = document.querySelectorAll(".column").length;
     drawer.style.width = Math.min(count * 330, window.innerWidth * 0.95) + "px";
   }
+
+  // Mostrar intro al cargar
+  showMainIntro();
 </script>
 </body>
 </html>
