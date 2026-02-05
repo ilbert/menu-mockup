@@ -368,7 +368,7 @@
       </div>
     </div>
 
-    <!-- ✅ PC: botón centrado grande (igual que antes). Móvil: sticky por CSS -->
+    <!-- ✅ PC: botón centrado grande (no sticky). Móvil: sticky por CSS -->
     <div class="introCta">
       <button id="btnIntroStart" class="btn btnPrimary introBtn">Empezar</button>
     </div>
@@ -477,6 +477,7 @@
 </aside>
 
 <script>
+  // ====== Datos categorías (CSV de Google Sheets) ======
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
   const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_CATEGORIES}&_=${Date.now()}`;
@@ -488,6 +489,8 @@
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
   const FEATURED_CATS = [{ name:"Camillas" }, { name:"Sillas de ruedas" }, { name:"Diagnóstico" }, { name:"Mobiliario" }];
 
+  // ====== Tracking / Experimento ======
+  // "version" = variante del test (FIN/A/B...). Te sirve para comparar resultados entre menús.
   const VERSION = "FIN";
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
@@ -506,6 +509,7 @@
     }
   ];
 
+  // ====== Estado ======
   let taskIndex = 0;
   let TASK = null;
 
@@ -529,10 +533,12 @@
 
   let menuTree = [];
 
+  // ====== DOM ======
   const drawer = document.getElementById("drawer");
   const overlay = document.getElementById("overlay");
   const statusEl = document.getElementById("status");
 
+  // ====== Helpers ======
   const norm2 = (s)=> String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
   const nowISO = ()=> new Date().toISOString();
   const norm = (s)=> String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -566,7 +572,16 @@
     setDetourBadge();
   }
 
+  // ====== LOG mejorado (para análisis IA/UX) ======
+  let EVENT_SEQ = 0;
+  let LAST_EVENT_TS = 0;
+
   function track(eventName, extra = {}) {
+    EVENT_SEQ += 1;
+    const now = Date.now();
+    const msFromPrev = LAST_EVENT_TS ? (now - LAST_EVENT_TS) : 0;
+    LAST_EVENT_TS = now;
+
     const row = {
       ts_iso: nowISO(),
       version: VERSION,
@@ -574,19 +589,43 @@
       task_id: TASK?.id || "",
       task_label: TASK?.label || "",
       target_route: TASK?.route ? TASK.route.join(" > ") : "",
+
+      // NUEVO
+      seq: EVENT_SEQ,
+      ms_from_prev: msFromPrev,
+
       event: eventName,
+
       label: extra.label || "",
       level: (typeof extra.level === "number") ? extra.level : "",
-      path: extra.path || NAV_PATH.join(" > "),
+      expected_label: extra.expected_label || "",
+      is_expected: (typeof extra.is_expected === "number") ? extra.is_expected : "",
+      deviation: (typeof extra.deviation === "number") ? extra.deviation : "",
+      deviation_reason: extra.deviation_reason || "",
+
+      path_before: extra.path_before || "",
+      path_after: extra.path_after || "",
+      path: (typeof extra.path === "string") ? extra.path : (NAV_PATH.join(" > ")),
+
       ms_from_start: (START_TS && TASK_ACTIVE) ? effectiveElapsedMs() : "",
-      detours: (typeof extra.detours === "number") ? extra.detours : DETOURS
+      detours: (typeof extra.detours === "number") ? extra.detours : DETOURS,
+
+      task_status: extra.task_status || "",
+      final_path: extra.final_path || ""
     };
+
     EVENTS.push(row);
-    document.getElementById("taskLast").textContent =
-      `Último: ${row.event}${row.label ? " → " + row.label : ""} · Desvíos: ${DETOURS}`;
+
+    const lastEl = document.getElementById("taskLast");
+    if (lastEl) {
+      lastEl.textContent =
+        `Último: ${row.event}${row.label ? " → " + row.label : ""}` +
+        (row.deviation ? ` · 🟠 desvío (${row.deviation_reason})` : "") +
+        ` · Desvíos: ${DETOURS}`;
+    }
   }
 
-  // Panel collapse
+  // ====== Panel collapse ======
   const panel = document.getElementById("abpanel");
   const btnPanelToggle = document.getElementById("btnPanelToggle");
   function isMobile(){ return window.matchMedia("(max-width: 720px)").matches; }
@@ -617,7 +656,7 @@
   });
   window.addEventListener("resize", () => collapsePanel(isMobile()));
 
-  // Intro list
+  // ====== Intro ======
   function fillIntroTaskList(){
     const ul = document.getElementById("introTaskList");
     ul.innerHTML = "";
@@ -628,6 +667,7 @@
     });
   }
 
+  // ====== Flow tareas ======
   function hardPause(){ if (TASK_ACTIVE && !PAUSED) { PAUSED = true; PAUSE_TS = Date.now(); } }
 
   function showNextTaskScreen(){
@@ -646,6 +686,10 @@
   function hideNextTaskScreen(){ document.getElementById("nextTaskOverlay").style.display = "none"; }
 
   function startThisTaskNow(){
+    // reset secuencia por tarea
+    EVENT_SEQ = 0;
+    LAST_EVENT_TS = 0;
+
     NAV_PATH = [];
     CLICK_COUNT = 0;
     DETOURS = 0;
@@ -706,98 +750,7 @@
     return true;
   }
 
-  function registerDetourIfAny(level, clickedName){
-    const expected = TASK.route[level];
-    if (!expected) { DETOURS++; return; }
-    if (norm2(clickedName) !== norm2(expected)) DETOURS++;
-  }
-
-  function xmlEscape(s){
-    return String(s ?? "")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;").replace(/'/g,"&apos;");
-  }
-  function worksheetXml(name, rows){
-    const rowXml = rows.map(r => `<Row>${
-      r.map(c => `<Cell${c.style?` ss:StyleID="${c.style}"`:``}><Data ss:Type="String">${xmlEscape(c.v)}</Data></Cell>`).join("")
-    }</Row>`).join("");
-    return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
-  }
-  function buildExcelXml(){
-    const rowsSummary = [];
-    const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
-
-    rowsSummary.push([{v:"Sesión", style:"sHeader"},{v:SESSION_ID, style:"sCell"}]);
-    rowsSummary.push([{v:"Variante (version)", style:"sHeader"},{v:VERSION, style:"sCell"}]);
-    rowsSummary.push([{v:"Tiempo total (s)", style:"sHeader"},{v:(totalMs/1000).toFixed(1), style:"sCell"}]);
-    rowsSummary.push([{v:"", style:"sCell"},{v:"", style:"sCell"}]);
-
-    rowsSummary.push([
-      {v:"Tarea", style:"sHeader"},
-      {v:"Resultado", style:"sHeader"},
-      {v:"Tiempo (s)", style:"sHeader"},
-      {v:"Clicks", style:"sHeader"},
-      {v:"Desvíos", style:"sHeader"},
-      {v:"Ruta objetivo", style:"sHeader"}
-    ]);
-
-    TASKS.forEach(t => {
-      const r = TASK_RESULTS[t.id];
-      const status = r?.status || "fail";
-      const det = (r?.detours ?? 0);
-      const isSuccess = status !== "fail" && det === 0;
-      const isWarn = status !== "fail" && det > 0;
-      const styleRow = isSuccess ? "sSuccess" : (isWarn ? "sWarn" : "sFail");
-      const labelRes = isSuccess ? "Encontrada" : (isWarn ? "Encontrada (con desvíos)" : "No encontrada");
-
-      rowsSummary.push([
-        {v:t.label, style:styleRow},
-        {v:labelRes, style:styleRow},
-        {v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},
-        {v: r ? String(r.clicks ?? "") : "", style:styleRow},
-        {v: r ? String(r.detours ?? "") : "", style:styleRow},
-        {v: t.route.join(" > "), style:styleRow}
-      ]);
-    });
-
-    const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
-      "ts_iso","version","session_id","task_id","task_label","target_route","event","label","level","path","ms_from_start","detours"
-    ];
-
-    const rowsEvents = [];
-    rowsEvents.push(headers.map(h => ({v:h, style:"sHeader"})));
-    EVENTS.forEach(e => rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"}))));
-
-    return `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:o="urn:schemas-microsoft-com:office:office"
- xmlns:x="urn:schemas-microsoft-com:office:excel"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
- <Styles>
-  <Style ss:ID="sHeader"><Font ss:Bold="1"/><Interior ss:Color="#E6F2FA" ss:Pattern="Solid"/></Style>
-  <Style ss:ID="sCell"></Style>
-  <Style ss:ID="sSuccess"><Interior ss:Color="#EAF7EE" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#0A7A3A"/></Style>
-  <Style ss:ID="sWarn"><Interior ss:Color="#FFF7E6" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#8A4B00"/></Style>
-  <Style ss:ID="sFail"><Interior ss:Color="#FDECEC" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#B42318"/></Style>
- </Styles>
- ${worksheetXml("Resumen", rowsSummary)}
- ${worksheetXml("Eventos", rowsEvents)}
-</Workbook>`;
-  }
-  function downloadExcelAuto(){
-    const xml = buildExcelXml();
-    const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
-    const a = document.createElement("a");
-    const ts = new Date().toISOString().replace(/[:.]/g,"-");
-    a.href = URL.createObjectURL(blob);
-    a.download = `test_usabilidad_menu_${VERSION}_${SESSION_ID}_${ts}.xls`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
-  }
-
+  // ====== Confetti ======
   function confettiBurstSlow(){
     const canvas = document.getElementById("confettiCanvas");
     const ctx = canvas.getContext("2d");
@@ -852,7 +805,15 @@
 
   function nextTaskFlow(){
     document.getElementById("doneOverlay").style.display = "none";
-    if (TASK_ACTIVE) track("task_end");
+
+    if (TASK_ACTIVE) {
+      track("task_end", {
+        task_status: TASK_RESULTS[TASK?.id]?.status || (TASK_DONE ? "success" : ""),
+        final_path: NAV_PATH.join(" > "),
+        path: "" // ✅ evita repetir la ruta final en "path"
+      });
+    }
+
     TASK_ACTIVE = false;
     if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
 
@@ -864,7 +825,7 @@
   function finishAllTasks(){
     TASK_ACTIVE = false;
     if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
-    track("tasks_finished");
+    track("tasks_finished", { path:"" });
 
     document.getElementById("finalOverlay").style.display = "block";
     setTimeout(() => {
@@ -881,11 +842,103 @@
     TASK_DONE = true;
     const tms = effectiveElapsedMs();
     TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT, detours: DETOURS };
-    track("task_fail");
+    track("task_fail", { task_status:"fail" });
     drawer.classList.remove("struggling");
     showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
   }
 
+  // ====== Excel (XML Spreadsheet) ======
+  function xmlEscape(s){
+    return String(s ?? "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&apos;");
+  }
+  function worksheetXml(name, rows){
+    const rowXml = rows.map(r => `<Row>${
+      r.map(c => `<Cell${c.style?` ss:StyleID="${c.style}"`:``}><Data ss:Type="String">${xmlEscape(c.v)}</Data></Cell>`).join("")
+    }</Row>`).join("");
+    return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
+  }
+  function buildExcelXml(){
+    const rowsSummary = [];
+    const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
+
+    rowsSummary.push([{v:"Sesión", style:"sHeader"},{v:SESSION_ID, style:"sCell"}]);
+    rowsSummary.push([{v:"Variante (version)", style:"sHeader"},{v:VERSION, style:"sCell"}]);
+    rowsSummary.push([{v:"Tiempo total (s)", style:"sHeader"},{v:(totalMs/1000).toFixed(1), style:"sCell"}]);
+    rowsSummary.push([{v:"", style:"sCell"},{v:"", style:"sCell"}]);
+
+    rowsSummary.push([
+      {v:"Tarea", style:"sHeader"},
+      {v:"Resultado", style:"sHeader"},
+      {v:"Tiempo (s)", style:"sHeader"},
+      {v:"Clicks", style:"sHeader"},
+      {v:"Desvíos", style:"sHeader"},
+      {v:"Ruta objetivo", style:"sHeader"}
+    ]);
+
+    TASKS.forEach(t => {
+      const r = TASK_RESULTS[t.id];
+      const status = r?.status || "fail";
+      const det = (r?.detours ?? 0);
+      const isSuccess = status !== "fail" && det === 0;
+      const isWarn = status !== "fail" && det > 0;
+      const styleRow = isSuccess ? "sSuccess" : (isWarn ? "sWarn" : "sFail");
+      const labelRes = isSuccess ? "Encontrada" : (isWarn ? "Encontrada (con desvíos)" : "No encontrada");
+
+      rowsSummary.push([
+        {v:t.label, style:styleRow},
+        {v:labelRes, style:styleRow},
+        {v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},
+        {v: r ? String(r.clicks ?? "") : "", style:styleRow},
+        {v: r ? String(r.detours ?? "") : "", style:styleRow},
+        {v: t.route.join(" > "), style:styleRow}
+      ]);
+    });
+
+    // Eventos
+    const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
+      "ts_iso","version","session_id","task_id","task_label","target_route",
+      "seq","ms_from_prev","event","label","level","expected_label","is_expected",
+      "deviation","deviation_reason","path_before","path_after","path","ms_from_start",
+      "detours","task_status","final_path"
+    ];
+
+    const rowsEvents = [];
+    rowsEvents.push(headers.map(h => ({v:h, style:"sHeader"})));
+    EVENTS.forEach(e => rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"}))));
+
+    return `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="sHeader"><Font ss:Bold="1"/><Interior ss:Color="#E6F2FA" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="sCell"></Style>
+  <Style ss:ID="sSuccess"><Interior ss:Color="#EAF7EE" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#0A7A3A"/></Style>
+  <Style ss:ID="sWarn"><Interior ss:Color="#FFF7E6" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#8A4B00"/></Style>
+  <Style ss:ID="sFail"><Interior ss:Color="#FDECEC" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#B42318"/></Style>
+ </Styles>
+ ${worksheetXml("Resumen", rowsSummary)}
+ ${worksheetXml("Eventos", rowsEvents)}
+</Workbook>`;
+  }
+  function downloadExcelAuto(){
+    const xml = buildExcelXml();
+    const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const a = document.createElement("a");
+    const ts = new Date().toISOString().replace(/[:.]/g,"-");
+    a.href = URL.createObjectURL(blob);
+    a.download = `test_usabilidad_menu_${VERSION}_${SESSION_ID}_${ts}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ====== CSV parsing / árbol ======
   function parseCSV(text){
     const rows = [];
     let cur = "", row = [], inQ = false;
@@ -939,6 +992,7 @@
     } catch(e) { statusEl.textContent="Error de carga"; }
   }
 
+  // ====== Render menú ======
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
@@ -973,33 +1027,77 @@
       li.onclick = () => {
         const wasActive = li.classList.contains("active");
 
+        // ==== tracking click (mejorado) ====
         if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
+          const beforePathArr = [...NAV_PATH];
+
+          // Actualizamos ruta "estado"
           NAV_PATH = NAV_PATH.slice(0, level);
           NAV_PATH[level] = item.name;
 
-          CLICK_COUNT++;
-          registerDetourIfAny(level, item.name);
-          updateStruggleUI();
+          const afterPathArr = [...NAV_PATH];
 
+          CLICK_COUNT++;
+
+          // Qué se esperaba en este nivel
+          const expected = TASK.route[level] || "";
+          const isExpected = expected ? (norm2(item.name) === norm2(expected)) : 0;
+
+          // Reglas de desvío (explicativas)
+          let deviation = 0;
+          let reason = "";
+
+          if (!expected) {
+            deviation = 1; reason = "extra_depth";
+          } else if (!isExpected) {
+            deviation = 1;
+            reason = (level === 0) ? "wrong_top_category" : "wrong_choice_same_level";
+          }
+
+          if (deviation) DETOURS++;
+
+          updateStruggleUI();
           setPathNow();
-          track("click_item", { label:item.name, level, path:NAV_PATH.join(" > ") });
+
+          track("click_item", {
+            label: item.name,
+            level,
+            expected_label: expected,
+            is_expected: isExpected ? 1 : 0,
+            deviation,
+            deviation_reason: reason,
+            path_before: beforePathArr.join(" > "),
+            path_after: afterPathArr.join(" > "),
+            path: afterPathArr.join(" > ")
+          });
 
           if (isSuccessPath()) {
             TASK_DONE = true;
-            const tms = effectiveElapsedMs();
-            const status = (DETOURS > 0) ? "success_inefficient" : "success";
-            TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks:CLICK_COUNT, detours:DETOURS };
-            track("task_success", { label:item.name, level, path:NAV_PATH.join(" > ") });
 
-            if (status === "success_inefficient") li.classList.add("found-warn");
+            const tms = effectiveElapsedMs();
+            const status = (DETOURS > 0) ? "success_with_detours" : "success";
+            TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks:CLICK_COUNT, detours:DETOURS };
+
+            track("task_success", {
+              label: item.name,
+              level,
+              task_status: status,
+              final_path: afterPathArr.join(" > "),
+              path_before: beforePathArr.join(" > "),
+              path_after: afterPathArr.join(" > "),
+              path: afterPathArr.join(" > ")
+            });
+
+            if (status === "success_with_detours") li.classList.add("found-warn");
             drawer.classList.remove("struggling");
 
             showCompletedBanner(
-              status === "success_inefficient" ? "✅ Es la correcta (pero NO a la primera)" : "✅ Es la correcta",
-              status === "success_inefficient" ? "🟠 Correcta con desvíos" : "🟢 Tarea completada"
+              status === "success_with_detours" ? "✅ Es la correcta (pero NO a la primera)" : "✅ Es la correcta",
+              status === "success_with_detours" ? "🟠 Correcta con desvíos" : "🟢 Tarea completada"
             );
           }
         }
+        // ===============================
 
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
         if(item.children.length && wasActive) {
@@ -1030,7 +1128,7 @@
     drawer.style.width = Math.min(count * 330, window.innerWidth * 0.95) + "px";
   }
 
-  // Wiring
+  // ====== Wiring ======
   document.getElementById("openBtn").onclick = () => toggleMenu(true);
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
@@ -1051,7 +1149,7 @@
   document.getElementById("btnPause").onclick = () => pauseTask();
   document.getElementById("btnResume").onclick = () => resumeTask();
 
-  // Init
+  // ====== Init ======
   fillIntroTaskList();
   document.getElementById("taskIntroOverlay").style.display = "block";
   collapsePanel(true);
