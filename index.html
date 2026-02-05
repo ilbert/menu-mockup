@@ -59,6 +59,15 @@
     #confettiCanvas{
       position:fixed; inset:0; z-index:9999; pointer-events:none; display:none;
     }
+
+    /* spinner */
+    .spinner{
+      width:34px;height:34px;border-radius:50%;
+      border:4px solid #dbe7ff;border-top-color: var(--brand);
+      animation:spin 1s linear infinite;
+      margin:0 auto;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
@@ -115,7 +124,6 @@
     </div>
   </div>
 </div>
-<!-- ========================================= -->
 
 <!-- ===== Pantalla bonita para tarea (cronómetro parado aquí) ===== -->
 <div id="nextTaskOverlay" style="position:fixed; inset:0; z-index:3500; background:linear-gradient(180deg, rgba(3,76,168,.55), rgba(0,0,0,.55)); display:none;">
@@ -141,7 +149,25 @@
     </div>
   </div>
 </div>
-<!-- ========================================= -->
+
+<!-- ===== Pantalla final (mientras descarga) ===== -->
+<div id="finalOverlay" style="position:fixed; inset:0; z-index:5000; background:linear-gradient(180deg, rgba(3,76,168,.65), rgba(0,0,0,.60)); display:none;">
+  <div class="card" style="
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(720px,92vw); padding:18px; text-align:center;">
+    <div class="chip">Test finalizado</div>
+    <div style="margin-top:10px;font-weight:1000;font-size:22px;color:var(--brand);">✅ Test finalizado</div>
+    <div id="finalSubtitle" style="margin-top:8px;color:#333;font-size:13px;line-height:1.45;">
+      Estamos preparando tu archivo Excel…
+    </div>
+    <div style="margin-top:14px;">
+      <div class="spinner" id="finalSpinner"></div>
+    </div>
+    <div id="finalHint" style="margin-top:12px;color:#666;font-size:12px;">
+      Si tu navegador tiene activado “Preguntar dónde guardar”, podría mostrarse un diálogo.
+    </div>
+  </div>
+</div>
 
 <!-- ===== Panel pequeño (control) ===== -->
 <div id="abpanel" style="
@@ -178,7 +204,6 @@
     <button id="btnRestartTasks" class="btn btnGhost" style="flex:1;padding:10px 12px;">Reiniciar tareas</button>
   </div>
 </div>
-<!-- =============================== -->
 
 <!-- ===== Cartel de tarea completada ===== -->
 <div id="doneOverlay" style="position:fixed; inset:0; z-index:3000; display:none; background:rgba(0,0,0,.55);">
@@ -194,7 +219,6 @@
     </div>
   </div>
 </div>
-<!-- ====================================== -->
 
 <div id="overlay"></div>
 
@@ -225,7 +249,7 @@
   const OFFERS_ITEMS = [{ name:"Ofertas del momento" }, { name:"Más vendidos" }, { name:"Promociones" }];
 
   // ===================== TEST =====================
-  const VERSION = "FIN"; // A / B / FIN (identifica variante del menú)
+  const VERSION = "FIN"; // A/B/FIN: identifica variante del menú
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
   // ✅ EDITA AQUÍ LAS RUTAS EXACTAS
@@ -269,7 +293,7 @@
   const TASK_RESULTS = {}; // {taskId:{status:'success'|'fail', timeMs:number}}
 
   let TEST_STARTED = false;
-  let TASK_ACTIVE = false; // tracking+cronómetro solo cuando true
+  let TASK_ACTIVE = false;
 
   function norm2(s){
     return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -293,7 +317,7 @@
   }
 
   function track(eventName, extra = {}) {
-    // ⛔ sin columna url (la quitamos)
+    // url eliminada
     const row = {
       ts_iso: nowISO(),
       version: VERSION,
@@ -349,7 +373,6 @@
   }
 
   function startThisTaskNow(){
-    // reinicia contador SOLO al pulsar este botón
     CLICK_PATH = [];
     TASK_DONE = false;
 
@@ -415,10 +438,7 @@
   }
 
   function showCompletedBanner(message){
-    // detener cronómetro mientras se lee el cartel
     hardPause();
-
-    // confeti ✅
     confettiBurst();
 
     const overlayEl = document.getElementById("doneOverlay");
@@ -440,7 +460,6 @@
   function nextTaskFlow(){
     hideCompletedBanner();
 
-    // fin tarea
     if (TASK_ACTIVE) track("task_end");
     TASK_ACTIVE = false;
     if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
@@ -453,11 +472,33 @@
     showNextTaskScreen();
   }
 
+  function showFinalOverlay(){
+    document.getElementById("finalOverlay").style.display = "block";
+    document.getElementById("finalSubtitle").textContent = "Estamos preparando tu archivo Excel…";
+    document.getElementById("finalSpinner").style.display = "block";
+  }
+  function setFinalDownloadedState(){
+    document.getElementById("finalSubtitle").textContent = "✅ Descarga iniciada. Ya puedes cerrar esta ventana.";
+    document.getElementById("finalSpinner").style.display = "none";
+  }
+
   function finishAllTasks(){
     TASK_ACTIVE = false;
     if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
     track("tasks_finished");
-    downloadExcelAuto();
+
+    // Pantalla final mientras genera/descarga
+    showFinalOverlay();
+
+    // Dejar respirar al render (y que se vea la pantalla) antes de generar el excel
+    setTimeout(() => {
+      try {
+        downloadExcelAuto(); // dispara descarga
+      } finally {
+        // 2 ticks para dar tiempo al navegador a iniciar descarga
+        setTimeout(() => setFinalDownloadedState(), 350);
+      }
+    }, 50);
   }
 
   function failTask(){
@@ -481,30 +522,28 @@
       .replace(/'/g,"&apos;");
   }
 
+  function worksheetXml(name, rows){
+    const rowXml = rows.map(r => {
+      const cells = r.map(c => {
+        const style = c.style ? ` ss:StyleID="${c.style}"` : "";
+        const v = xmlEscape(c.v);
+        return `<Cell${style}><Data ss:Type="String">${v}</Data></Cell>`;
+      }).join("");
+      return `<Row>${cells}</Row>`;
+    }).join("");
+    return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
+  }
+
   function buildExcelXml(){
-    // Resumen
     const rowsSummary = [];
     const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
 
-    rowsSummary.push([
-      {v:"Sesión", style:"sHeader"},
-      {v:SESSION_ID, style:"sCell"}
-    ]);
-    rowsSummary.push([
-      {v:"Variante (version)", style:"sHeader"},
-      {v:VERSION, style:"sCell"}
-    ]);
-    rowsSummary.push([
-      {v:"Tiempo total (s)", style:"sHeader"},
-      {v:(totalMs/1000).toFixed(1), style:"sCell"}
-    ]);
+    rowsSummary.push([{v:"Sesión", style:"sHeader"},{v:SESSION_ID, style:"sCell"}]);
+    rowsSummary.push([{v:"Variante (version)", style:"sHeader"},{v:VERSION, style:"sCell"}]);
+    rowsSummary.push([{v:"Tiempo total (s)", style:"sHeader"},{v:(totalMs/1000).toFixed(1), style:"sCell"}]);
     rowsSummary.push([{v:"", style:"sCell"},{v:"", style:"sCell"}]);
 
-    rowsSummary.push([
-      {v:"Tarea", style:"sHeader"},
-      {v:"Resultado", style:"sHeader"},
-      {v:"Tiempo (s)", style:"sHeader"}
-    ]);
+    rowsSummary.push([{v:"Tarea", style:"sHeader"},{v:"Resultado", style:"sHeader"},{v:"Tiempo (s)", style:"sHeader"}]);
 
     TASKS.forEach(t => {
       const r = TASK_RESULTS[t.id];
@@ -517,16 +556,12 @@
       ]);
     });
 
-    // Eventos (sin url)
     const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
       "ts_iso","version","session_id","task_id","task_label","target_route","event","label","level","path","ms_from_start"
     ];
-
     const rowsEvents = [];
     rowsEvents.push(headers.map(h => ({v:h, style:"sHeader"})));
-    EVENTS.forEach(e => {
-      rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"})));
-    });
+    EVENTS.forEach(e => rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"}))));
 
     const xml = `<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
@@ -582,18 +617,6 @@
     return xml;
   }
 
-  function worksheetXml(name, rows){
-    const rowXml = rows.map(r => {
-      const cells = r.map(c => {
-        const style = c.style ? ` ss:StyleID="${c.style}"` : "";
-        const v = xmlEscape(c.v);
-        return `<Cell${style}><Data ss:Type="String">${v}</Data></Cell>`;
-      }).join("");
-      return `<Row>${cells}</Row>`;
-    }).join("");
-    return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
-  }
-
   function downloadExcelAuto(){
     const xml = buildExcelXml();
     const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
@@ -627,7 +650,8 @@
         s: 4 + Math.random()*4,
         r: Math.random()*Math.PI,
         vr: (Math.random()*0.2-0.1),
-        life: 60 + Math.random()*40
+        life: 60 + Math.random()*40,
+        hue: Math.floor(Math.random()*360)
       });
     }
 
@@ -646,8 +670,7 @@
         ctx.translate(p.x, p.y);
         ctx.rotate(p.r);
         ctx.globalAlpha = Math.max(0, Math.min(1, p.life/100));
-        // colores “auto”: random HSL
-        ctx.fillStyle = `hsl(${Math.floor(Math.random()*360)},90%,55%)`;
+        ctx.fillStyle = `hsl(${p.hue},90%,55%)`;
         ctx.fillRect(-p.s/2, -p.s/2, p.s, p.s*0.6);
         ctx.restore();
       });
@@ -686,7 +709,7 @@
 
   document.getElementById("btnIntroStart").onclick = () => {
     TEST_STARTED = true;
-    hideMainIntro();
+    document.getElementById("taskIntroOverlay").style.display = "none";
     document.getElementById("abpanel").style.display = "block";
     taskIndex = 0;
     showNextTaskScreen();
@@ -855,7 +878,6 @@
             TASK_DONE = true;
             const tms = effectiveElapsedMs();
             TASK_RESULTS[TASK.id] = { status:"success", timeMs:tms };
-
             track("task_success", { label: item.name, level, path: CLICK_PATH.join(" > ") });
             showCompletedBanner("✅ Ruta correcta");
           }
@@ -893,7 +915,32 @@
     drawer.style.width = Math.min(count * 330, window.innerWidth * 0.95) + "px";
   }
 
-  // Start: show intro + preload menu data
+  // Panel wiring
+  document.getElementById("btnFailTask").onclick = () => failTask();
+  document.getElementById("btnDownloadXLS").onclick = () => downloadExcelAuto();
+  document.getElementById("btnResetLog").onclick = () => { EVENTS.length = 0; alert("Log borrado."); };
+  document.getElementById("btnRestartTasks").onclick = () => {
+    taskIndex = 0;
+    TASK = null;
+    TASK_ACTIVE = false;
+    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
+    CLICK_PATH = [];
+    for (const k of Object.keys(TASK_RESULTS)) delete TASK_RESULTS[k];
+    showNextTaskScreen();
+  };
+  document.getElementById("btnPause").onclick = () => pauseTask();
+  document.getElementById("btnResume").onclick = () => resumeTask();
+  document.getElementById("btnNextTask").onclick = () => nextTaskFlow();
+  document.getElementById("btnStartThisTask").onclick = () => startThisTaskNow();
+  document.getElementById("btnIntroStart").onclick = () => {
+    TEST_STARTED = true;
+    document.getElementById("taskIntroOverlay").style.display = "none";
+    document.getElementById("abpanel").style.display = "block";
+    taskIndex = 0;
+    showNextTaskScreen();
+  };
+
+  // Init
   showMainIntro();
   loadAllData();
 </script>
