@@ -41,6 +41,7 @@
 
     /* Panel test */
     #abpanel * { box-sizing:border-box; }
+    code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
   </style>
 </head>
 <body>
@@ -55,65 +56,70 @@
   position:fixed; top:10px; right:10px; z-index:2000;
   background:#fff; border:1px solid #e6e8eb; border-radius:12px;
   padding:10px; box-shadow:0 10px 25px rgba(0,0,0,.12);
-  font-size:12px; width:340px; max-width:92vw;">
-  <div style="font-weight:900;color:#034ca8;margin-bottom:6px;">Test de encontrabilidad (CSV local)</div>
+  font-size:12px; width:380px; max-width:92vw;">
+  <div style="font-weight:900;color:#034ca8;margin-bottom:6px;">Test de encontrabilidad (ruta → CSV local)</div>
 
-  <label style="display:block;margin-bottom:6px;">
-    Tarea:
-    <select id="taskSelect" style="width:100%;padding:8px;border-radius:10px;border:1px solid #e6e8eb;">
-      <option value="">-- elige una tarea --</option>
-    </select>
-  </label>
-
-  <div style="display:flex; gap:8px;">
-    <button id="btnStartTask" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#034ca8;color:#fff;font-weight:800;cursor:pointer;">
-      Iniciar
+  <div style="display:flex; gap:8px; margin-bottom:6px;">
+    <button id="btnPause" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
+      ⏸ Pausa
     </button>
+    <button id="btnResume" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#034ca8;color:#fff;font-weight:800;cursor:pointer; display:none;">
+      ▶ Reanudar
+    </button>
+  </div>
+
+  <div style="font-weight:900; margin-bottom:6px;">
+    Tarea actual: <span id="taskNowLabel" style="color:#034ca8;"></span>
+  </div>
+
+  <div id="taskHint" style="margin-top:4px;color:#555;"></div>
+  <div id="taskTimer" style="margin-top:6px;font-weight:900;"></div>
+
+  <div style="margin-top:8px; font-size:11px; color:#444;">
+    Ruta actual: <code id="pathNow" style="display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom;"></code>
+  </div>
+
+  <div id="taskLast" style="margin-top:8px;color:#666;font-size:11px;"></div>
+
+  <div style="display:flex; gap:8px; margin-top:10px;">
     <button id="btnFailTask" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
       No lo encuentro
+    </button>
+    <button id="btnDownloadCSV" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
+      Descargar CSV
     </button>
   </div>
 
   <div style="display:flex; gap:8px; margin-top:8px;">
-    <button id="btnDownloadCSV" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
-      Descargar CSV
-    </button>
     <button id="btnResetLog" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
       Borrar log
     </button>
+    <button id="btnRestartTasks" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
+      Reiniciar tareas
+    </button>
   </div>
-
-  <div id="taskHint" style="margin-top:8px;color:#555;"></div>
-  <div id="taskTimer" style="margin-top:6px;font-weight:900;"></div>
-  <div id="taskLast" style="margin-top:6px;color:#666;font-size:11px;"></div>
 </div>
 <!-- ==================================== -->
 
 <!-- ===== Cartel de tarea completada ===== -->
-<div id="doneOverlay" style="
-  position:fixed; inset:0; z-index:3000; display:none;
-  background:rgba(0,0,0,.55);">
+<div id="doneOverlay" style="position:fixed; inset:0; z-index:3000; display:none; background:rgba(0,0,0,.55);">
   <div style="
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
     background:#fff; border:1px solid #e6e8eb; border-radius:16px;
-    width:min(520px,92vw); padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.25);
+    width:min(560px,92vw); padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.25);
     text-align:center;">
-    <div id="doneTitle" style="font-weight:1000;font-size:18px;color:#034ca8;">
-      ✅ Tarea completada
-    </div>
+    <div style="font-weight:1000;font-size:18px;color:#034ca8;">✅ Es la correcta</div>
     <div id="doneDetail" style="margin-top:8px;color:#333;font-size:13px;"></div>
     <div id="doneTime" style="margin-top:10px;font-weight:900;"></div>
 
     <div style="display:flex; gap:10px; margin-top:14px;">
-      <button id="btnDoneClose" style="
-        flex:1; padding:10px; border-radius:12px; border:1px solid #e6e8eb;
-        background:#034ca8; color:#fff; font-weight:900; cursor:pointer;">
-        Seguir
+      <button id="btnNextTask" style="flex:1; padding:10px; border-radius:12px; border:1px solid #e6e8eb; background:#034ca8; color:#fff; font-weight:900; cursor:pointer;">
+        Siguiente tarea
       </button>
     </div>
 
     <div style="margin-top:10px; font-size:11px; color:#666;">
-      Ya puedes cambiar de tarea o descargar el CSV.
+      Se registrará el tiempo y pasaremos automáticamente a la siguiente.
     </div>
   </div>
 </div>
@@ -147,28 +153,58 @@
   const SPECIALTIES_ITEMS = [{ name:"Fisioterapia", icon:"🦵" }, { name:"Estética", icon:"✨" }, { name:"Peluquería y Barbería", icon:"💈" }, { name:"SPA & Wellness", icon:"🧖" }, { name:"Medicina", icon:"🩺" }];
   const OFFERS_ITEMS = [{ name:"Ofertas del momento" }, { name:"Más vendidos" }, { name:"Promociones" }];
 
-  // ===== Tracking local → CSV descargable =====
-  const VERSION = "FIN"; // cambia a "A"/"B" si lo necesitas
+  // ===================== TEST (ruta exacta) =====================
+  const VERSION = "FIN";
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
+  // ✅ AQUÍ defines tus tareas y sus rutas EXACTAS (texto tal cual aparece en el menú)
+  // La tarea se completa cuando el CLICK_PATH "termina en" route.
+  const TASKS = [
+    { id:"camilla_electrica", label:"Camilla eléctrica", route:["Camillas","Camillas eléctricas"] },
+    { id:"silla_ruedas_electrica", label:"Silla de ruedas eléctrica", route:["Sillas de ruedas","Sillas de ruedas eléctricas"] },
+    { id:"autoclave_clase_b", label:"Autoclave clase B", route:["Esterilización y autoclaves","Autoclaves clase B"] },
+  ];
+
+  let taskIndex = 0;
   let TASK = null;
+
   let START_TS = 0;
+  let PAUSED = false;
+  let PAUSE_TS = 0;
+  let PAUSED_TOTAL_MS = 0;
+
   let CLICK_PATH = [];
   let TIMER_INT = null;
+  let TASK_DONE = false;
 
   const EVENTS = [];
-
-  const TASKS = [
-    { id:"presoterapia", label:"Encontrar Presoterapia", target:"presoterapia", hint:"Llega a Presoterapia (destino final, sin subcategorías)." },
-    { id:"camilla_electrica", label:"Encontrar Camilla eléctrica", target:"camilla electrica", hint:"Llega a Camilla eléctrica (destino final, sin subcategorías)." },
-    { id:"silla_ruedas_electrica", label:"Encontrar Silla de ruedas eléctrica", target:"silla de ruedas electrica", hint:"Llega a Silla de ruedas eléctrica (destino final, sin subcategorías)." },
-    { id:"autoclave_clase_b", label:"Encontrar Autoclave clase B", target:"autoclave clase b", hint:"Llega a Autoclave clase B (destino final, sin subcategorías)." },
-  ];
 
   function norm2(s){
     return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
   }
   function nowISO(){ return new Date().toISOString(); }
+
+  function effectiveElapsedMs(){
+    if(!START_TS) return 0;
+    const now = PAUSED ? PAUSE_TS : Date.now();
+    return Math.max(0, (now - START_TS) - PAUSED_TOTAL_MS);
+  }
+
+  function setPathNow(){
+    const el = document.getElementById("pathNow");
+    if (el) el.textContent = CLICK_PATH.join(" > ");
+  }
+
+  function setTaskUI(){
+    const lbl = document.getElementById("taskNowLabel");
+    const hint = document.getElementById("taskHint");
+    const timer = document.getElementById("taskTimer");
+
+    if (lbl) lbl.textContent = TASK ? TASK.label : "(sin tarea)";
+    if (hint) hint.textContent = TASK ? `Objetivo: ${TASK.route.join(" > ")}` : "";
+    if (timer) timer.textContent = "Tiempo: 0.0s";
+    setPathNow();
+  }
 
   function track(eventName, extra = {}) {
     const row = {
@@ -177,12 +213,12 @@
       session_id: SESSION_ID,
       task_id: TASK?.id || "",
       task_label: TASK?.label || "",
-      target: TASK?.target || "",
+      target_route: TASK?.route ? TASK.route.join(" > ") : "",
       event: eventName,
       label: extra.label || "",
       level: (typeof extra.level === "number") ? extra.level : "",
       path: extra.path || CLICK_PATH.join(" > "),
-      ms_from_start: START_TS ? (Date.now() - START_TS) : "",
+      ms_from_start: START_TS ? effectiveElapsedMs() : "",
       url: location.href
     };
     EVENTS.push(row);
@@ -191,40 +227,94 @@
     if (last) last.textContent = `Último: ${row.event}${row.label ? " → " + row.label : ""}`;
   }
 
-  function startTask(taskId){
-    TASK = TASKS.find(t => t.id === taskId) || null;
+  function startCurrentTask(){
+    TASK = TASKS[taskIndex] || null;
     CLICK_PATH = [];
+    TASK_DONE = false;
+
     START_TS = Date.now();
+    PAUSED = false;
+    PAUSE_TS = 0;
+    PAUSED_TOTAL_MS = 0;
+
+    setTaskUI();
     track("task_start");
 
-    const hint = document.getElementById("taskHint");
-    const timer = document.getElementById("taskTimer");
-    if (hint) hint.textContent = TASK ? TASK.hint : "";
-    if (timer) timer.textContent = "Tiempo: 0.0s";
+    const btnPause = document.getElementById("btnPause");
+    const btnResume = document.getElementById("btnResume");
+    if (btnPause) btnPause.style.display = "block";
+    if (btnResume) btnResume.style.display = "none";
 
+    const timer = document.getElementById("taskTimer");
     if (TIMER_INT) clearInterval(TIMER_INT);
     TIMER_INT = setInterval(() => {
       if (!START_TS || !timer) return;
-      timer.textContent = "Tiempo: " + ((Date.now()-START_TS)/1000).toFixed(1) + "s";
+      timer.textContent = "Tiempo: " + (effectiveElapsedMs()/1000).toFixed(1) + "s" + (PAUSED ? " (pausa)" : "");
     }, 100);
+  }
+
+  function nextTask(){
+    taskIndex++;
+    if (taskIndex >= TASKS.length) {
+      TASK = null;
+      START_TS = 0;
+      if (TIMER_INT) clearInterval(TIMER_INT);
+      const lbl = document.getElementById("taskNowLabel");
+      const hint = document.getElementById("taskHint");
+      const timer = document.getElementById("taskTimer");
+      if (lbl) lbl.textContent = "✅ Fin";
+      if (hint) hint.textContent = "Has completado todas las tareas. Descarga el CSV.";
+      if (timer) timer.textContent = "";
+      track("tasks_finished");
+      return;
+    }
+    toggleMenu(true);
+    startCurrentTask();
   }
 
   function failTask(){
     if(!TASK || !START_TS) return;
     track("task_fail");
+    showCompletedBanner("❌ Marcada como 'No lo encuentro'");
   }
 
-  // ✅ éxito SOLO si el item coincide y NO tiene hijos (destino final)
-  function isSuccessClick(item){
-    if(!TASK || !START_TS) return false;
+  function pauseTask(){
+    if (!TASK || !START_TS || PAUSED) return;
+    PAUSED = true;
+    PAUSE_TS = Date.now();
+    track("task_pause");
 
-    const clicked = norm2(item.name);
-    const target = norm2(TASK.target);
+    const btnPause = document.getElementById("btnPause");
+    const btnResume = document.getElementById("btnResume");
+    if (btnPause) btnPause.style.display = "none";
+    if (btnResume) btnResume.style.display = "block";
+  }
 
-    const nameMatches = clicked === target || clicked.includes(target) || target.includes(clicked);
-    const isLeaf = !item.children || item.children.length === 0;
+  function resumeTask(){
+    if (!TASK || !START_TS || !PAUSED) return;
+    PAUSED = false;
+    PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS);
+    PAUSE_TS = 0;
+    track("task_resume");
 
-    return nameMatches && isLeaf;
+    const btnPause = document.getElementById("btnPause");
+    const btnResume = document.getElementById("btnResume");
+    if (btnPause) btnPause.style.display = "block";
+    if (btnResume) btnResume.style.display = "none";
+  }
+
+  function isSuccessPath(){
+    if(!TASK || !START_TS || !TASK.route || !TASK.route.length) return false;
+    const current = CLICK_PATH.map(norm2);
+    const target = TASK.route.map(norm2);
+    if (current.length < target.length) return false;
+
+    for (let i = 0; i < target.length; i++) {
+      const curVal = current[current.length - target.length + i];
+      const tarVal = target[i];
+      if (curVal !== tarVal) return false;
+    }
+    return true;
   }
 
   function escapeCSV(v){
@@ -259,16 +349,22 @@
     alert("Log borrado.");
   }
 
-  function showCompletedBanner(foundName){
+  function restartTasks(){
+    taskIndex = 0;
+    toggleMenu(true);
+    startCurrentTask();
+  }
+
+  function showCompletedBanner(message){
     const overlayEl = document.getElementById("doneOverlay");
     const detail = document.getElementById("doneDetail");
     const timeEl = document.getElementById("doneTime");
 
-    const seconds = START_TS ? ((Date.now() - START_TS)/1000).toFixed(1) : "";
+    const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
+    const routeStr = CLICK_PATH.join(" > ");
 
-    if (detail) detail.textContent = `Encontrado: ${foundName}`;
+    if (detail) detail.textContent = `${message}\nRuta: ${routeStr}`;
     if (timeEl) timeEl.textContent = seconds ? `Tiempo: ${seconds}s` : "";
-
     if (overlayEl) overlayEl.style.display = "block";
   }
 
@@ -276,7 +372,7 @@
     const overlayEl = document.getElementById("doneOverlay");
     if (overlayEl) overlayEl.style.display = "none";
   }
-  // ===========================================
+  // ============================================================
 
   let menuTree = [];
   let bannersData = [];
@@ -289,28 +385,28 @@
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
 
-  // UI panel wiring
-  const taskSelect = document.getElementById("taskSelect");
-  TASKS.forEach(t => {
-    const opt = document.createElement("option");
-    opt.value = t.id;
-    opt.textContent = t.label;
-    taskSelect.appendChild(opt);
-  });
-
-  document.getElementById("btnStartTask").onclick = () => {
-    const id = taskSelect.value;
-    if(!id) return;
-    startTask(id);
-    toggleMenu(true);
+  // Panel buttons
+  document.getElementById("btnFailTask").onclick = () => {
+    if (PAUSED) resumeTask(); // opcional: si marca fail, lo sacamos de pausa
+    failTask();
   };
-  document.getElementById("btnFailTask").onclick = () => failTask();
   document.getElementById("btnDownloadCSV").onclick = () => downloadCSV();
   document.getElementById("btnResetLog").onclick = () => resetLog();
+  document.getElementById("btnRestartTasks").onclick = () => restartTasks();
+  document.getElementById("btnPause").onclick = () => pauseTask();
+  document.getElementById("btnResume").onclick = () => resumeTask();
 
-  document.getElementById("btnDoneClose").onclick = () => hideCompletedBanner();
+  document.getElementById("btnNextTask").onclick = () => {
+    hideCompletedBanner();
+    nextTask();
+  };
+
+  // Cierra overlay si click en fondo
   document.getElementById("doneOverlay").onclick = (e) => {
-    if (e.target && e.target.id === "doneOverlay") hideCompletedBanner();
+    if (e.target && e.target.id === "doneOverlay") {
+      hideCompletedBanner();
+      nextTask();
+    }
   };
 
   const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -327,6 +423,9 @@
       bannersData = rowsToObjects(parseCSV(banCsv)).reverse();
       statusEl.style.display="none";
       renderRootMenu();
+
+      // Arranca la primera tarea automáticamente cuando ya hay datos
+      if (!TASK) startCurrentTask();
     } catch(e) { statusEl.textContent="Error de carga"; }
   }
 
@@ -459,27 +558,28 @@
       li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
 
       li.onclick = () => {
-        // ===== tracking click =====
-        CLICK_PATH.push(item.name);
-        track("click_item", { label: item.name, level });
+        // ===== test tracking (solo si hay tarea activa y no está en pausa) =====
+        if (TASK && START_TS && !TASK_DONE && !PAUSED) {
+          CLICK_PATH.push(item.name);
+          setPathNow();
+          track("click_item", { label: item.name, level });
 
-        if (isSuccessClick(item)) {
-          track("task_success", { label: item.name, level });
-          showCompletedBanner(item.name);
+          if (isSuccessPath()) {
+            TASK_DONE = true;
+            track("task_success", { label: item.name, level, path: CLICK_PATH.join(" > ") });
+            showCompletedBanner("✅ Ruta correcta");
+          }
         }
-        // ==========================
+        // =====================================================================
 
         const wasActive = li.classList.contains("active");
 
-        // Limpieza visual: desmarcar hermanos
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
 
         if(item.children.length && wasActive) {
-          // Toggle cerrar
           Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
           li.classList.remove("active");
         } else {
-          // Abrir
           li.classList.add("active");
           if(item.children.length) render(item.children, level + 1, item);
         }
