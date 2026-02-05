@@ -153,6 +153,18 @@
       font-weight:1000 !important;
     }
 
+    /* ===== TAGS ===== */
+    .tag{font-size:11px;font-weight:1000;padding:2px 8px;border-radius:999px;margin-left:8px;white-space:nowrap}
+    .tag.new{background:#e6f2fa;color:var(--brand)}
+    .tag.trending{background:#eafaf1;color:#0a8f4e}
+
+    /* ===== BANNERS ===== */
+    .promo-card{ margin:16px; border-radius:14px; overflow:hidden; position:relative; background:#f0f0f0; box-shadow:0 10px 25px rgba(0,0,0,.1); }
+    .promo-img{ width:100%; height:160px; object-fit:cover; display:block; }
+    .promo-link{ position:absolute; inset:0; display:block; }
+    .promo-card.small{ margin:12px 16px 8px; }
+    .promo-card.small .promo-img{ height:120px; }
+
     /* ===== MODALES ===== */
     .modalOverlay{
       position:fixed; inset:0;
@@ -368,7 +380,6 @@
       </div>
     </div>
 
-    <!-- ✅ PC: botón centrado grande (no sticky). Móvil: sticky por CSS -->
     <div class="introCta">
       <button id="btnIntroStart" class="btn btnPrimary introBtn">Empezar</button>
     </div>
@@ -477,20 +488,43 @@
 </aside>
 
 <script>
-  // ====== Datos categorías (CSV de Google Sheets) ======
+  // ====== Datos categorías + banners (CSV de Google Sheets) ======
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
+  const GID_BANNERS = "1300813141";
+
   const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_CATEGORIES}&_=${Date.now()}`;
+  const BANNERS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_BANNERS}&_=${Date.now()}`;
 
   const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
 
   const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
-  const FEATURED_CATS = [{ name:"Camillas" }, { name:"Sillas de ruedas" }, { name:"Diagnóstico" }, { name:"Mobiliario" }];
+
+  const FEATURED_CATS = [
+    { name:"Camillas", tag:"trending" },
+    { name:"Sillas de ruedas", tag:"new" },
+    { name:"Diagnóstico", tag:null },
+    { name:"Mobiliario", tag:null }
+  ];
+
+  const SPECIALTIES_ITEMS = [
+    { name:"Fisioterapia", icon:"🦵" },
+    { name:"Estética", icon:"✨" },
+    { name:"Peluquería y Barbería", icon:"💈" },
+    { name:"SPA & Wellness", icon:"🧖" },
+    { name:"Medicina", icon:"🩺" }
+  ];
+
+  const OFFERS_ITEMS = [
+    { name:"Ofertas del momento" },
+    { name:"Más vendidos" },
+    { name:"Promociones" }
+  ];
 
   // ====== Tracking / Experimento ======
-  // "version" = variante del test (FIN/A/B...). Te sirve para comparar resultados entre menús.
+  // "version" = variante del test (FIN/A/B...). Sirve para comparar resultados entre menús.
   const VERSION = "FIN";
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
@@ -532,6 +566,7 @@
   let TASK_ACTIVE = false;
 
   let menuTree = [];
+  let bannersData = [];
 
   // ====== DOM ======
   const drawer = document.getElementById("drawer");
@@ -590,7 +625,6 @@
       task_label: TASK?.label || "",
       target_route: TASK?.route ? TASK.route.join(" > ") : "",
 
-      // NUEVO
       seq: EVENT_SEQ,
       ms_from_prev: msFromPrev,
 
@@ -686,7 +720,6 @@
   function hideNextTaskScreen(){ document.getElementById("nextTaskOverlay").style.display = "none"; }
 
   function startThisTaskNow(){
-    // reset secuencia por tarea
     EVENT_SEQ = 0;
     LAST_EVENT_TS = 0;
 
@@ -842,7 +875,7 @@
     TASK_DONE = true;
     const tms = effectiveElapsedMs();
     TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT, detours: DETOURS };
-    track("task_fail", { task_status:"fail" });
+    track("task_fail", { task_status:"fail", path:"" });
     drawer.classList.remove("struggling");
     showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
   }
@@ -896,7 +929,7 @@
       ]);
     });
 
-    // Eventos
+    // Eventos (sin URL)
     const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
       "ts_iso","version","session_id","task_id","task_label","target_route",
       "seq","ms_from_prev","event","label","level","expected_label","is_expected",
@@ -955,6 +988,15 @@
     row.push(cur); if(row.join("").trim()) rows.push(row);
     return rows;
   }
+  function rowsToObjects(rows){
+    if(!rows.length) return [];
+    const header = rows[0].map(h => h.trim().toLowerCase());
+    return rows.slice(1).map(row => {
+      const obj = {};
+      header.forEach((h, i) => obj[h] = (row[i] || "").trim());
+      return obj;
+    });
+  }
   function sortNodes(nodes, level) {
     if (!nodes) return;
     if (level === 0) {
@@ -980,34 +1022,111 @@
     sortNodes(root, 0);
     menuTree = root;
   }
+
   async function loadAllData(){
     statusEl.style.display="block";
     statusEl.textContent="Cargando...";
     try {
-      const catRes = await fetch(DATA_URL);
+      const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
       const catCsv = await catRes.text();
+      const banCsv = await banRes.text();
+
       buildTree(catCsv);
+      bannersData = rowsToObjects(parseCSV(banCsv)).reverse();
+
       statusEl.style.display="none";
       renderRootMenu();
-    } catch(e) { statusEl.textContent="Error de carga"; }
+    } catch(e) {
+      statusEl.textContent="Error de carga";
+    }
   }
 
-  // ====== Render menú ======
+  // ====== Menú: root + especialidades/ofertas + banners ======
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
     const col = document.createElement("div");
     col.className = "column";
+
     col.innerHTML = `<ul>
-      <li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
+      <li class="item" onclick="renderSpecialties()">
+        <span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}
+      </li>
+      <li class="item" onclick="renderOffers()">
+        <span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}
+      </li>
+      <li class="item" onclick="renderAllCategories()">
+        <span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}
+      </li>
+
       <li class="divider"></li>
-      ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span></span></li>`).join('')}
+
+      ${FEATURED_CATS.map(fc => `
+        <li class="item">
+          <span class="label">
+            <span class="text">${fc.name}</span>
+            ${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}
+          </span>
+        </li>
+      `).join('')}
     </ul>`;
+
+    const b = bannersData.find(b => norm(b.scope) === "root");
+    if (b) {
+      col.innerHTML += `
+        <div class="promo-card">
+          <img class="promo-img" src="${b.img}">
+          <a class="promo-link" href="${b.href || '#'}" target="_blank" rel="noopener"></a>
+        </div>`;
+    }
+
     container.appendChild(col);
     updateDrawerWidth();
   }
+
+  window.renderSpecialties = function renderSpecialties(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML = "";
+    const col = document.createElement("div");
+    col.className = "column";
+    col.innerHTML = `
+      <div class="column-header">
+        <button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button>
+        Especialidades
+      </div>
+      <ul>
+        ${SPECIALTIES_ITEMS.map(it => `
+          <li class="item">
+            <span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span>
+          </li>
+        `).join("")}
+      </ul>`;
+    container.appendChild(col);
+    updateDrawerWidth();
+  };
+
+  window.renderOffers = function renderOffers(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML = "";
+    const col = document.createElement("div");
+    col.className = "column";
+    col.innerHTML = `
+      <div class="column-header">
+        <button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button>
+        Ofertas
+      </div>
+      <ul>
+        ${OFFERS_ITEMS.map(it => `
+          <li class="item"><span class="label"><span class="text">${it.name}</span></span></li>
+        `).join("")}
+      </ul>`;
+    container.appendChild(col);
+    updateDrawerWidth();
+  };
+
   window.renderAllCategories = function(){ render(menuTree, 0); };
 
+  // ====== Render categorías + banners internos ======
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
     if(level === 0) container.innerHTML = "";
@@ -1015,7 +1134,11 @@
 
     const col = document.createElement("div");
     col.className = "column";
-    col.innerHTML = `<div class="column-header">${level===0 ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías` : parent.name}</div><ul></ul>`;
+    col.innerHTML = `<div class="column-header">${
+      level===0
+        ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías`
+        : parent.name
+    }</div><ul></ul>`;
     const ul = col.querySelector("ul");
 
     items.forEach(item => {
@@ -1031,7 +1154,6 @@
         if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
           const beforePathArr = [...NAV_PATH];
 
-          // Actualizamos ruta "estado"
           NAV_PATH = NAV_PATH.slice(0, level);
           NAV_PATH[level] = item.name;
 
@@ -1039,11 +1161,9 @@
 
           CLICK_COUNT++;
 
-          // Qué se esperaba en este nivel
           const expected = TASK.route[level] || "";
           const isExpected = expected ? (norm2(item.name) === norm2(expected)) : 0;
 
-          // Reglas de desvío (explicativas)
           let deviation = 0;
           let reason = "";
 
@@ -1100,6 +1220,7 @@
         // ===============================
 
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
+
         if(item.children.length && wasActive) {
           Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
           li.classList.remove("active");
@@ -1111,7 +1232,40 @@
       };
 
       ul.appendChild(li);
+
+      // Banner after_item
+      if(parent){
+        const bAfter = bannersData.find(b =>
+          norm(b.scope) === "after_item" &&
+          norm(b.parent) === norm(parent.name) &&
+          norm(b.after) === norm(item.name)
+        );
+        if (bAfter) {
+          const bLi = document.createElement("li");
+          bLi.innerHTML = `
+            <div class="promo-card small">
+              <img class="promo-img" src="${bAfter.img}">
+              <a class="promo-link" href="${bAfter.href||'#'}" target="_blank" rel="noopener"></a>
+            </div>`;
+          ul.appendChild(bLi);
+        }
+      }
     });
+
+    // Banner category_children (al final de la columna)
+    if(parent){
+      const bChild = bannersData.find(b =>
+        norm(b.scope) === "category_children" &&
+        norm(b.parent) === norm(parent.name)
+      );
+      if (bChild) {
+        col.insertAdjacentHTML("beforeend", `
+          <div class="promo-card small">
+            <img class="promo-img" src="${bChild.img}">
+            <a class="promo-link" href="${bChild.href||'#'}" target="_blank" rel="noopener"></a>
+          </div>`);
+      }
+    }
 
     container.appendChild(col);
     updateDrawerWidth();
