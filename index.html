@@ -5,23 +5,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Menu Mockup - Test de usabilidad</title>
   <style>
-    :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
+    :root{
+      --brand:#034ca8;
+      --brand2:#0b5bd3;
+      --border:#e6e8eb;
+      --bg:#f4f6f9;
+
+      --okBg:#eaf7ee;
+      --okText:#0a7a3a;
+
+      --warnBg:#fff7e6;
+      --warnText:#8a4b00;
+      --warnBorder:#ffb020;
+
+      --dangerBg:#fdecec;
+      --dangerText:#b42318;
+      --dangerBorder:#ffb4b4;
+
+      --shadow:0 24px 60px rgba(0,0,0,.18);
+    }
+
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);overflow:hidden}
-    header{background:#fff;height:60px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border)}
-    .hamburger{width:42px;height:42px;border:1px solid var(--border);background:#fff;cursor:pointer;border-radius:8px;font-size:20px;color:var(--brand)}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      overflow:hidden;
+      color:#0f172a;
+    }
+
+    header{
+      background:#fff;
+      height:60px;
+      display:flex;
+      align-items:center;
+      padding:0 20px;
+      border-bottom:1px solid var(--border)
+    }
+
+    .hamburger{
+      width:42px;height:42px;
+      border:1px solid var(--border);
+      background:#fff;
+      cursor:pointer;
+      border-radius:10px;
+      font-size:20px;
+      color:var(--brand)
+    }
+
     #overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:1000}
-    #drawer{position:fixed;inset:0 auto 0 0;background:#fff;z-index:1001;display:none;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.12);width:auto;max-width:96vw}
-    .drawer-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)}
+    #drawer{
+      position:fixed;inset:0 auto 0 0;background:#fff;z-index:1001;display:none;
+      flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.12);width:auto;max-width:96vw
+    }
+    .drawer-header{
+      padding:15px 20px;border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)
+    }
     .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
     #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd;display:none}
     #columns-container{display:flex;flex:1;overflow-x:auto;overflow-y:hidden;background:#fff;scrollbar-width:none;-ms-overflow-style:none}
+
     .column{flex:0 0 330px;border-right:1px solid #eee;overflow-y:auto;height:100%}
     @media (max-width:520px){.column{flex-basis:86vw}}
+
     ul{list-style:none;padding:0;margin:0}
-    .item{padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;font-size:13px;border-bottom:1px solid #f3f4f6}
+    .item{
+      padding:14px 20px;
+      display:flex;justify-content:space-between;align-items:center;gap:10px;
+      cursor:pointer;font-size:13px;border-bottom:1px solid #f3f4f6;
+      transition:background .12s ease, color .12s ease;
+    }
     .item:hover{background:#f7f9fc;color:var(--brand)}
-    .item.active{background:#e6f2fa;color:var(--brand);font-weight:800;border-left:5px solid var(--brand)}
+
+    /* ✅ Selección normal = AZUL (como antes) */
+    .item.active{
+      background:#e6f2fa;
+      color:var(--brand);
+      font-weight:900;
+      border-left:5px solid var(--brand)
+    }
+
     .label{display:flex;align-items:center;gap:10px;min-width:0}
     .text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .icon{width:22px;height:22px;display:inline-grid;place-items:center;font-size:18px;flex:0 0 auto}
@@ -30,38 +94,67 @@
     .column-header{padding:14px 16px 8px;font-weight:900;color:var(--brand);font-size:18px;display:flex;align-items:center;gap:10px}
     .back-only{border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center}
     .divider{border-top:1px solid #e5e7eb;margin:8px 0;}
-    .promo-card{ margin:16px; border-radius:14px; overflow:hidden; position:relative; background:#f0f0f0; box-shadow:0 10px 25px rgba(0,0,0,.1); }
-    .promo-img{ width:100%; height:160px; object-fit:cover; display:block; }
-    .promo-link{ position:absolute; inset:0; display:block; }
 
     /* UI helpers */
     #abpanel * { box-sizing:border-box; }
     code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
-    .btn{padding:14px 18px;border-radius:16px;border:1px solid var(--border);font-weight:1000;cursor:pointer;font-size:14px;}
-    .btnPrimary{background:var(--brand);color:#fff;border-color:transparent;}
+
+    .btn{
+      padding:14px 18px;border-radius:16px;border:1px solid var(--border);
+      font-weight:1000;cursor:pointer;font-size:14px;
+      transition:transform .06s ease, filter .12s ease;
+      user-select:none;
+    }
+    .btn:active{ transform:translateY(1px); }
+    .btnPrimary{background:linear-gradient(180deg, var(--brand2), var(--brand));color:#fff;border-color:transparent;}
     .btnGhost{background:#fff;color:#111;}
-    .chip{display:inline-flex;align-items:center;gap:8px;background:#eef4ff;border:1px solid #d7e4ff;color:#123e8f;padding:6px 10px;border-radius:999px;font-weight:1000;font-size:12px;}
-    .card{border:1px solid var(--border);border-radius:20px;background:#fff;box-shadow:0 24px 60px rgba(0,0,0,.18);}
+    .btnWarn{
+      background:linear-gradient(180deg, #ffcf6b, #ffb020);
+      border-color:transparent;
+      color:#3a2400;
+    }
+    .btnDanger{
+      background:linear-gradient(180deg, #ff6b6b, #e11d48);
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;
+      background:#eef4ff;border:1px solid #d7e4ff;color:#123e8f;
+      padding:6px 12px;border-radius:999px;font-weight:1000;font-size:12px;
+    }
+    .card{
+      border:1px solid var(--border);
+      border-radius:22px;
+      background:#fff;
+      box-shadow:var(--shadow);
+    }
 
     /* confetti canvas */
     #confettiCanvas{ position:fixed; inset:0; z-index:9999; pointer-events:none; display:none; }
 
     /* spinner */
-    .spinner{width:34px;height:34px;border-radius:50%;border:4px solid #dbe7ff;border-top-color: var(--brand);animation:spin 1s linear infinite;margin:0 auto;}
+    .spinner{
+      width:34px;height:34px;border-radius:50%;
+      border:4px solid #dbe7ff;border-top-color: var(--brand);
+      animation:spin 1s linear infinite;
+      margin:0 auto;
+    }
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* ===== Señal visual cuando ya hay desvíos ===== */
+    /* ✅ Modo “desvíos”: SOLO cambia el activo a naranja si hay desvíos */
     #drawer.struggling .item.active{
-      background:#fff7e6 !important;
-      color:#8a4b00 !important;
-      border-left:5px solid #ffb020 !important;
+      background:var(--warnBg) !important;
+      color:var(--warnText) !important;
+      border-left:5px solid var(--warnBorder) !important;
       font-weight:1000 !important;
     }
-    /* ===== Marcado naranja del item encontrado con desvíos ===== */
+
     .item.found-warn{
-      background:#fff7e6 !important;
-      color:#8a4b00 !important;
-      border-left:5px solid #ffb020 !important;
+      background:var(--warnBg) !important;
+      color:var(--warnText) !important;
+      border-left:5px solid var(--warnBorder) !important;
       font-weight:1000 !important;
     }
   </style>
@@ -72,108 +165,145 @@
 
 <header>
   <button class="hamburger" id="openBtn">☰</button>
-  <div style="margin-left:15px;font-weight:900;color:var(--brand);">MENU MOCKUP</div>
+  <div style="margin-left:15px;font-weight:1000;color:var(--brand);letter-spacing:.2px;">MENU MOCKUP</div>
 </header>
 
-<!-- Intro -->
-<div id="taskIntroOverlay" style="position:fixed; inset:0; z-index:4000; background:linear-gradient(180deg, rgba(3,76,168,.60), rgba(0,0,0,.55)); display:none;">
-  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(860px,92vw); padding:18px 18px 16px;">
-    <div class="chip">Test de usabilidad del menú web</div>
-    <div style="margin-top:10px;font-weight:1000;font-size:22px;color:var(--brand);">Test de usabilidad del menú web</div>
-    <div style="margin-top:6px;color:#333;line-height:1.45;font-size:13px;max-width:80ch;">
-      Vas a realizar tareas de encontrabilidad. Antes de cada tarea verás instrucciones.
-      El cronómetro empieza cuando pulses “Comenzar tarea”.
+<!-- ===== INICIO (más claro, grande y legible) ===== -->
+<div id="taskIntroOverlay" style="position:fixed; inset:0; z-index:4000; background:linear-gradient(180deg, rgba(3,76,168,.55), rgba(0,0,0,.55)); display:none;">
+  <div class="card" style="
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(980px,92vw); padding:22px;">
+
+    <div style="display:flex;align-items:flex-start;gap:14px;">
+      <div style="
+        width:48px;height:48px;border-radius:16px;
+        background:linear-gradient(180deg, var(--brand2), var(--brand));
+        display:grid;place-items:center;color:#fff;font-weight:1000;">
+        UX
+      </div>
+
+      <div style="flex:1;">
+        <div class="chip">Test de usabilidad del menú web</div>
+        <div style="margin-top:10px;font-weight:1000;font-size:30px;color:#0b1b3a;line-height:1.1;">
+          Test de usabilidad del menú web
+        </div>
+        <div style="margin-top:10px;color:#334155;line-height:1.55;font-size:16px;max-width:85ch;">
+          Vas a realizar <b>3 tareas</b>: encontrar categorías dentro del menú.
+          Verás una pantalla con instrucciones antes de cada tarea.
+          <b>El cronómetro empieza</b> cuando pulses “Comenzar tarea”.
+        </div>
+      </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px;">
-      <div style="border:1px solid var(--border);border-radius:16px;padding:14px;background:#fbfcfe;">
-        <div style="font-weight:1000;color:#111;">Qué tienes que hacer</div>
-        <ol style="margin:10px 0 0 18px;color:#333;line-height:1.5;font-size:13px;">
+    <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:18px;">
+      <div style="border:1px solid var(--border);border-radius:18px;padding:16px;background:#fbfcfe;">
+        <div style="font-weight:1000;color:#0f172a;font-size:16px;">Qué tienes que hacer</div>
+        <ol style="margin:12px 0 0 20px;color:#334155;line-height:1.7;font-size:15px;">
           <li>Pulsa <b>Empezar</b>.</li>
           <li>Lee la tarea y pulsa <b>Comenzar tarea</b>.</li>
           <li>Navega hasta la <b>ruta correcta</b>.</li>
-          <li>Si te interrumpen, usa <b>Pausar</b>/<b>Reanudar</b>.</li>
-          <li>Al final se descargará un Excel.</li>
+          <li>Si te interrumpen, usa <b>Pausa</b> y luego <b>Reanudar</b>.</li>
+          <li>Al terminar, se descargará un <b>Excel</b>.</li>
         </ol>
+        <div style="margin-top:10px;color:#64748b;font-size:13px;">
+          Consejo: no hay truco; navega como lo harías en una web real.
+        </div>
       </div>
-      <div style="border:1px solid var(--border);border-radius:16px;padding:14px;background:#fff;">
-        <div style="font-weight:1000;color:#111;">Tareas incluidas</div>
-        <ul id="introTaskList" style="margin:10px 0 0 18px;color:#333;line-height:1.5;font-size:13px;"></ul>
-        <div style="margin-top:10px;color:#666;font-size:11px;">Consejo: hazlo como lo harías normalmente.</div>
+
+      <div style="border:1px solid var(--border);border-radius:18px;padding:16px;background:#fff;">
+        <div style="font-weight:1000;color:#0f172a;font-size:16px;">Tareas incluidas</div>
+        <ul id="introTaskList" style="margin:12px 0 0 20px;color:#334155;line-height:1.7;font-size:15px;"></ul>
       </div>
     </div>
 
-    <div style="display:flex;justify-content:center;margin-top:16px;">
-      <button id="btnIntroStart" class="btn btnPrimary" style="min-width:min(520px,92vw);font-size:16px;padding:16px 22px;">Empezar</button>
+    <div style="display:flex;justify-content:center;margin-top:18px;">
+      <button id="btnIntroStart" class="btn btnPrimary" style="min-width:min(560px,92vw);font-size:18px;padding:18px 24px;border-radius:18px;">
+        Empezar
+      </button>
     </div>
   </div>
 </div>
 
-<!-- Next task -->
+<!-- ===== Pantalla tarea ===== -->
 <div id="nextTaskOverlay" style="position:fixed; inset:0; z-index:3500; background:linear-gradient(180deg, rgba(3,76,168,.55), rgba(0,0,0,.55)); display:none;">
-  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(820px,92vw); padding:18px; text-align:center;">
+  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(900px,92vw); padding:22px; text-align:center;">
     <div class="chip">Siguiente tarea</div>
-    <div id="nextTitle" style="margin-top:10px;font-weight:1000;font-size:20px;color:var(--brand);"></div>
+    <div id="nextTitle" style="margin-top:10px;font-weight:1000;font-size:22px;color:#0b1b3a;"></div>
 
-    <div style="margin-top:10px;border:1px solid var(--border);border-radius:16px;padding:14px;background:#fbfcfe; text-align:left;">
-      <div id="nextGoal" style="color:#111;font-size:13px;"></div>
-      <div id="nextInfo" style="margin-top:8px;color:#555;line-height:1.45;font-size:13px;"></div>
-      <div id="nextRoute" style="margin-top:10px;color:#333;font-size:12px;"><b>Ruta objetivo:</b> <code></code></div>
+    <div style="margin-top:14px;border:1px solid var(--border);border-radius:18px;padding:16px;background:#fbfcfe; text-align:left;">
+      <div id="nextGoal" style="color:#0f172a;font-size:15px;line-height:1.6;"></div>
+      <div id="nextInfo" style="margin-top:10px;color:#475569;line-height:1.6;font-size:15px;"></div>
+      <div id="nextRoute" style="margin-top:12px;color:#0f172a;font-size:13px;">
+        <b>Ruta objetivo:</b> <code style="background:#fff;border:1px solid var(--border);padding:4px 8px;border-radius:10px;"></code>
+      </div>
     </div>
 
-    <div style="display:flex;justify-content:center;margin-top:16px;">
-      <button id="btnStartThisTask" class="btn btnPrimary" style="min-width:min(520px,92vw);font-size:16px;padding:16px 22px;">Comenzar tarea</button>
+    <div style="display:flex;justify-content:center;margin-top:18px;">
+      <button id="btnStartThisTask" class="btn btnPrimary" style="min-width:min(560px,92vw);font-size:18px;padding:18px 24px;border-radius:18px;">
+        Comenzar tarea
+      </button>
+    </div>
+
+    <div style="margin-top:10px;color:#94a3b8;font-size:13px;">
+      El cronómetro empezará al pulsar “Comenzar tarea”.
     </div>
   </div>
 </div>
 
-<!-- Final -->
+<!-- ===== Final ===== -->
 <div id="finalOverlay" style="position:fixed; inset:0; z-index:5000; background:linear-gradient(180deg, rgba(3,76,168,.65), rgba(0,0,0,.60)); display:none;">
-  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(720px,92vw); padding:18px; text-align:center;">
+  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(760px,92vw); padding:22px; text-align:center;">
     <div class="chip">Test finalizado</div>
-    <div style="margin-top:10px;font-weight:1000;font-size:22px;color:var(--brand);">✅ Test finalizado</div>
-    <div id="finalSubtitle" style="margin-top:8px;color:#333;font-size:13px;line-height:1.45;">Estamos preparando tu archivo Excel…</div>
-    <div style="margin-top:14px;"><div class="spinner" id="finalSpinner"></div></div>
-    <div style="margin-top:12px;color:#666;font-size:12px;">
-      Si tu navegador tiene activado “Preguntar dónde guardar”, podría mostrarse un diálogo.
-    </div>
+    <div style="margin-top:10px;font-weight:1000;font-size:26px;color:#0b1b3a;">✅ Test finalizado</div>
+    <div id="finalSubtitle" style="margin-top:10px;color:#334155;font-size:15px;line-height:1.6;">Estamos preparando tu archivo Excel…</div>
+    <div style="margin-top:16px;"><div class="spinner" id="finalSpinner"></div></div>
   </div>
 </div>
 
-<!-- Small panel -->
-<div id="abpanel" style="position:fixed; top:10px; right:10px; z-index:2000; background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; box-shadow:0 10px 25px rgba(0,0,0,.12); font-size:12px; width:420px; max-width:92vw; display:none;">
-  <div style="font-weight:1000;color:var(--brand);margin-bottom:6px;">Test en curso</div>
-
-  <div style="display:flex; gap:8px; margin-bottom:6px;">
-    <button id="btnPause" class="btn btnGhost" style="flex:1;padding:10px 12px;">⏸ Pausa</button>
-    <button id="btnResume" class="btn btnPrimary" style="flex:1; padding:10px 12px; display:none;">▶ Reanudar</button>
+<!-- ===== Panel de control (más visible) ===== -->
+<div id="abpanel" class="card" style="
+  position:fixed; top:12px; right:12px; z-index:2000;
+  padding:14px; width:460px; max-width:92vw; display:none;
+  border-radius:18px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <div style="font-weight:1000;color:var(--brand);font-size:14px;">Test en curso</div>
+    <div id="detourBadge" style="
+      display:none;
+      padding:6px 10px;border-radius:999px;
+      background:var(--warnBg);color:var(--warnText);
+      border:1px solid #ffd79a;font-weight:1000;font-size:12px;">
+      🟠 Con desvíos
+    </div>
   </div>
 
-  <div style="font-weight:1000; margin-bottom:6px;">
+  <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <button id="btnPause" class="btn btnWarn" style="padding:12px 14px;border-radius:16px;">⏸ Pausa</button>
+    <button id="btnResume" class="btn btnPrimary" style="padding:12px 14px;border-radius:16px;display:none;">▶ Reanudar</button>
+    <button id="btnFailTask" class="btn btnDanger" style="grid-column:1 / -1;padding:12px 14px;border-radius:16px;">No lo encuentro</button>
+  </div>
+
+  <div style="margin-top:12px;font-weight:1000;font-size:14px;color:#0f172a;">
     Tarea: <span id="taskNowLabel" style="color:var(--brand);"></span>
   </div>
 
-  <div id="taskTimer" style="margin-top:8px;font-weight:1000;"></div>
+  <div id="taskTimer" style="margin-top:6px;font-weight:1000;font-size:16px;"></div>
 
-  <div style="margin-top:8px; font-size:11px; color:#444;">
-    Ruta actual: <code id="pathNow" style="display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom;"></code>
+  <div style="margin-top:10px; font-size:12px; color:#334155;">
+    Ruta actual:
+    <code id="pathNow" style="display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;background:#fff;border:1px solid var(--border);padding:4px 8px;border-radius:10px;"></code>
   </div>
 
-  <div id="taskLast" style="margin-top:8px;color:#666;font-size:11px;"></div>
-
-  <div style="display:flex; gap:8px; margin-top:10px;">
-    <button id="btnFailTask" class="btn btnGhost" style="flex:1;padding:10px 12px;">No lo encuentro</button>
-  </div>
+  <div id="taskLast" style="margin-top:8px;color:#64748b;font-size:12px;"></div>
 </div>
 
-<!-- Completed banner -->
+<!-- ===== Cartel completado ===== -->
 <div id="doneOverlay" style="position:fixed; inset:0; z-index:3000; display:none; background:rgba(0,0,0,.55);">
-  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(560px,92vw); padding:18px; text-align:center;">
-    <div id="doneTitle" style="font-weight:1000;font-size:18px;color:var(--brand);">✅ Resultado</div>
-    <div id="doneDetail" style="margin-top:8px;color:#333;font-size:13px; white-space:pre-line;"></div>
-    <div id="doneTime" style="margin-top:10px;font-weight:1000;"></div>
-    <div style="display:flex; gap:10px; margin-top:14px;">
-      <button id="btnNextTask" class="btn btnPrimary" style="flex:1;">Siguiente</button>
+  <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(620px,92vw); padding:20px; text-align:center;">
+    <div id="doneTitle" style="font-weight:1000;font-size:20px;color:#0b1b3a;">✅ Resultado</div>
+    <div id="doneDetail" style="margin-top:10px;color:#334155;font-size:14px; white-space:pre-line;line-height:1.55;"></div>
+    <div id="doneTime" style="margin-top:12px;font-weight:1000;font-size:16px;"></div>
+    <div style="display:flex; gap:10px; margin-top:16px;">
+      <button id="btnNextTask" class="btn btnPrimary" style="flex:1;border-radius:18px;">Siguiente</button>
     </div>
   </div>
 </div>
@@ -203,14 +333,11 @@
   const TOP_ORDER = ["Camillas", "Mobiliario", "Sillas de ruedas", "Aparatología y equipos", "Esterilización y autoclaves", "Material médico", "Cuidado personal y salud", "Desechables y consumibles", "Ayudas técnicas para personas mayores", "Vestuario y seguridad"];
   const ICON_MAP = {"aparatologia y equipos":"📁", "ayudas tecnicas para personas mayores":"🧓", "camillas":"🛏️", "cuidado personal y salud":"🧴", "desechables y consumibles":"🧻", "diagnostico":"🩺", "esterilizacion y autoclaves":"🧼", "instrumental":"🧰", "material medico":"📦", "mobiliario":"🪑", "sillas de ruedas":"🦽", "vestuario y seguridad":"🦺"};
   const FEATURED_CATS = [{ name:"Camillas" }, { name:"Sillas de ruedas" }, { name:"Diagnóstico" }, { name:"Mobiliario" }];
-  const SPECIALTIES_ITEMS = [{ name:"Fisioterapia", icon:"🦵" }, { name:"Estética", icon:"✨" }, { name:"Peluquería y Barbería", icon:"💈" }, { name:"SPA & Wellness", icon:"🧖" }, { name:"Medicina", icon:"🩺" }];
-  const OFFERS_ITEMS = [{ name:"Ofertas del momento" }, { name:"Más vendidos" }, { name:"Promociones" }];
 
-  // ===================== TEST =====================
   const VERSION = "FIN";
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
-  // ✅ RUTAS EXACTAS
+  // ✅ Tus tareas/rutas
   const TASKS = [
     { id:"camilla_electrica", label:"Camilla eléctrica", route:["Camillas","Camillas eléctricas"],
       goal:"Encuentra la categoría de camillas eléctricas en el menú.",
@@ -234,10 +361,9 @@
   let PAUSE_TS = 0;
   let PAUSED_TOTAL_MS = 0;
 
-  // ✅ Ruta real + clicks + desvíos
   let NAV_PATH = [];
   let CLICK_COUNT = 0;
-  let DETOURS = 0;          // <- si >0 => naranja (no a la primera)
+  let DETOURS = 0;
 
   let TIMER_INT = null;
   let TASK_DONE = false;
@@ -248,7 +374,6 @@
   let TEST_STARTED = false;
   let TASK_ACTIVE = false;
 
-  // menu data
   let menuTree = [];
   let bannersData = [];
 
@@ -275,6 +400,12 @@
     if (lbl) lbl.textContent = TASK ? `${taskIndex+1}/${TASKS.length} · ${TASK.label}` : "(sin tarea)";
   }
 
+  function setDetourBadge(){
+    const b = document.getElementById("detourBadge");
+    if (!b) return;
+    b.style.display = (DETOURS > 0) ? "inline-flex" : "none";
+  }
+
   function track(eventName, extra = {}) {
     const row = {
       ts_iso: nowISO(),
@@ -293,7 +424,7 @@
     EVENTS.push(row);
 
     const last = document.getElementById("taskLast");
-    if (last) last.textContent = `Último: ${row.event}${row.label ? " → " + row.label : ""} (desvíos: ${DETOURS})`;
+    if (last) last.textContent = `Último: ${row.event}${row.label ? " → " + row.label : ""} · Desvíos: ${DETOURS}`;
   }
 
   function fillIntroTaskList(){
@@ -331,9 +462,9 @@
   }
 
   function updateStruggleUI(){
-    // 🟠 En cuanto hay 1 desvío, marcamos modo naranja
     if (TASK_ACTIVE && !TASK_DONE && DETOURS > 0) drawer.classList.add("struggling");
     else drawer.classList.remove("struggling");
+    setDetourBadge();
   }
 
   function startThisTaskNow(){
@@ -343,6 +474,7 @@
     TASK_DONE = false;
     setPathNow();
     drawer.classList.remove("struggling");
+    setDetourBadge();
 
     START_TS = Date.now();
     PAUSED = false;
@@ -358,7 +490,10 @@
     TIMER_INT = setInterval(() => {
       if (!timer) return;
       if (!TASK_ACTIVE) { timer.textContent = "Tiempo: —"; return; }
-      timer.textContent = "Tiempo: " + (effectiveElapsedMs()/1000).toFixed(1) + "s" + (PAUSED ? " (pausa)" : "") + (DETOURS>0 ? " · 🟠 con desvíos" : "");
+      timer.textContent =
+        "Tiempo: " + (effectiveElapsedMs()/1000).toFixed(1) + "s" +
+        (PAUSED ? " (pausa)" : "") +
+        (DETOURS>0 ? " · 🟠 con desvíos" : "");
     }, 100);
 
     hideNextTaskScreen();
@@ -397,19 +532,11 @@
     return true;
   }
 
-  // ✅ Desvío = click que NO coincide con el elemento esperado en su nivel
   function registerDetourIfAny(level, clickedName){
     if (!TASK?.route?.length) return;
-
     const expected = TASK.route[level];
-    if (!expected) {
-      // click en un nivel que no existe en la ruta objetivo
-      DETOURS++;
-      return;
-    }
-    if (norm2(clickedName) !== norm2(expected)) {
-      DETOURS++;
-    }
+    if (!expected) { DETOURS++; return; }
+    if (norm2(clickedName) !== norm2(expected)) DETOURS++;
   }
 
   function showCompletedBanner(message, title="✅ Resultado"){
@@ -420,7 +547,8 @@
     const routeStr = NAV_PATH.join(" > ");
 
     document.getElementById("doneTitle").textContent = title;
-    document.getElementById("doneDetail").textContent = `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
+    document.getElementById("doneDetail").textContent =
+      `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
     document.getElementById("doneTime").textContent = seconds ? `Tiempo: ${seconds}s` : "";
     document.getElementById("doneOverlay").style.display = "block";
   }
@@ -465,20 +593,18 @@
     showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
   }
 
-  // ===================== Excel (XML .xls con pestañas) =====================
+  // ===================== Excel XML (.xls) =====================
   function xmlEscape(s){
     return String(s ?? "")
       .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
       .replace(/"/g,"&quot;").replace(/'/g,"&apos;");
   }
-
   function worksheetXml(name, rows){
     const rowXml = rows.map(r => `<Row>${
       r.map(c => `<Cell${c.style?` ss:StyleID="${c.style}"`:``}><Data ss:Type="String">${xmlEscape(c.v)}</Data></Cell>`).join("")
     }</Row>`).join("");
     return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
   }
-
   function buildExcelXml(){
     const rowsSummary = [];
     const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
@@ -500,12 +626,9 @@
     TASKS.forEach(t => {
       const r = TASK_RESULTS[t.id];
       const status = r?.status || "fail";
-
-      // ✅ ahora: verde SOLO si detours==0, naranja si detours>0
       const det = (r?.detours ?? 0);
       const isSuccess = status !== "fail" && det === 0;
       const isWarn = status !== "fail" && det > 0;
-
       const styleRow = isSuccess ? "sSuccess" : (isWarn ? "sWarn" : "sFail");
       const labelRes = isSuccess ? "Encontrada" : (isWarn ? "Encontrada (con desvíos)" : "No encontrada");
 
@@ -543,7 +666,6 @@
  ${worksheetXml("Eventos", rowsEvents)}
 </Workbook>`;
   }
-
   function downloadExcelAuto(){
     const xml = buildExcelXml();
     const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
@@ -586,7 +708,7 @@
     })();
   }
 
-  // ===================== Build menu tree =====================
+  // ===================== Data build =====================
   const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
   const displayName = (name) => String(name||"").replace(/\s+Total\s*$/i,"").trim();
 
@@ -658,7 +780,7 @@
     nodes.forEach(n => sortNodes(n.children, level + 1));
   }
 
-  // ===================== Render =====================
+  // ===================== Render menu =====================
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
@@ -666,8 +788,6 @@
     col.className = "column";
 
     col.innerHTML = `<ul>
-      <li class="item" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
-      <li class="item" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
       <li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
       <li class="divider"></li>
       ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span></span></li>`).join('')}
@@ -677,8 +797,6 @@
     updateDrawerWidth();
   }
 
-  function renderSpecialties(){ /* opcional */ renderRootMenu(); }
-  function renderOffers(){ /* opcional */ renderRootMenu(); }
   function renderAllCategories(){ render(menuTree, 0); }
 
   function render(items, level, parent=null){
@@ -701,17 +819,15 @@
         const wasActive = li.classList.contains("active");
 
         if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
-          // breadcrumb real
           NAV_PATH = NAV_PATH.slice(0, level);
           NAV_PATH[level] = item.name;
 
-          // clicks + desvíos
           CLICK_COUNT++;
           registerDetourIfAny(level, item.name);
           updateStruggleUI();
 
           setPathNow();
-          track("click_item", { label:item.name, level, path:NAV_PATH.join(" > "), detours:DETOURS });
+          track("click_item", { label:item.name, level, path:NAV_PATH.join(" > ") });
 
           if (isSuccessPath()) {
             TASK_DONE = true;
@@ -719,8 +835,7 @@
 
             const status = (DETOURS > 0) ? "success_inefficient" : "success";
             TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks:CLICK_COUNT, detours:DETOURS };
-
-            track("task_success", { label:item.name, level, path:NAV_PATH.join(" > "), detours:DETOURS });
+            track("task_success", { label:item.name, level, path:NAV_PATH.join(" > ") });
 
             if (status === "success_inefficient") li.classList.add("found-warn");
             drawer.classList.remove("struggling");
@@ -775,12 +890,22 @@
     drawer.style.width = Math.min(count * 330, window.innerWidth * 0.95) + "px";
   }
 
-  // ===================== UI wiring =====================
-  document.getElementById("btnFailTask").onclick = () => failTask();
-  document.getElementById("btnPause").onclick = () => pauseTask();
-  document.getElementById("btnResume").onclick = () => resumeTask();
-  document.getElementById("btnNextTask").onclick = () => nextTaskFlow();
-  document.getElementById("btnStartThisTask").onclick = () => startThisTaskNow();
+  // ===================== Tasks flow =====================
+  function showNextTaskScreen(){
+    TASK_ACTIVE = false;
+    hardPause();
+
+    TASK = TASKS[taskIndex];
+    setTaskLabelPanel();
+
+    document.getElementById("nextTitle").textContent = `${taskIndex+1}/${TASKS.length} · ${TASK.label}`;
+    document.getElementById("nextGoal").innerHTML = `<b>Qué buscar:</b> ${TASK.goal}`;
+    document.getElementById("nextInfo").innerHTML = `<b>Info:</b> ${TASK.info}`;
+    document.querySelector("#nextRoute code").textContent = TASK.route.join(" > ");
+    document.getElementById("nextTaskOverlay").style.display = "block";
+  }
+  function hideNextTaskScreen(){ document.getElementById("nextTaskOverlay").style.display = "none"; }
+
   document.getElementById("btnIntroStart").onclick = () => {
     TEST_STARTED = true;
     document.getElementById("taskIntroOverlay").style.display = "none";
@@ -788,8 +913,261 @@
     taskIndex = 0;
     showNextTaskScreen();
   };
+  document.getElementById("btnStartThisTask").onclick = () => startThisTaskNow();
+  document.getElementById("btnNextTask").onclick = () => nextTaskFlow();
+  document.getElementById("btnFailTask").onclick = () => failTask();
+  document.getElementById("btnPause").onclick = () => pauseTask();
+  document.getElementById("btnResume").onclick = () => resumeTask();
 
-  // start
+  function hardPause(){
+    if (TASK_ACTIVE && !PAUSED) { PAUSED = true; PAUSE_TS = Date.now(); }
+  }
+
+  function pauseTask(){
+    if (!TASK_ACTIVE || !START_TS || PAUSED) return;
+    PAUSED = true;
+    PAUSE_TS = Date.now();
+    track("task_pause");
+    document.getElementById("btnPause").style.display = "none";
+    document.getElementById("btnResume").style.display = "block";
+  }
+
+  function resumeTask(){
+    if (!TASK_ACTIVE || !START_TS || !PAUSED) return;
+    PAUSED = false;
+    PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS);
+    PAUSE_TS = 0;
+    track("task_resume");
+    document.getElementById("btnPause").style.display = "block";
+    document.getElementById("btnResume").style.display = "none";
+  }
+
+  function isSuccessPath(){
+    if(!TASK?.route?.length) return false;
+    const current = NAV_PATH.map(norm2);
+    const target  = TASK.route.map(norm2);
+    if (current.length !== target.length) return false;
+    for (let i=0;i<target.length;i++) if (current[i] !== target[i]) return false;
+    return true;
+  }
+
+  function startThisTaskNow(){
+    NAV_PATH = [];
+    CLICK_COUNT = 0;
+    DETOURS = 0;
+    TASK_DONE = false;
+    setPathNow();
+    drawer.classList.remove("struggling");
+    setDetourBadge();
+
+    START_TS = Date.now();
+    PAUSED = false;
+    PAUSE_TS = 0;
+    PAUSED_TOTAL_MS = 0;
+
+    TASK_ACTIVE = true;
+    track("task_start", { detours: DETOURS });
+    setTaskLabelPanel();
+
+    const timer = document.getElementById("taskTimer");
+    if (TIMER_INT) clearInterval(TIMER_INT);
+    TIMER_INT = setInterval(() => {
+      if (!timer) return;
+      if (!TASK_ACTIVE) { timer.textContent = "Tiempo: —"; return; }
+      timer.textContent =
+        "Tiempo: " + (effectiveElapsedMs()/1000).toFixed(1) + "s" +
+        (PAUSED ? " (pausa)" : "") +
+        (DETOURS>0 ? " · 🟠 con desvíos" : "");
+    }, 100);
+
+    hideNextTaskScreen();
+    toggleMenu(true);
+  }
+
+  function nextTaskFlow(){
+    document.getElementById("doneOverlay").style.display = "none";
+    if (TASK_ACTIVE) track("task_end");
+    TASK_ACTIVE = false;
+    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
+
+    taskIndex++;
+    if (taskIndex >= TASKS.length) finishAllTasks();
+    else showNextTaskScreen();
+  }
+
+  function finishAllTasks(){
+    TASK_ACTIVE = false;
+    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
+    track("tasks_finished");
+    document.getElementById("finalOverlay").style.display = "block";
+    setTimeout(() => {
+      try { downloadExcelAuto(); }
+      finally {
+        document.getElementById("finalSubtitle").textContent = "✅ Descarga iniciada. Ya puedes cerrar esta ventana.";
+        document.getElementById("finalSpinner").style.display = "none";
+      }
+    }, 80);
+  }
+
+  function failTask(){
+    if(!TASK_ACTIVE || TASK_DONE) return;
+    TASK_DONE = true;
+    const tms = effectiveElapsedMs();
+    TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT, detours: DETOURS };
+    track("task_fail");
+    drawer.classList.remove("struggling");
+    showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
+  }
+
+  function updateStruggleUI(){
+    if (TASK_ACTIVE && !TASK_DONE && DETOURS > 0) drawer.classList.add("struggling");
+    else drawer.classList.remove("struggling");
+    setDetourBadge();
+  }
+
+  function registerDetourIfAny(level, clickedName){
+    if (!TASK?.route?.length) return;
+    const expected = TASK.route[level];
+    if (!expected) { DETOURS++; return; }
+    if (norm2(clickedName) !== norm2(expected)) DETOURS++;
+  }
+
+  function showCompletedBanner(message, title="✅ Resultado"){
+    hardPause();
+    confettiBurstSlow();
+
+    const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
+    const routeStr = NAV_PATH.join(" > ");
+
+    document.getElementById("doneTitle").textContent = title;
+    document.getElementById("doneDetail").textContent =
+      `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
+    document.getElementById("doneTime").textContent = seconds ? `Tiempo: ${seconds}s` : "";
+    document.getElementById("doneOverlay").style.display = "block";
+  }
+
+  // ===================== Excel XML (.xls) =====================
+  function xmlEscape(s){
+    return String(s ?? "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&apos;");
+  }
+  function worksheetXml(name, rows){
+    const rowXml = rows.map(r => `<Row>${
+      r.map(c => `<Cell${c.style?` ss:StyleID="${c.style}"`:``}><Data ss:Type="String">${xmlEscape(c.v)}</Data></Cell>`).join("")
+    }</Row>`).join("");
+    return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
+  }
+  function buildExcelXml(){
+    const rowsSummary = [];
+    const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
+
+    rowsSummary.push([{v:"Sesión", style:"sHeader"},{v:SESSION_ID, style:"sCell"}]);
+    rowsSummary.push([{v:"Variante (version)", style:"sHeader"},{v:VERSION, style:"sCell"}]);
+    rowsSummary.push([{v:"Tiempo total (s)", style:"sHeader"},{v:(totalMs/1000).toFixed(1), style:"sCell"}]);
+    rowsSummary.push([{v:"", style:"sCell"},{v:"", style:"sCell"}]);
+
+    rowsSummary.push([
+      {v:"Tarea", style:"sHeader"},
+      {v:"Resultado", style:"sHeader"},
+      {v:"Tiempo (s)", style:"sHeader"},
+      {v:"Clicks", style:"sHeader"},
+      {v:"Desvíos", style:"sHeader"},
+      {v:"Ruta objetivo", style:"sHeader"}
+    ]);
+
+    TASKS.forEach(t => {
+      const r = TASK_RESULTS[t.id];
+      const status = r?.status || "fail";
+      const det = (r?.detours ?? 0);
+      const isSuccess = status !== "fail" && det === 0;
+      const isWarn = status !== "fail" && det > 0;
+      const styleRow = isSuccess ? "sSuccess" : (isWarn ? "sWarn" : "sFail");
+      const labelRes = isSuccess ? "Encontrada" : (isWarn ? "Encontrada (con desvíos)" : "No encontrada");
+
+      rowsSummary.push([
+        {v:t.label, style:styleRow},
+        {v:labelRes, style:styleRow},
+        {v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},
+        {v: r ? String(r.clicks ?? "") : "", style:styleRow},
+        {v: r ? String(r.detours ?? "") : "", style:styleRow},
+        {v: t.route.join(" > "), style:styleRow}
+      ]);
+    });
+
+    const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
+      "ts_iso","version","session_id","task_id","task_label","target_route","event","label","level","path","ms_from_start","detours"
+    ];
+    const rowsEvents = [];
+    rowsEvents.push(headers.map(h => ({v:h, style:"sHeader"})));
+    EVENTS.forEach(e => rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"}))));
+
+    return `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="sHeader"><Font ss:Bold="1"/><Interior ss:Color="#E6F2FA" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="sCell"></Style>
+  <Style ss:ID="sSuccess"><Interior ss:Color="#EAF7EE" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#0A7A3A"/></Style>
+  <Style ss:ID="sWarn"><Interior ss:Color="#FFF7E6" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#8A4B00"/></Style>
+  <Style ss:ID="sFail"><Interior ss:Color="#FDECEC" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#B42318"/></Style>
+ </Styles>
+ ${worksheetXml("Resumen", rowsSummary)}
+ ${worksheetXml("Eventos", rowsEvents)}
+</Workbook>`;
+  }
+  function downloadExcelAuto(){
+    const xml = buildExcelXml();
+    const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const a = document.createElement("a");
+    const ts = new Date().toISOString().replace(/[:.]/g,"-");
+    a.href = URL.createObjectURL(blob);
+    a.download = `test_usabilidad_menu_${VERSION}_${SESSION_ID}_${ts}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ===================== Confetti (lento) =====================
+  function confettiBurstSlow(){
+    const canvas = document.getElementById("confettiCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    canvas.style.display = "block";
+    const N = 200, parts = [];
+    for (let i=0;i<N;i++){
+      parts.push({x:canvas.width/2+(Math.random()*140-70),y:canvas.height/2+(Math.random()*70-35),
+        vx:(Math.random()*8-4),vy:(Math.random()*-10-5),g:0.18+Math.random()*0.15,
+        s:4+Math.random()*5,r:Math.random()*Math.PI,vr:(Math.random()*0.16-0.08),
+        life:130+Math.random()*80,hue:Math.floor(Math.random()*360)});
+    }
+    let t=0;
+    (function frame(){
+      t++; ctx.clearRect(0,0,canvas.width,canvas.height);
+      parts.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.r+=p.vr; p.life--;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+        ctx.globalAlpha=Math.max(0,Math.min(1,p.life/160));
+        ctx.fillStyle=`hsl(${p.hue},90%,55%)`;
+        ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);
+        ctx.restore();
+      });
+      if (t<160) requestAnimationFrame(frame);
+      else canvas.style.display="none";
+    })();
+  }
+
+  // ===================== Init =====================
+  document.getElementById("btnNextTask").onclick = () => nextTaskFlow();
+
+  document.getElementById("openBtn").onclick = () => toggleMenu(true);
+  document.getElementById("closeBtn").onclick = () => toggleMenu(false);
+  overlay.onclick = () => toggleMenu(false);
+
   showMainIntro();
   loadAllData();
 </script>
