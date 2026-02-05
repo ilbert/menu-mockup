@@ -181,15 +181,12 @@
       padding:22px;
     }
 
-    /* ===== INICIO: grid ===== */
     .introGrid{
       display:grid;
       grid-template-columns:1.1fr .9fr;
       gap:16px;
       margin-top:18px;
     }
-
-    /* CTA del intro (PC) — NO sticky */
     .introCta{
       display:flex;
       justify-content:center;
@@ -202,49 +199,36 @@
       border-radius:18px;
     }
 
-    /* ===== PANEL ===== */
+    /* ===== PANEL EN CURSO — SOLO BOTONES ===== */
     #abpanel{
       position:fixed;
       top:12px; right:12px;
       z-index:2000;
-      padding:14px;
-      width:460px; max-width:92vw;
+      padding:12px;
+      width:340px; max-width:92vw;
       display:none;
       border-radius:18px;
       box-shadow:var(--shadow2);
       background:#fff;
       border:1px solid var(--border);
-      transition:height .18s ease;
     }
-
-    .kpiRow{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:10px; flex-wrap:wrap;
-      margin-top:8px;
-      font-size:13px;
-      color:#334155;
-    }
-    .kpi{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px;
-      background:#f8fafc; border:1px solid #e2e8f0;
-      font-weight:900;
-    }
-
-    #abpanel .panelToggle{
-      display:none;
-      border:none;
-      background:#f1f5ff;
-      border:1px solid #d7e4ff;
-      color:#123e8f;
+    .panelTitle{
       font-weight:1000;
-      border-radius:999px;
-      padding:6px 10px;
-      cursor:pointer;
-      -webkit-tap-highlight-color:transparent;
+      color:#0b1b3a;
+      font-size:13px;
+      margin-bottom:10px;
+      display:flex;align-items:center;gap:8px;
+    }
+    .panelTitle .dot{
+      width:10px;height:10px;border-radius:999px;background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.15);
+    }
+    .panelBtns{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
     }
 
-    /* ===== MÓVIL SOLO: intro sin scroll + CTA sticky ===== */
+    /* ===== MÓVIL ===== */
     @media (max-width:720px){
       body{ overflow:auto; }
 
@@ -262,7 +246,6 @@
         border:none;
       }
 
-      /* Intro: 1 columna y CTA sticky SOLO en móvil */
       .introModal{
         display:flex;
         flex-direction:column;
@@ -295,7 +278,7 @@
         border-radius:18px;
       }
 
-      /* Panel abajo */
+      /* Panel abajo compacto */
       #abpanel{
         top:auto; right:0; left:0; bottom:0;
         width:100vw; max-width:100vw;
@@ -303,27 +286,14 @@
         padding:10px 12px calc(10px + env(safe-area-inset-bottom));
         box-shadow:0 -16px 40px rgba(0,0,0,.18);
       }
-      #abpanel.is-collapsed{
-        height:132px;
-        overflow:hidden;
-      }
-      #abpanel .panelToggle{
-        display:inline-flex;
-        align-items:center;
-        gap:6px;
-      }
       #abpanel .btn{
-        padding:11px 12px !important;
-        font-size:14px !important;
-        border-radius:14px !important;
-      }
-      #abpanel .kpi{
-        padding:6px 10px;
-        font-size:13px;
+        padding:12px 14px !important;
+        font-size:16px !important;
+        border-radius:16px !important;
       }
 
-      #drawer{ max-width:100vw; padding-bottom:150px; }
-      #columns-container{ padding-bottom:150px; }
+      #drawer{ max-width:100vw; padding-bottom:132px; }
+      #columns-container{ padding-bottom:132px; }
     }
   </style>
 </head>
@@ -423,44 +393,13 @@
   </div>
 </div>
 
-<!-- ===== PANEL EN CURSO ===== -->
+<!-- ===== PANEL EN CURSO (solo botones) ===== -->
 <div id="abpanel" class="card">
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-    <div style="font-weight:1000;color:var(--brand);font-size:14px;">Test en curso</div>
-
-    <div style="display:flex;align-items:center;gap:8px;">
-      <button id="btnPanelToggle" class="panelToggle" type="button">▲ Expandir</button>
-
-      <div id="detourBadge" style="
-        display:none;
-        padding:6px 10px;border-radius:999px;
-        background:var(--warnBg);color:var(--warnText);
-        border:1px solid #ffd79a;font-weight:1000;font-size:12px;">
-        🟠 Con desvíos
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:10px;font-weight:1000;font-size:14px;color:#0f172a;">
-    Tarea: <span id="taskNowLabel" style="color:var(--brand);"></span>
-  </div>
-
-  <div class="kpiRow">
-    <div id="taskTimer" class="kpi">⏱ Tiempo: —</div>
-    <div id="detourKpi" class="kpi" style="display:none;">🟠 Desvíos: 0</div>
-  </div>
-
-  <div style="margin-top:10px; font-size:12px; color:#334155;">
-    Ruta actual:
-    <code id="pathNow" style="display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;background:#fff;border:1px solid var(--border);padding:4px 8px;border-radius:10px;"></code>
-  </div>
-
-  <div id="taskLast" style="margin-top:8px;color:#64748b;font-size:12px;"></div>
-
-  <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-    <button id="btnPause" class="btn btnWarn" style="padding:12px 14px;border-radius:16px;">⏸ Pausa</button>
-    <button id="btnResume" class="btn btnPrimary" style="padding:12px 14px;border-radius:16px;display:none;">▶ Reanudar</button>
-    <button id="btnFailTask" class="btn btnDanger" style="grid-column:1 / -1;padding:12px 14px;border-radius:16px;">No lo encuentro</button>
+  <div class="panelTitle"><span class="dot"></span> Test en curso</div>
+  <div class="panelBtns">
+    <button id="btnPause" class="btn btnWarn" style="width:100%;">⏸ Pausa</button>
+    <button id="btnResume" class="btn btnPrimary" style="width:100%;display:none;">▶ Reanudar</button>
+    <button id="btnFailTask" class="btn btnDanger" style="width:100%;">No lo encuentro</button>
   </div>
 </div>
 
@@ -524,8 +463,7 @@
   ];
 
   // ====== Tracking / Experimento ======
-  // "version" = variante del test (FIN/A/B...). Sirve para comparar resultados entre menús.
-  const VERSION = "FIN";
+  const VERSION = "FIN"; // Variante A/B/FIN...
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
   const TASKS = [
@@ -556,7 +494,7 @@
   let CLICK_COUNT = 0;
   let DETOURS = 0;
 
-  let TIMER_INT = null;
+  let TIMER_INT = null; // se mantiene interno para Excel, pero no se pinta en UI
   let TASK_DONE = false;
 
   const EVENTS = [];
@@ -585,29 +523,7 @@
     return Math.max(0, (now - START_TS) - PAUSED_TOTAL_MS);
   }
 
-  function setPathNow(){ document.getElementById("pathNow").textContent = NAV_PATH.join(" > "); }
-  function setTaskLabelPanel(){ document.getElementById("taskNowLabel").textContent = TASK ? `${taskIndex+1}/${TASKS.length} · ${TASK.label}` : "(sin tarea)"; }
-
-  function setDetourBadge(){
-    const b = document.getElementById("detourBadge");
-    const k = document.getElementById("detourKpi");
-    if (DETOURS > 0){
-      b.style.display = "inline-flex";
-      k.style.display = "inline-flex";
-      k.textContent = `🟠 Desvíos: ${DETOURS}`;
-    } else {
-      b.style.display = "none";
-      k.style.display = "none";
-    }
-  }
-
-  function updateStruggleUI(){
-    if (TASK_ACTIVE && !TASK_DONE && DETOURS > 0) drawer.classList.add("struggling");
-    else drawer.classList.remove("struggling");
-    setDetourBadge();
-  }
-
-  // ====== LOG mejorado (para análisis IA/UX) ======
+  // ====== LOG (para Excel) ======
   let EVENT_SEQ = 0;
   let LAST_EVENT_TS = 0;
 
@@ -649,138 +565,6 @@
     };
 
     EVENTS.push(row);
-
-    const lastEl = document.getElementById("taskLast");
-    if (lastEl) {
-      lastEl.textContent =
-        `Último: ${row.event}${row.label ? " → " + row.label : ""}` +
-        (row.deviation ? ` · 🟠 desvío (${row.deviation_reason})` : "") +
-        ` · Desvíos: ${DETOURS}`;
-    }
-  }
-
-  // ====== Panel collapse ======
-  const panel = document.getElementById("abpanel");
-  const btnPanelToggle = document.getElementById("btnPanelToggle");
-  function isMobile(){ return window.matchMedia("(max-width: 720px)").matches; }
-  function collapsePanel(on){
-    if (!panel || !btnPanelToggle) return;
-    if (!isMobile()){
-      panel.classList.remove("is-collapsed");
-      btnPanelToggle.textContent = "▼ Contraer";
-      return;
-    }
-    if (on){
-      panel.classList.add("is-collapsed");
-      btnPanelToggle.textContent = "▲ Expandir";
-    } else {
-      panel.classList.remove("is-collapsed");
-      btnPanelToggle.textContent = "▼ Contraer";
-    }
-  }
-  function autoPeekPanel(){
-    if(!isMobile()) return;
-    collapsePanel(false);
-    clearTimeout(window.__peekT);
-    window.__peekT = setTimeout(()=>collapsePanel(true), 2000);
-  }
-  btnPanelToggle.addEventListener("click", () => {
-    const collapsed = panel.classList.contains("is-collapsed");
-    collapsePanel(!collapsed);
-  });
-  window.addEventListener("resize", () => collapsePanel(isMobile()));
-
-  // ====== Intro ======
-  function fillIntroTaskList(){
-    const ul = document.getElementById("introTaskList");
-    ul.innerHTML = "";
-    TASKS.forEach((t, i) => {
-      const li = document.createElement("li");
-      li.textContent = `${i+1}. ${t.label} — ${t.goal}`;
-      ul.appendChild(li);
-    });
-  }
-
-  // ====== Flow tareas ======
-  function hardPause(){ if (TASK_ACTIVE && !PAUSED) { PAUSED = true; PAUSE_TS = Date.now(); } }
-
-  function showNextTaskScreen(){
-    TASK_ACTIVE = false;
-    hardPause();
-    TASK = TASKS[taskIndex];
-    setTaskLabelPanel();
-
-    document.getElementById("nextTitle").textContent = `${taskIndex+1}/${TASKS.length} · ${TASK.label}`;
-    document.getElementById("nextGoal").innerHTML = `<b>Qué buscar:</b> ${TASK.goal}`;
-    document.getElementById("nextInfo").innerHTML = `<b>Info:</b> ${TASK.info}`;
-    document.querySelector("#nextRoute code").textContent = TASK.route.join(" > ");
-    document.getElementById("nextTaskOverlay").style.display = "block";
-    autoPeekPanel();
-  }
-  function hideNextTaskScreen(){ document.getElementById("nextTaskOverlay").style.display = "none"; }
-
-  function startThisTaskNow(){
-    EVENT_SEQ = 0;
-    LAST_EVENT_TS = 0;
-
-    NAV_PATH = [];
-    CLICK_COUNT = 0;
-    DETOURS = 0;
-    TASK_DONE = false;
-    setPathNow();
-    drawer.classList.remove("struggling");
-    setDetourBadge();
-
-    START_TS = Date.now();
-    PAUSED = false;
-    PAUSE_TS = 0;
-    PAUSED_TOTAL_MS = 0;
-
-    TASK_ACTIVE = true;
-    track("task_start", { detours: DETOURS });
-    setTaskLabelPanel();
-
-    if (TIMER_INT) clearInterval(TIMER_INT);
-    TIMER_INT = setInterval(() => {
-      const timer = document.getElementById("taskTimer");
-      if (!timer) return;
-      if (!TASK_ACTIVE) { timer.textContent = "⏱ Tiempo: —"; return; }
-      timer.textContent =
-        "⏱ Tiempo: " + (effectiveElapsedMs()/1000).toFixed(1) + "s" +
-        (PAUSED ? " (pausa)" : "") +
-        (DETOURS>0 ? " · 🟠 con desvíos" : "");
-    }, 100);
-
-    hideNextTaskScreen();
-    toggleMenu(true);
-    autoPeekPanel();
-  }
-
-  function pauseTask(){
-    if (!TASK_ACTIVE || !START_TS || PAUSED) return;
-    PAUSED = true;
-    PAUSE_TS = Date.now();
-    track("task_pause");
-    document.getElementById("btnPause").style.display = "none";
-    document.getElementById("btnResume").style.display = "block";
-  }
-
-  function resumeTask(){
-    if (!TASK_ACTIVE || !START_TS || !PAUSED) return;
-    PAUSED = false;
-    PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS);
-    PAUSE_TS = 0;
-    track("task_resume");
-    document.getElementById("btnPause").style.display = "block";
-    document.getElementById("btnResume").style.display = "none";
-  }
-
-  function isSuccessPath(){
-    const current = NAV_PATH.map(norm2);
-    const target  = TASK.route.map(norm2);
-    if (current.length !== target.length) return false;
-    for (let i=0;i<target.length;i++) if (current[i] !== target[i]) return false;
-    return true;
   }
 
   // ====== Confetti ======
@@ -820,6 +604,8 @@
     })();
   }
 
+  function hardPause(){ if (TASK_ACTIVE && !PAUSED) { PAUSED = true; PAUSE_TS = Date.now(); } }
+
   function showCompletedBanner(message, title){
     hardPause();
     confettiBurstSlow();
@@ -832,8 +618,82 @@
       `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
     document.getElementById("doneTime").textContent = seconds ? `Tiempo: ${seconds}s` : "";
     document.getElementById("doneOverlay").style.display = "block";
+  }
 
-    collapsePanel(true);
+  // ====== Flow tareas ======
+  function fillIntroTaskList(){
+    const ul = document.getElementById("introTaskList");
+    ul.innerHTML = "";
+    TASKS.forEach((t, i) => {
+      const li = document.createElement("li");
+      li.textContent = `${i+1}. ${t.label} — ${t.goal}`;
+      ul.appendChild(li);
+    });
+  }
+
+  function showNextTaskScreen(){
+    TASK_ACTIVE = false;
+    hardPause();
+    TASK = TASKS[taskIndex];
+
+    document.getElementById("nextTitle").textContent = `${taskIndex+1}/${TASKS.length} · ${TASK.label}`;
+    document.getElementById("nextGoal").innerHTML = `<b>Qué buscar:</b> ${TASK.goal}`;
+    document.getElementById("nextInfo").innerHTML = `<b>Info:</b> ${TASK.info}`;
+    document.querySelector("#nextRoute code").textContent = TASK.route.join(" > ");
+    document.getElementById("nextTaskOverlay").style.display = "block";
+  }
+  function hideNextTaskScreen(){ document.getElementById("nextTaskOverlay").style.display = "none"; }
+
+  function startThisTaskNow(){
+    EVENT_SEQ = 0;
+    LAST_EVENT_TS = 0;
+
+    NAV_PATH = [];
+    CLICK_COUNT = 0;
+    DETOURS = 0;
+    TASK_DONE = false;
+    drawer.classList.remove("struggling");
+
+    START_TS = Date.now();
+    PAUSED = false;
+    PAUSE_TS = 0;
+    PAUSED_TOTAL_MS = 0;
+
+    TASK_ACTIVE = true;
+    track("task_start", { detours: DETOURS });
+
+    if (TIMER_INT) clearInterval(TIMER_INT);
+    TIMER_INT = setInterval(() => { /* no UI */ }, 250);
+
+    hideNextTaskScreen();
+    toggleMenu(true);
+  }
+
+  function pauseTask(){
+    if (!TASK_ACTIVE || !START_TS || PAUSED) return;
+    PAUSED = true;
+    PAUSE_TS = Date.now();
+    track("task_pause");
+    document.getElementById("btnPause").style.display = "none";
+    document.getElementById("btnResume").style.display = "block";
+  }
+
+  function resumeTask(){
+    if (!TASK_ACTIVE || !START_TS || !PAUSED) return;
+    PAUSED = false;
+    PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS);
+    PAUSE_TS = 0;
+    track("task_resume");
+    document.getElementById("btnPause").style.display = "block";
+    document.getElementById("btnResume").style.display = "none";
+  }
+
+  function isSuccessPath(){
+    const current = NAV_PATH.map(norm2);
+    const target  = TASK.route.map(norm2);
+    if (current.length !== target.length) return false;
+    for (let i=0;i<target.length;i++) if (current[i] !== target[i]) return false;
+    return true;
   }
 
   function nextTaskFlow(){
@@ -843,7 +703,7 @@
       track("task_end", {
         task_status: TASK_RESULTS[TASK?.id]?.status || (TASK_DONE ? "success" : ""),
         final_path: NAV_PATH.join(" > "),
-        path: "" // ✅ evita repetir la ruta final en "path"
+        path: ""
       });
     }
 
@@ -929,7 +789,6 @@
       ]);
     });
 
-    // Eventos (sin URL)
     const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
       "ts_iso","version","session_id","task_id","task_label","target_route",
       "seq","ms_from_prev","event","label","level","expected_label","is_expected",
@@ -1081,7 +940,6 @@
     }
 
     container.appendChild(col);
-    updateDrawerWidth();
   }
 
   window.renderSpecialties = function renderSpecialties(){
@@ -1102,7 +960,6 @@
         `).join("")}
       </ul>`;
     container.appendChild(col);
-    updateDrawerWidth();
   };
 
   window.renderOffers = function renderOffers(){
@@ -1121,7 +978,6 @@
         `).join("")}
       </ul>`;
     container.appendChild(col);
-    updateDrawerWidth();
   };
 
   window.renderAllCategories = function(){ render(menuTree, 0); };
@@ -1174,10 +1030,10 @@
             reason = (level === 0) ? "wrong_top_category" : "wrong_choice_same_level";
           }
 
-          if (deviation) DETOURS++;
-
-          updateStruggleUI();
-          setPathNow();
+          if (deviation) {
+            DETOURS++;
+            drawer.classList.add("struggling");
+          }
 
           track("click_item", {
             label: item.name,
@@ -1228,7 +1084,6 @@
           li.classList.add("active");
           if(item.children.length) render(item.children, level + 1, item);
         }
-        updateDrawerWidth();
       };
 
       ul.appendChild(li);
@@ -1268,7 +1123,6 @@
     }
 
     container.appendChild(col);
-    updateDrawerWidth();
   }
 
   function toggleMenu(open){
@@ -1276,10 +1130,6 @@
     overlay.style.display = open ? "block" : "none";
     if(open && menuTree.length===0) loadAllData();
     else if(open) renderRootMenu();
-  }
-  function updateDrawerWidth(){
-    const count = document.querySelectorAll(".column").length;
-    drawer.style.width = Math.min(count * 330, window.innerWidth * 0.95) + "px";
   }
 
   // ====== Wiring ======
@@ -1291,8 +1141,6 @@
     TEST_STARTED = true;
     document.getElementById("taskIntroOverlay").style.display = "none";
     document.getElementById("abpanel").style.display = "block";
-    collapsePanel(true);
-    autoPeekPanel();
     taskIndex = 0;
     showNextTaskScreen();
   };
@@ -1306,7 +1154,6 @@
   // ====== Init ======
   fillIntroTaskList();
   document.getElementById("taskIntroOverlay").style.display = "block";
-  collapsePanel(true);
   loadAllData();
 </script>
 </body>
