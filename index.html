@@ -56,7 +56,7 @@
   position:fixed; top:10px; right:10px; z-index:2000;
   background:#fff; border:1px solid #e6e8eb; border-radius:12px;
   padding:10px; box-shadow:0 10px 25px rgba(0,0,0,.12);
-  font-size:12px; width:380px; max-width:92vw;">
+  font-size:12px; width:420px; max-width:92vw;">
   <div style="font-weight:900;color:#034ca8;margin-bottom:6px;">Test de encontrabilidad (ruta → CSV local)</div>
 
   <div style="display:flex; gap:8px; margin-bottom:6px;">
@@ -72,7 +72,10 @@
     Tarea actual: <span id="taskNowLabel" style="color:#034ca8;"></span>
   </div>
 
-  <div id="taskHint" style="margin-top:4px;color:#555;"></div>
+  <div id="taskGoal" style="margin-top:4px;color:#111;"></div>
+  <div id="taskInfo" style="margin-top:6px;color:#555; line-height:1.35;"></div>
+
+  <div id="taskHint" style="margin-top:8px;color:#555;"></div>
   <div id="taskTimer" style="margin-top:6px;font-weight:900;"></div>
 
   <div style="margin-top:8px; font-size:11px; color:#444;">
@@ -119,7 +122,7 @@
     </div>
 
     <div style="margin-top:10px; font-size:11px; color:#666;">
-      Se registrará el tiempo y pasaremos automáticamente a la siguiente.
+      Se registrará el tiempo y pasaremos a la siguiente tarea.
     </div>
   </div>
 </div>
@@ -157,12 +160,32 @@
   const VERSION = "FIN";
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
-  // ✅ AQUÍ defines tus tareas y sus rutas EXACTAS (texto tal cual aparece en el menú)
-  // La tarea se completa cuando el CLICK_PATH "termina en" route.
+  // ✅ AQUÍ defines:
+  // - route: la ruta exacta
+  // - goal: qué tienes que buscar
+  // - info: una mini explicación del producto
   const TASKS = [
-    { id:"camilla_electrica", label:"Camilla eléctrica", route:["Camillas","Camillas eléctricas"] },
-    { id:"silla_ruedas_electrica", label:"Silla de ruedas eléctrica", route:["Sillas de ruedas","Sillas de ruedas eléctricas"] },
-    { id:"autoclave_clase_b", label:"Autoclave clase B", route:["Esterilización y autoclaves","Autoclaves clase B"] },
+    {
+      id:"camilla_electrica",
+      label:"Camilla eléctrica",
+      route:["Camillas","Camillas eléctricas"],
+      goal:"Encuentra la categoría de camillas eléctricas en el menú.",
+      info:"Una camilla eléctrica es una camilla de exploración/terapia cuya altura o secciones se ajustan con motor. Se usa en clínicas, fisioterapia y centros médicos para mejorar ergonomía y confort."
+    },
+    {
+      id:"silla_ruedas_electrica",
+      label:"Silla de ruedas eléctrica",
+      route:["Sillas de ruedas","Sillas de ruedas eléctricas"],
+      goal:"Encuentra la categoría de sillas de ruedas eléctricas en el menú.",
+      info:"Una silla de ruedas eléctrica incorpora motor y batería; se maneja con joystick y está pensada para usuarios con movilidad reducida que necesitan asistencia para desplazarse."
+    },
+    {
+      id:"autoclave_clase_b",
+      label:"Autoclave clase B",
+      route:["Esterilización y autoclaves","Autoclaves clase B"],
+      goal:"Encuentra la categoría de autoclaves clase B en el menú.",
+      info:"Un autoclave clase B es un esterilizador de vapor con prevacío y postvacío. Se usa para esterilizar instrumental (incluido hueco/poroso) en clínicas, dental y estética avanzada."
+    }
   ];
 
   let taskIndex = 0;
@@ -197,11 +220,15 @@
 
   function setTaskUI(){
     const lbl = document.getElementById("taskNowLabel");
+    const goal = document.getElementById("taskGoal");
+    const info = document.getElementById("taskInfo");
     const hint = document.getElementById("taskHint");
     const timer = document.getElementById("taskTimer");
 
     if (lbl) lbl.textContent = TASK ? TASK.label : "(sin tarea)";
-    if (hint) hint.textContent = TASK ? `Objetivo: ${TASK.route.join(" > ")}` : "";
+    if (goal) goal.innerHTML = TASK ? `<b>Qué buscar:</b> ${TASK.goal}` : "";
+    if (info) info.innerHTML = TASK ? `<b>Info:</b> ${TASK.info}` : "";
+    if (hint) hint.textContent = TASK ? `Objetivo (ruta): ${TASK.route.join(" > ")}` : "";
     if (timer) timer.textContent = "Tiempo: 0.0s";
     setPathNow();
   }
@@ -260,9 +287,13 @@
       START_TS = 0;
       if (TIMER_INT) clearInterval(TIMER_INT);
       const lbl = document.getElementById("taskNowLabel");
+      const goal = document.getElementById("taskGoal");
+      const info = document.getElementById("taskInfo");
       const hint = document.getElementById("taskHint");
       const timer = document.getElementById("taskTimer");
       if (lbl) lbl.textContent = "✅ Fin";
+      if (goal) goal.innerHTML = "<b>Qué buscar:</b> —";
+      if (info) info.innerHTML = "<b>Info:</b> —";
       if (hint) hint.textContent = "Has completado todas las tareas. Descarga el CSV.";
       if (timer) timer.textContent = "";
       track("tasks_finished");
@@ -386,10 +417,7 @@
   overlay.onclick = () => toggleMenu(false);
 
   // Panel buttons
-  document.getElementById("btnFailTask").onclick = () => {
-    if (PAUSED) resumeTask(); // opcional: si marca fail, lo sacamos de pausa
-    failTask();
-  };
+  document.getElementById("btnFailTask").onclick = () => failTask();
   document.getElementById("btnDownloadCSV").onclick = () => downloadCSV();
   document.getElementById("btnResetLog").onclick = () => resetLog();
   document.getElementById("btnRestartTasks").onclick = () => restartTasks();
@@ -401,7 +429,6 @@
     nextTask();
   };
 
-  // Cierra overlay si click en fondo
   document.getElementById("doneOverlay").onclick = (e) => {
     if (e.target && e.target.id === "doneOverlay") {
       hideCompletedBanner();
@@ -424,7 +451,7 @@
       statusEl.style.display="none";
       renderRootMenu();
 
-      // Arranca la primera tarea automáticamente cuando ya hay datos
+      // Arranca la primera tarea automáticamente al cargar el menú
       if (!TASK) startCurrentTask();
     } catch(e) { statusEl.textContent="Error de carga"; }
   }
@@ -540,11 +567,8 @@
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
 
-    if(level === 0) {
-      container.innerHTML = "";
-    } else {
-      Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
-    }
+    if(level === 0) container.innerHTML = "";
+    else Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
 
     const col = document.createElement("div");
     col.className = "column";
@@ -573,7 +597,6 @@
         // =====================================================================
 
         const wasActive = li.classList.contains("active");
-
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
 
         if(item.children.length && wasActive) {
@@ -587,23 +610,7 @@
       };
 
       ul.appendChild(li);
-
-      if(parent){
-        const bAfter = bannersData.find(b => norm(b.scope) === 'after_item' && norm(b.parent) === norm(parent.name) && norm(b.after) === norm(item.name));
-        if(bAfter) {
-          const bLi = document.createElement("li");
-          bLi.innerHTML = `<div class="promo-card small"><img class="promo-img" src="${bAfter.img}"><a class="promo-link" href="${bAfter.href||'#'}"></a></div>`;
-          ul.appendChild(bLi);
-        }
-      }
     });
-
-    if(parent){
-      const bChild = bannersData.find(b => norm(b.scope) === 'category_children' && norm(b.parent) === norm(parent.name));
-      if(bChild) {
-        col.insertAdjacentHTML('beforeend', `<div class="promo-card small"><img class="promo-img" src="${bChild.img}"><a class="promo-link" href="${bChild.href||'#'}"></a></div>`);
-      }
-    }
 
     container.appendChild(col);
     updateDrawerWidth();
@@ -611,7 +618,6 @@
 
   function toggleMenu(open){
     track(open ? "menu_open" : "menu_close");
-
     drawer.style.display = open ? "flex" : "none";
     overlay.style.display = open ? "block" : "none";
     if(open && menuTree.length===0) loadAllData();
