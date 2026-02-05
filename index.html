@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Navegación Corregida</title>
+  <title>Menu Mockup - Test de encontrabilidad</title>
   <style>
     :root{ --brand:#034ca8; --border:#e6e8eb; --bg:#f4f6f9; }
     *{box-sizing:border-box}
@@ -30,18 +30,21 @@
     .column-header{padding:14px 16px 8px;font-weight:900;color:var(--brand);font-size:18px;display:flex;align-items:center;gap:10px}
     .back-only{border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center}
     .divider{border-top:1px solid #e5e7eb;margin:8px 0;}
-    .tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:8px;white-space:nowrap}
-    .tag.new{background:#e6f2fa;color:var(--brand)}
-    .tag.trending{background:#eafaf1;color:#0a8f4e}
     .promo-card{ margin:16px; border-radius:14px; overflow:hidden; position:relative; background:#f0f0f0; box-shadow:0 10px 25px rgba(0,0,0,.1); }
     .promo-img{ width:100%; height:160px; object-fit:cover; display:block; }
     .promo-link{ position:absolute; inset:0; display:block; }
     .promo-card.small{ margin:12px 16px 8px; }
     .promo-card.small .promo-img{ height:120px; }
 
-    /* Panel test */
+    /* overlays */
     #abpanel * { box-sizing:border-box; }
     code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .btn{
+      padding:10px;border-radius:12px;border:1px solid var(--border);
+      font-weight:900;cursor:pointer;
+    }
+    .btnPrimary{background:var(--brand);color:#fff;}
+    .btnGhost{background:#fff;color:#111;}
   </style>
 </head>
 <body>
@@ -51,25 +54,58 @@
   <div style="margin-left:15px;font-weight:900;color:var(--brand);">MENU MOCKUP</div>
 </header>
 
-<!-- ===== Panel de test (CSV local) ===== -->
+<!-- ===== Intro Panel Grande ===== -->
+<div id="introOverlay" style="position:fixed; inset:0; z-index:4000; background:rgba(0,0,0,.55);">
+  <div style="
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:#fff; border:1px solid var(--border); border-radius:18px;
+    width:min(780px,92vw); padding:18px; box-shadow:0 24px 60px rgba(0,0,0,.28);">
+    <div style="font-weight:1000;font-size:20px;color:var(--brand);">Test de encontrabilidad del menú</div>
+    <div style="margin-top:10px;color:#222;line-height:1.4;font-size:13px;">
+      <b>Qué tienes que hacer:</b>
+      <ol style="margin:8px 0 0 18px;">
+        <li>Pulsa <b>Empezar</b>.</li>
+        <li>Para cada tarea, navega por el menú hasta encontrar la <b>ruta correcta</b>.</li>
+        <li>Cuando llegues, saldrá un cartel: <b>“Es la correcta”</b> y pasará a la siguiente tarea.</li>
+        <li>Si te interrumpen, puedes <b>Pausar</b> y luego <b>Reanudar</b>.</li>
+        <li>Al terminar la última tarea, el CSV se <b>descargará automáticamente</b>.</li>
+      </ol>
+      <div style="margin-top:10px;color:#555;">
+        Consejo: no hace falta “adivinar”. Solo navega como lo harías normalmente.
+      </div>
+    </div>
+
+    <div style="margin-top:14px; padding:12px; border:1px dashed #cfd6df; border-radius:14px; background:#fbfcfe;">
+      <div style="font-weight:900;margin-bottom:6px;">Tareas incluidas</div>
+      <ul id="introTaskList" style="margin:0 0 0 18px; color:#333; font-size:13px;"></ul>
+      <div style="margin-top:8px; color:#666; font-size:11px;">
+        * Las rutas objetivo están definidas dentro del código en <code>TASKS</code> → <code>route:[...]</code>.
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:14px;">
+      <button id="btnIntroStart" class="btn btnPrimary" style="flex:1;">Empezar</button>
+      <button id="btnIntroClose" class="btn btnGhost" style="flex:1;">Cerrar (sin empezar)</button>
+    </div>
+  </div>
+</div>
+<!-- ============================ -->
+
+<!-- ===== Panel pequeño (control) ===== -->
 <div id="abpanel" style="
   position:fixed; top:10px; right:10px; z-index:2000;
-  background:#fff; border:1px solid #e6e8eb; border-radius:12px;
+  background:#fff; border:1px solid var(--border); border-radius:12px;
   padding:10px; box-shadow:0 10px 25px rgba(0,0,0,.12);
-  font-size:12px; width:420px; max-width:92vw;">
-  <div style="font-weight:900;color:#034ca8;margin-bottom:6px;">Test de encontrabilidad (ruta → CSV local)</div>
+  font-size:12px; width:420px; max-width:92vw; display:none;">
+  <div style="font-weight:900;color:var(--brand);margin-bottom:6px;">Test en curso</div>
 
   <div style="display:flex; gap:8px; margin-bottom:6px;">
-    <button id="btnPause" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
-      ⏸ Pausa
-    </button>
-    <button id="btnResume" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#034ca8;color:#fff;font-weight:800;cursor:pointer; display:none;">
-      ▶ Reanudar
-    </button>
+    <button id="btnPause" class="btn btnGhost" style="flex:1;">⏸ Pausa</button>
+    <button id="btnResume" class="btn btnPrimary" style="flex:1; display:none;">▶ Reanudar</button>
   </div>
 
   <div style="font-weight:900; margin-bottom:6px;">
-    Tarea actual: <span id="taskNowLabel" style="color:#034ca8;"></span>
+    Tarea: <span id="taskNowLabel" style="color:var(--brand);"></span>
   </div>
 
   <div id="taskGoal" style="margin-top:4px;color:#111;"></div>
@@ -85,44 +121,34 @@
   <div id="taskLast" style="margin-top:8px;color:#666;font-size:11px;"></div>
 
   <div style="display:flex; gap:8px; margin-top:10px;">
-    <button id="btnFailTask" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
-      No lo encuentro
-    </button>
-    <button id="btnDownloadCSV" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
-      Descargar CSV
-    </button>
+    <button id="btnFailTask" class="btn btnGhost" style="flex:1;">No lo encuentro</button>
+    <button id="btnDownloadCSV" class="btn btnGhost" style="flex:1;">Descargar CSV</button>
   </div>
 
   <div style="display:flex; gap:8px; margin-top:8px;">
-    <button id="btnResetLog" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
-      Borrar log
-    </button>
-    <button id="btnRestartTasks" style="flex:1;padding:8px;border-radius:10px;border:1px solid #e6e8eb;background:#fff;color:#111;font-weight:800;cursor:pointer;">
-      Reiniciar tareas
-    </button>
+    <button id="btnResetLog" class="btn btnGhost" style="flex:1;">Borrar log</button>
+    <button id="btnRestartTasks" class="btn btnGhost" style="flex:1;">Reiniciar tareas</button>
   </div>
 </div>
-<!-- ==================================== -->
+<!-- =============================== -->
 
 <!-- ===== Cartel de tarea completada ===== -->
 <div id="doneOverlay" style="position:fixed; inset:0; z-index:3000; display:none; background:rgba(0,0,0,.55);">
   <div style="
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    background:#fff; border:1px solid #e6e8eb; border-radius:16px;
+    background:#fff; border:1px solid var(--border); border-radius:16px;
     width:min(560px,92vw); padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.25);
     text-align:center;">
-    <div style="font-weight:1000;font-size:18px;color:#034ca8;">✅ Es la correcta</div>
-    <div id="doneDetail" style="margin-top:8px;color:#333;font-size:13px;"></div>
+    <div style="font-weight:1000;font-size:18px;color:var(--brand);">✅ Es la correcta</div>
+    <div id="doneDetail" style="margin-top:8px;color:#333;font-size:13px; white-space:pre-line;"></div>
     <div id="doneTime" style="margin-top:10px;font-weight:900;"></div>
 
     <div style="display:flex; gap:10px; margin-top:14px;">
-      <button id="btnNextTask" style="flex:1; padding:10px; border-radius:12px; border:1px solid #e6e8eb; background:#034ca8; color:#fff; font-weight:900; cursor:pointer;">
-        Siguiente tarea
-      </button>
+      <button id="btnNextTask" class="btn btnPrimary" style="flex:1;">Siguiente tarea</button>
     </div>
 
     <div style="margin-top:10px; font-size:11px; color:#666;">
-      Se registrará el tiempo y pasaremos a la siguiente tarea.
+      Al terminar la última tarea se descargará el CSV automáticamente.
     </div>
   </div>
 </div>
@@ -160,31 +186,28 @@
   const VERSION = "FIN";
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
-  // ✅ AQUÍ defines:
-  // - route: la ruta exacta
-  // - goal: qué tienes que buscar
-  // - info: una mini explicación del producto
+  // ✅ AQUÍ PONES TUS RUTAS EXACTAS en route:[...]
   const TASKS = [
     {
       id:"camilla_electrica",
       label:"Camilla eléctrica",
-      route:["Camillas","Camillas eléctricas"],
+      route:["Camillas","Camillas eléctricas"], // <-- EDITA AQUÍ
       goal:"Encuentra la categoría de camillas eléctricas en el menú.",
-      info:"Una camilla eléctrica es una camilla de exploración/terapia cuya altura o secciones se ajustan con motor. Se usa en clínicas, fisioterapia y centros médicos para mejorar ergonomía y confort."
+      info:"Camilla eléctrica: camilla clínica con motor para ajustar altura/secciones; se usa en fisioterapia, clínica y exploración."
     },
     {
       id:"silla_ruedas_electrica",
       label:"Silla de ruedas eléctrica",
-      route:["Sillas de ruedas","Sillas de ruedas eléctricas"],
+      route:["Sillas de ruedas","Sillas de ruedas eléctricas"], // <-- EDITA AQUÍ
       goal:"Encuentra la categoría de sillas de ruedas eléctricas en el menú.",
-      info:"Una silla de ruedas eléctrica incorpora motor y batería; se maneja con joystick y está pensada para usuarios con movilidad reducida que necesitan asistencia para desplazarse."
+      info:"Silla de ruedas eléctrica: motor y batería, control por joystick, pensada para movilidad reducida."
     },
     {
       id:"autoclave_clase_b",
       label:"Autoclave clase B",
-      route:["Esterilización y autoclaves","Autoclaves clase B"],
+      route:["Esterilización y autoclaves","Autoclaves clase B"], // <-- EDITA AQUÍ
       goal:"Encuentra la categoría de autoclaves clase B en el menú.",
-      info:"Un autoclave clase B es un esterilizador de vapor con prevacío y postvacío. Se usa para esterilizar instrumental (incluido hueco/poroso) en clínicas, dental y estética avanzada."
+      info:"Autoclave clase B: esterilizador de vapor con prevacío/postvacío, apto para instrumental hueco/poroso (dental, clínica, estética avanzada)."
     }
   ];
 
@@ -201,6 +224,7 @@
   let TASK_DONE = false;
 
   const EVENTS = [];
+  let TEST_STARTED = false;
 
   function norm2(s){
     return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -225,7 +249,7 @@
     const hint = document.getElementById("taskHint");
     const timer = document.getElementById("taskTimer");
 
-    if (lbl) lbl.textContent = TASK ? TASK.label : "(sin tarea)";
+    if (lbl) lbl.textContent = TASK ? `${taskIndex+1}/${TASKS.length} · ${TASK.label}` : "(sin tarea)";
     if (goal) goal.innerHTML = TASK ? `<b>Qué buscar:</b> ${TASK.goal}` : "";
     if (info) info.innerHTML = TASK ? `<b>Info:</b> ${TASK.info}` : "";
     if (hint) hint.textContent = TASK ? `Objetivo (ruta): ${TASK.route.join(" > ")}` : "";
@@ -280,23 +304,20 @@
     }, 100);
   }
 
+  function finishAllTasks(){
+    TASK = null;
+    START_TS = 0;
+    if (TIMER_INT) clearInterval(TIMER_INT);
+    track("tasks_finished");
+
+    // descarga automática
+    downloadCSV(true);
+  }
+
   function nextTask(){
     taskIndex++;
     if (taskIndex >= TASKS.length) {
-      TASK = null;
-      START_TS = 0;
-      if (TIMER_INT) clearInterval(TIMER_INT);
-      const lbl = document.getElementById("taskNowLabel");
-      const goal = document.getElementById("taskGoal");
-      const info = document.getElementById("taskInfo");
-      const hint = document.getElementById("taskHint");
-      const timer = document.getElementById("taskTimer");
-      if (lbl) lbl.textContent = "✅ Fin";
-      if (goal) goal.innerHTML = "<b>Qué buscar:</b> —";
-      if (info) info.innerHTML = "<b>Info:</b> —";
-      if (hint) hint.textContent = "Has completado todas las tareas. Descarga el CSV.";
-      if (timer) timer.textContent = "";
-      track("tasks_finished");
+      finishAllTasks();
       return;
     }
     toggleMenu(true);
@@ -314,11 +335,8 @@
     PAUSED = true;
     PAUSE_TS = Date.now();
     track("task_pause");
-
-    const btnPause = document.getElementById("btnPause");
-    const btnResume = document.getElementById("btnResume");
-    if (btnPause) btnPause.style.display = "none";
-    if (btnResume) btnResume.style.display = "block";
+    document.getElementById("btnPause").style.display = "none";
+    document.getElementById("btnResume").style.display = "block";
   }
 
   function resumeTask(){
@@ -327,11 +345,8 @@
     PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS);
     PAUSE_TS = 0;
     track("task_resume");
-
-    const btnPause = document.getElementById("btnPause");
-    const btnResume = document.getElementById("btnResume");
-    if (btnPause) btnPause.style.display = "block";
-    if (btnResume) btnResume.style.display = "none";
+    document.getElementById("btnPause").style.display = "block";
+    document.getElementById("btnResume").style.display = "none";
   }
 
   function isSuccessPath(){
@@ -354,7 +369,7 @@
     return s;
   }
 
-  function downloadCSV(){
+  function downloadCSV(isAuto=false){
     if (!EVENTS.length) {
       alert("No hay eventos todavía.");
       return;
@@ -373,6 +388,11 @@
     a.click();
     a.remove();
     URL.revokeObjectURL(a.href);
+
+    if (isAuto) {
+      // aviso final bonito
+      alert("✅ Test finalizado. Se ha descargado el CSV automáticamente.");
+    }
   }
 
   function resetLog(){
@@ -405,6 +425,54 @@
   }
   // ============================================================
 
+  // ===== Intro list =====
+  function fillIntroList(){
+    const ul = document.getElementById("introTaskList");
+    if (!ul) return;
+    ul.innerHTML = "";
+    TASKS.forEach((t, i) => {
+      const li = document.createElement("li");
+      li.textContent = `${i+1}. ${t.label} — ${t.goal}`;
+      ul.appendChild(li);
+    });
+  }
+  fillIntroList();
+
+  // ===== Start flow =====
+  function beginTest(){
+    TEST_STARTED = true;
+    document.getElementById("introOverlay").style.display = "none";
+    document.getElementById("abpanel").style.display = "block";
+    toggleMenu(true);
+    // el menú carga al abrir; cuando termine loadAllData inicia tarea automáticamente si TEST_STARTED
+  }
+
+  document.getElementById("btnIntroStart").onclick = () => beginTest();
+  document.getElementById("btnIntroClose").onclick = () => {
+    document.getElementById("introOverlay").style.display = "none";
+    // no empezamos
+  };
+
+  // Panel buttons
+  document.getElementById("btnFailTask").onclick = () => failTask();
+  document.getElementById("btnDownloadCSV").onclick = () => downloadCSV(false);
+  document.getElementById("btnResetLog").onclick = () => resetLog();
+  document.getElementById("btnRestartTasks").onclick = () => restartTasks();
+  document.getElementById("btnPause").onclick = () => pauseTask();
+  document.getElementById("btnResume").onclick = () => resumeTask();
+
+  document.getElementById("btnNextTask").onclick = () => {
+    hideCompletedBanner();
+    nextTask();
+  };
+  document.getElementById("doneOverlay").onclick = (e) => {
+    if (e.target && e.target.id === "doneOverlay") {
+      hideCompletedBanner();
+      nextTask();
+    }
+  };
+
+  // ===== Menu data + render =====
   let menuTree = [];
   let bannersData = [];
 
@@ -415,26 +483,6 @@
   document.getElementById("openBtn").onclick = () => toggleMenu(true);
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
-
-  // Panel buttons
-  document.getElementById("btnFailTask").onclick = () => failTask();
-  document.getElementById("btnDownloadCSV").onclick = () => downloadCSV();
-  document.getElementById("btnResetLog").onclick = () => resetLog();
-  document.getElementById("btnRestartTasks").onclick = () => restartTasks();
-  document.getElementById("btnPause").onclick = () => pauseTask();
-  document.getElementById("btnResume").onclick = () => resumeTask();
-
-  document.getElementById("btnNextTask").onclick = () => {
-    hideCompletedBanner();
-    nextTask();
-  };
-
-  document.getElementById("doneOverlay").onclick = (e) => {
-    if (e.target && e.target.id === "doneOverlay") {
-      hideCompletedBanner();
-      nextTask();
-    }
-  };
 
   const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
   const displayName = (name) => String(name||"").replace(/\s+Total\s*$/i,"").trim();
@@ -451,8 +499,8 @@
       statusEl.style.display="none";
       renderRootMenu();
 
-      // Arranca la primera tarea automáticamente al cargar el menú
-      if (!TASK) startCurrentTask();
+      // SOLO iniciamos tarea si el usuario ha pulsado "Empezar"
+      if (TEST_STARTED && !TASK) startCurrentTask();
     } catch(e) { statusEl.textContent="Error de carga"; }
   }
 
@@ -522,11 +570,11 @@
     col.className = "column";
 
     col.innerHTML = `<ul>
-      <li class="item" id="item-spec" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
-      <li class="item" id="item-off" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
-      <li class="item" id="item-all" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
+      <li class="item" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>
+      <li class="item" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>
+      <li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
       <li class="divider"></li>
-      ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}</span></li>`).join('')}
+      ${FEATURED_CATS.map(fc => `<li class="item"><span class="label"><span class="text">${fc.name}</span></span></li>`).join('')}
     </ul>`;
 
     const b = bannersData.find(b => norm(b.scope) === 'root');
@@ -566,7 +614,6 @@
 
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
-
     if(level === 0) container.innerHTML = "";
     else Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
 
@@ -582,8 +629,8 @@
       li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
 
       li.onclick = () => {
-        // ===== test tracking (solo si hay tarea activa y no está en pausa) =====
-        if (TASK && START_TS && !TASK_DONE && !PAUSED) {
+        // ===== tracking (solo si test started + tarea activa + no pausa) =====
+        if (TEST_STARTED && TASK && START_TS && !TASK_DONE && !PAUSED) {
           CLICK_PATH.push(item.name);
           setPathNow();
           track("click_item", { label: item.name, level });
@@ -594,7 +641,7 @@
             showCompletedBanner("✅ Ruta correcta");
           }
         }
-        // =====================================================================
+        // ================================================================
 
         const wasActive = li.classList.contains("active");
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
@@ -617,7 +664,7 @@
   }
 
   function toggleMenu(open){
-    track(open ? "menu_open" : "menu_close");
+    if (TEST_STARTED) track(open ? "menu_open" : "menu_close");
     drawer.style.display = open ? "flex" : "none";
     overlay.style.display = open ? "block" : "none";
     if(open && menuTree.length===0) loadAllData();
