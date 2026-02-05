@@ -56,9 +56,7 @@
     }
 
     /* confetti canvas */
-    #confettiCanvas{
-      position:fixed; inset:0; z-index:9999; pointer-events:none; display:none;
-    }
+    #confettiCanvas{ position:fixed; inset:0; z-index:9999; pointer-events:none; display:none; }
 
     /* spinner */
     .spinner{
@@ -68,6 +66,21 @@
       margin:0 auto;
     }
     @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ===== Señal visual cuando está costando ===== */
+    #drawer.struggling .item.active{
+      background:#fff7e6 !important;
+      color:#8a4b00 !important;
+      border-left:5px solid #ffb020 !important;
+      font-weight:1000 !important;
+    }
+    /* ===== Marcado naranja del item encontrado con desvíos ===== */
+    .item.found-warn{
+      background:#fff7e6 !important;
+      color:#8a4b00 !important;
+      border-left:5px solid #ffb020 !important;
+      font-weight:1000 !important;
+    }
   </style>
 </head>
 <body>
@@ -268,7 +281,7 @@
     {
       id:"autoclave_clase_b",
       label:"Autoclave clase B",
-      route:["Esterilización y autoclaves","Autoclaves clase B"],
+      route:["Esterilización y autoclaves","Autoclaves","Autoclaves clase B"],
       goal:"Encuentra la categoría de autoclaves clase B en el menú.",
       info:"Autoclave clase B: esterilizador de vapor con prevacío/postvacío, apto para instrumental hueco/poroso (dental, clínica, estética avanzada)."
     }
@@ -293,11 +306,18 @@
   let TASK_DONE = false;
 
   const EVENTS = [];
-  // TASK_RESULTS: { taskId: { status:'success'|'success_inefficient'|'fail', timeMs:number, clicks:number } }
   const TASK_RESULTS = {};
 
   let TEST_STARTED = false;
   let TASK_ACTIVE = false;
+
+  // ============== Menu core ==============
+  let menuTree = [];
+  let bannersData = [];
+
+  const drawer = document.getElementById("drawer");
+  const overlay = document.getElementById("overlay");
+  const statusEl = document.getElementById("status");
 
   function norm2(s){
     return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -375,11 +395,22 @@
     document.getElementById("nextTaskOverlay").style.display = "none";
   }
 
+  function isInefficient(){
+    return CLICK_COUNT > MAX_CLICKS_OK;
+  }
+
+  function updateStruggleUI(){
+    if (!drawer) return;
+    if (TASK_ACTIVE && !TASK_DONE && isInefficient()) drawer.classList.add("struggling");
+    else drawer.classList.remove("struggling");
+  }
+
   function startThisTaskNow(){
     NAV_PATH = [];
     CLICK_COUNT = 0;
     TASK_DONE = false;
     setPathNow();
+    drawer.classList.remove("struggling");
 
     START_TS = Date.now();
     PAUSED = false;
@@ -441,10 +472,6 @@
       if (current[i] !== target[i]) return false;
     }
     return true;
-  }
-
-  function isInefficient(){
-    return CLICK_COUNT > MAX_CLICKS_OK;
   }
 
   function showCompletedBanner(message, title="✅ Resultado"){
@@ -514,6 +541,7 @@
     TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT };
     track("task_fail", { path: NAV_PATH.join(" > ") });
 
+    drawer.classList.remove("struggling");
     showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
   }
 
@@ -711,18 +739,7 @@
     requestAnimationFrame(frame);
   }
 
-  // ============== Menu core ==============
-  let menuTree = [];
-  let bannersData = [];
-
-  const drawer = document.getElementById("drawer");
-  const overlay = document.getElementById("overlay");
-  const statusEl = document.getElementById("status");
-
-  document.getElementById("openBtn").onclick = () => toggleMenu(true);
-  document.getElementById("closeBtn").onclick = () => toggleMenu(false);
-  overlay.onclick = () => toggleMenu(false);
-
+  // ===================== Data build =====================
   const norm = (s) => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
   const displayName = (name) => String(name||"").replace(/\s+Total\s*$/i,"").trim();
 
@@ -799,6 +816,7 @@
     nodes.forEach(n => sortNodes(n.children, level + 1));
   }
 
+  // ===================== Render menu =====================
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
@@ -875,6 +893,7 @@
 
           // click count total
           CLICK_COUNT++;
+          updateStruggleUI();
 
           setPathNow();
           track("click_item", { label: item.name, level, path: NAV_PATH.join(" > ") });
@@ -886,6 +905,12 @@
 
             TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks: CLICK_COUNT };
             track("task_success", { label: item.name, level, path: NAV_PATH.join(" > "), inefficient: status === "success_inefficient" });
+
+            // ✅ marca naranja si hay desvíos
+            if (status === "success_inefficient") {
+              li.classList.add("found-warn");
+            }
+            drawer.classList.remove("struggling");
 
             if (status === "success_inefficient") {
               showCompletedBanner("✅ Ruta correcta (con desvíos)", "🟡 Correcta con desvíos");
@@ -923,6 +948,11 @@
     container.appendChild(col);
     updateDrawerWidth();
   }
+
+  // ===================== Menu open/close =====================
+  document.getElementById("openBtn").onclick = () => toggleMenu(true);
+  document.getElementById("closeBtn").onclick = () => toggleMenu(false);
+  overlay.onclick = () => toggleMenu(false);
 
   function toggleMenu(open){
     drawer.style.display = open ? "flex" : "none";
