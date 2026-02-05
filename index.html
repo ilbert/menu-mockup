@@ -177,6 +177,19 @@
       margin-top:18px;
     }
 
+    /* CTA del intro (PC) — NO sticky */
+    .introCta{
+      display:flex;
+      justify-content:center;
+      margin-top:18px;
+    }
+    .introBtn{
+      min-width:min(560px,92vw);
+      font-size:18px;
+      padding:18px 24px;
+      border-radius:18px;
+    }
+
     /* ===== PANEL ===== */
     #abpanel{
       position:fixed;
@@ -206,7 +219,6 @@
       font-weight:900;
     }
 
-    /* Toggle del panel */
     #abpanel .panelToggle{
       display:none;
       border:none;
@@ -220,7 +232,7 @@
       -webkit-tap-highlight-color:transparent;
     }
 
-    /* ===== MÓVIL ===== */
+    /* ===== MÓVIL SOLO: intro sin scroll + CTA sticky ===== */
     @media (max-width:720px){
       body{ overflow:auto; }
 
@@ -238,10 +250,37 @@
         border:none;
       }
 
-      /* Intro: 1 columna */
+      /* Intro: 1 columna y CTA sticky SOLO en móvil */
+      .introModal{
+        display:flex;
+        flex-direction:column;
+        height:100vh;
+        overflow:hidden;
+      }
       .introGrid{
         grid-template-columns:1fr;
         gap:12px;
+      }
+      .introModal .introGrid{
+        flex:1;
+        overflow:auto;
+        padding-bottom:110px;
+      }
+
+      .introCta{
+        position:fixed;
+        left:0; right:0; bottom:0;
+        z-index:9999;
+        padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+        background:rgba(244,246,249,.92);
+        backdrop-filter: blur(10px);
+        border-top:1px solid var(--border);
+      }
+      .introBtn{
+        width:min(560px, 92vw);
+        padding:16px 22px;
+        font-size:18px;
+        border-radius:18px;
       }
 
       /* Panel abajo */
@@ -252,69 +291,27 @@
         padding:10px 12px calc(10px + env(safe-area-inset-bottom));
         box-shadow:0 -16px 40px rgba(0,0,0,.18);
       }
-
       #abpanel.is-collapsed{
         height:132px;
         overflow:hidden;
       }
-
       #abpanel .panelToggle{
         display:inline-flex;
         align-items:center;
         gap:6px;
       }
-
       #abpanel .btn{
         padding:11px 12px !important;
         font-size:14px !important;
         border-radius:14px !important;
       }
-
       #abpanel .kpi{
         padding:6px 10px;
         font-size:13px;
       }
 
-      #drawer{ max-width:100vw; }
-      #drawer{ padding-bottom:150px; }
+      #drawer{ max-width:100vw; padding-bottom:150px; }
       #columns-container{ padding-bottom:150px; }
-    }
-
-    /* ===== Intro: botón siempre visible en móvil (sin tocar PC) ===== */
-    @media (max-width:720px){
-      .introModal{
-        display:flex;
-        flex-direction:column;
-        height:100vh;
-        overflow:hidden;
-        padding:16px 14px;
-      }
-
-      .introModal .introGrid{
-        flex:1;
-        overflow:auto;
-        padding-bottom:110px;
-      }
-
-      .introCta{
-        position:fixed;
-        left:0; right:0;
-        bottom:0;
-        z-index:9999;
-        padding:12px 14px calc(12px + env(safe-area-inset-bottom));
-        background:rgba(244,246,249,.92);
-        backdrop-filter: blur(10px);
-        border-top:1px solid var(--border);
-        display:flex;
-        justify-content:center;
-      }
-
-      .introBtn{
-        width:min(560px, 92vw);
-        font-size:18px;
-        padding:16px 22px;
-        border-radius:18px;
-      }
     }
   </style>
 </head>
@@ -371,7 +368,7 @@
       </div>
     </div>
 
-    <!-- ✅ CTA sticky en móvil -->
+    <!-- ✅ PC: botón centrado grande (igual que antes). Móvil: sticky por CSS -->
     <div class="introCta">
       <button id="btnIntroStart" class="btn btnPrimary introBtn">Empezar</button>
     </div>
@@ -480,13 +477,9 @@
 </aside>
 
 <script>
-  // ========= CONFIG =========
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
-  const GID_BANNERS = "1300813141";
-
   const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_CATEGORIES}&_=${Date.now()}`;
-  const BANNERS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_BANNERS}&_=${Date.now()}`;
 
   const CHEVRON_SVG = `<span class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
   const BACK_CHEVRON_SVG = `<span class="chevron" style="transform:rotate(180deg)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>`;
@@ -513,7 +506,6 @@
     }
   ];
 
-  // ========= STATE =========
   let taskIndex = 0;
   let TASK = null;
 
@@ -537,7 +529,6 @@
 
   let menuTree = [];
 
-  // ========= HELPERS =========
   const drawer = document.getElementById("drawer");
   const overlay = document.getElementById("overlay");
   const statusEl = document.getElementById("status");
@@ -553,13 +544,8 @@
     return Math.max(0, (now - START_TS) - PAUSED_TOTAL_MS);
   }
 
-  function setPathNow(){
-    document.getElementById("pathNow").textContent = NAV_PATH.join(" > ");
-  }
-
-  function setTaskLabelPanel(){
-    document.getElementById("taskNowLabel").textContent = TASK ? `${taskIndex+1}/${TASKS.length} · ${TASK.label}` : "(sin tarea)";
-  }
+  function setPathNow(){ document.getElementById("pathNow").textContent = NAV_PATH.join(" > "); }
+  function setTaskLabelPanel(){ document.getElementById("taskNowLabel").textContent = TASK ? `${taskIndex+1}/${TASKS.length} · ${TASK.label}` : "(sin tarea)"; }
 
   function setDetourBadge(){
     const b = document.getElementById("detourBadge");
@@ -600,12 +586,10 @@
       `Último: ${row.event}${row.label ? " → " + row.label : ""} · Desvíos: ${DETOURS}`;
   }
 
-  // ========= PANEL COLLAPSE =========
+  // Panel collapse
   const panel = document.getElementById("abpanel");
   const btnPanelToggle = document.getElementById("btnPanelToggle");
-
   function isMobile(){ return window.matchMedia("(max-width: 720px)").matches; }
-
   function collapsePanel(on){
     if (!panel || !btnPanelToggle) return;
     if (!isMobile()){
@@ -621,24 +605,19 @@
       btnPanelToggle.textContent = "▼ Contraer";
     }
   }
-
   function autoPeekPanel(){
     if(!isMobile()) return;
     collapsePanel(false);
     clearTimeout(window.__peekT);
     window.__peekT = setTimeout(()=>collapsePanel(true), 2000);
   }
-
   btnPanelToggle.addEventListener("click", () => {
     const collapsed = panel.classList.contains("is-collapsed");
     collapsePanel(!collapsed);
   });
+  window.addEventListener("resize", () => collapsePanel(isMobile()));
 
-  window.addEventListener("resize", () => {
-    collapsePanel(isMobile());
-  });
-
-  // ========= UI FLOW =========
+  // Intro list
   function fillIntroTaskList(){
     const ul = document.getElementById("introTaskList");
     ul.innerHTML = "";
@@ -649,10 +628,11 @@
     });
   }
 
+  function hardPause(){ if (TASK_ACTIVE && !PAUSED) { PAUSED = true; PAUSE_TS = Date.now(); } }
+
   function showNextTaskScreen(){
     TASK_ACTIVE = false;
     hardPause();
-
     TASK = TASKS[taskIndex];
     setTaskLabelPanel();
 
@@ -661,13 +641,9 @@
     document.getElementById("nextInfo").innerHTML = `<b>Info:</b> ${TASK.info}`;
     document.querySelector("#nextRoute code").textContent = TASK.route.join(" > ");
     document.getElementById("nextTaskOverlay").style.display = "block";
-
     autoPeekPanel();
   }
-
-  function hideNextTaskScreen(){
-    document.getElementById("nextTaskOverlay").style.display = "none";
-  }
+  function hideNextTaskScreen(){ document.getElementById("nextTaskOverlay").style.display = "none"; }
 
   function startThisTaskNow(){
     NAV_PATH = [];
@@ -703,10 +679,6 @@
     autoPeekPanel();
   }
 
-  function hardPause(){
-    if (TASK_ACTIVE && !PAUSED) { PAUSED = true; PAUSE_TS = Date.now(); }
-  }
-
   function pauseTask(){
     if (!TASK_ACTIVE || !START_TS || PAUSED) return;
     PAUSED = true;
@@ -740,61 +712,6 @@
     if (norm2(clickedName) !== norm2(expected)) DETOURS++;
   }
 
-  function showCompletedBanner(message, title){
-    hardPause();
-    confettiBurstSlow();
-
-    const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
-    const routeStr = NAV_PATH.join(" > ");
-
-    document.getElementById("doneTitle").textContent = title;
-    document.getElementById("doneDetail").textContent =
-      `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
-    document.getElementById("doneTime").textContent = seconds ? `Tiempo: ${seconds}s` : "";
-    document.getElementById("doneOverlay").style.display = "block";
-
-    collapsePanel(true);
-  }
-
-  function nextTaskFlow(){
-    document.getElementById("doneOverlay").style.display = "none";
-    if (TASK_ACTIVE) track("task_end");
-    TASK_ACTIVE = false;
-    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
-
-    taskIndex++;
-    if (taskIndex >= TASKS.length) finishAllTasks();
-    else showNextTaskScreen();
-  }
-
-  function finishAllTasks(){
-    TASK_ACTIVE = false;
-    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
-    track("tasks_finished");
-
-    document.getElementById("finalOverlay").style.display = "block";
-    setTimeout(() => {
-      try { downloadExcelAuto(); }
-      finally {
-        document.getElementById("finalSubtitle").textContent = "✅ Descarga iniciada. Ya puedes cerrar esta ventana.";
-        document.getElementById("finalSpinner").style.display = "none";
-      }
-    }, 120);
-  }
-
-  function failTask(){
-    if(!TASK_ACTIVE || TASK_DONE) return;
-    TASK_DONE = true;
-
-    const tms = effectiveElapsedMs();
-    TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT, detours: DETOURS };
-    track("task_fail");
-
-    drawer.classList.remove("struggling");
-    showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
-  }
-
-  // ========= EXCEL (.xls XML) =========
   function xmlEscape(s){
     return String(s ?? "")
       .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
@@ -806,7 +723,6 @@
     }</Row>`).join("");
     return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
   }
-
   function buildExcelXml(){
     const rowsSummary = [];
     const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
@@ -869,7 +785,6 @@
  ${worksheetXml("Eventos", rowsEvents)}
 </Workbook>`;
   }
-
   function downloadExcelAuto(){
     const xml = buildExcelXml();
     const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
@@ -883,7 +798,6 @@
     URL.revokeObjectURL(a.href);
   }
 
-  // ========= CONFETTI (lento) =========
   function confettiBurstSlow(){
     const canvas = document.getElementById("confettiCanvas");
     const ctx = canvas.getContext("2d");
@@ -920,7 +834,58 @@
     })();
   }
 
-  // ========= DATA LOAD =========
+  function showCompletedBanner(message, title){
+    hardPause();
+    confettiBurstSlow();
+
+    const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
+    const routeStr = NAV_PATH.join(" > ");
+
+    document.getElementById("doneTitle").textContent = title;
+    document.getElementById("doneDetail").textContent =
+      `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
+    document.getElementById("doneTime").textContent = seconds ? `Tiempo: ${seconds}s` : "";
+    document.getElementById("doneOverlay").style.display = "block";
+
+    collapsePanel(true);
+  }
+
+  function nextTaskFlow(){
+    document.getElementById("doneOverlay").style.display = "none";
+    if (TASK_ACTIVE) track("task_end");
+    TASK_ACTIVE = false;
+    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
+
+    taskIndex++;
+    if (taskIndex >= TASKS.length) finishAllTasks();
+    else showNextTaskScreen();
+  }
+
+  function finishAllTasks(){
+    TASK_ACTIVE = false;
+    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
+    track("tasks_finished");
+
+    document.getElementById("finalOverlay").style.display = "block";
+    setTimeout(() => {
+      try { downloadExcelAuto(); }
+      finally {
+        document.getElementById("finalSubtitle").textContent = "✅ Descarga iniciada. Ya puedes cerrar esta ventana.";
+        document.getElementById("finalSpinner").style.display = "none";
+      }
+    }, 120);
+  }
+
+  function failTask(){
+    if(!TASK_ACTIVE || TASK_DONE) return;
+    TASK_DONE = true;
+    const tms = effectiveElapsedMs();
+    TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT, detours: DETOURS };
+    track("task_fail");
+    drawer.classList.remove("struggling");
+    showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
+  }
+
   function parseCSV(text){
     const rows = [];
     let cur = "", row = [], inQ = false;
@@ -937,7 +902,6 @@
     row.push(cur); if(row.join("").trim()) rows.push(row);
     return rows;
   }
-
   function sortNodes(nodes, level) {
     if (!nodes) return;
     if (level === 0) {
@@ -946,7 +910,6 @@
     } else nodes.sort((a, b) => a.name.localeCompare(b.name));
     nodes.forEach(n => sortNodes(n.children, level + 1));
   }
-
   function buildTree(csv){
     const root = [];
     csv.split(/\r?\n/).forEach(line => {
@@ -964,7 +927,6 @@
     sortNodes(root, 0);
     menuTree = root;
   }
-
   async function loadAllData(){
     statusEl.style.display="block";
     statusEl.textContent="Cargando...";
@@ -977,13 +939,11 @@
     } catch(e) { statusEl.textContent="Error de carga"; }
   }
 
-  // ========= RENDER =========
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
     const col = document.createElement("div");
     col.className = "column";
-
     col.innerHTML = `<ul>
       <li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>
       <li class="divider"></li>
@@ -1027,7 +987,6 @@
           if (isSuccessPath()) {
             TASK_DONE = true;
             const tms = effectiveElapsedMs();
-
             const status = (DETOURS > 0) ? "success_inefficient" : "success";
             TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks:CLICK_COUNT, detours:DETOURS };
             track("task_success", { label:item.name, level, path:NAV_PATH.join(" > ") });
@@ -1060,7 +1019,6 @@
     updateDrawerWidth();
   }
 
-  // ========= MENU TOGGLE =========
   function toggleMenu(open){
     drawer.style.display = open ? "flex" : "none";
     overlay.style.display = open ? "block" : "none";
@@ -1072,7 +1030,7 @@
     drawer.style.width = Math.min(count * 330, window.innerWidth * 0.95) + "px";
   }
 
-  // ========= WIRING =========
+  // Wiring
   document.getElementById("openBtn").onclick = () => toggleMenu(true);
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
@@ -1081,10 +1039,8 @@
     TEST_STARTED = true;
     document.getElementById("taskIntroOverlay").style.display = "none";
     document.getElementById("abpanel").style.display = "block";
-
     collapsePanel(true);
     autoPeekPanel();
-
     taskIndex = 0;
     showNextTaskScreen();
   };
@@ -1095,7 +1051,7 @@
   document.getElementById("btnPause").onclick = () => pauseTask();
   document.getElementById("btnResume").onclick = () => resumeTask();
 
-  // ========= INIT =========
+  // Init
   fillIntroTaskList();
   document.getElementById("taskIntroOverlay").style.display = "block";
   collapsePanel(true);
