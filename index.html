@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Test de usabilidad</title>
+  <title>Menu Mockup - Test A/B</title>
   <style>
     :root{
       --brand:#034ca8; --brand2:#0b5bd3;
@@ -294,14 +294,15 @@
 <script>
   // ==========================================
   // ⚙️ CONFIGURACIÓN DEL TEST A/B
-  // CAMBIA 'B' POR 'A' SI QUIERES VER LA VERSIÓN ORIGINAL
+  // 'A' = Botón "Todas las categorías" (Ocultas)
+  // 'B' = Lista completa de categorías (Desplegadas)
   const TEST_VERSION = 'B';
   // ==========================================
 
   document.getElementById('ver-display').textContent = TEST_VERSION;
   document.getElementById('ver-panel').textContent = TEST_VERSION;
 
-  // ====== Datos categorías + banners ======
+  // ====== Datos ======
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
   const GID_BANNERS = "1300813141";
@@ -336,7 +337,7 @@
     { name:"Promociones" }
   ];
 
-  // ====== Tracking / Experimento ======
+  // ====== Tracking ======
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
   const TASKS = [
@@ -677,20 +678,20 @@
   }
 
 
-  // ====== LÓGICA DE CLIC UNIFICADA (CLAVE PARA EL ARREGLO) ======
+  // ====== LÓGICA DE CLIC UNIFICADA (CORREGIDA) ======
   function handleGenericItemClick(item, level, liElement, container, col) {
       const wasActive = liElement.classList.contains("active");
 
-      // ---- Tracking (Blindado contra nulls) ----
-      if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
+      // ---- Tracking (SOLO si el test está activo y la tarea existe) ----
+      if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED && TASK) {
         const beforePathArr = [...NAV_PATH];
         NAV_PATH = NAV_PATH.slice(0, level);
         NAV_PATH[level] = item.name;
         const afterPathArr = [...NAV_PATH];
         CLICK_COUNT++;
 
-        // Corrección importante: verificar si TASK existe antes de leer route
-        const expected = (TASK && TASK.route && TASK.route[level]) ? TASK.route[level] : "";
+        // Verificación de seguridad por si TASK no está definido
+        const expected = (TASK.route && TASK.route[level]) ? TASK.route[level] : "";
         const isExpected = expected ? (norm2(item.name) === norm2(expected)) : 0;
 
         let deviation = 0;
@@ -724,7 +725,7 @@
         }
       }
 
-      // ---- UI: Abrir/Cerrar ----
+      // ---- UI: Abrir/Cerrar (SIEMPRE SE EJECUTA) ----
       const ul = liElement.parentNode;
       Array.from(ul.children).forEach(l => l.classList.remove("active"));
 
@@ -741,7 +742,7 @@
   }
 
 
-  // ====== MENU ROOT: SOPORTA A y B ======
+  // ====== MENU ROOT ======
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
