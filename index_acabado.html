@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Test de usabilidad</title>
+  <title>Menu Mockup - Test de usabilidad A/B</title>
   <style>
     :root{
       --brand:#034ca8;
@@ -303,10 +303,11 @@
 
 <header>
   <button class="hamburger" id="openBtn">☰</button>
-  <div style="margin-left:12px;font-weight:1000;color:var(--brand);letter-spacing:.2px;">MENU MOCKUP</div>
+  <div style="margin-left:12px;font-weight:1000;color:var(--brand);letter-spacing:.2px;">
+    MENU MOCKUP <span style="opacity:0.6;font-weight:400;font-size:0.8em">(Var: <span id="ver-display"></span>)</span>
+  </div>
 </header>
 
-<!-- ===== INICIO ===== -->
 <div id="taskIntroOverlay" class="modalOverlay">
   <div class="card modalCard introModal">
     <div style="display:flex;align-items:flex-start;gap:14px;">
@@ -356,7 +357,6 @@
   </div>
 </div>
 
-<!-- ===== INSTRUCCIONES DE TAREA ===== -->
 <div id="nextTaskOverlay" class="modalOverlay" style="z-index:3500;">
   <div class="card modalCard" style="text-align:center; width:min(900px,92vw);">
     <div class="chip">Siguiente tarea</div>
@@ -383,7 +383,6 @@
   </div>
 </div>
 
-<!-- ===== FINAL ===== -->
 <div id="finalOverlay" class="modalOverlay" style="z-index:5000; background:linear-gradient(180deg, rgba(3,76,168,.65), rgba(0,0,0,.60));">
   <div class="card modalCard" style="text-align:center; width:min(760px,92vw);">
     <div class="chip">Test finalizado</div>
@@ -393,9 +392,8 @@
   </div>
 </div>
 
-<!-- ===== PANEL EN CURSO (solo botones) ===== -->
 <div id="abpanel" class="card">
-  <div class="panelTitle"><span class="dot"></span> Test en curso</div>
+  <div class="panelTitle"><span class="dot"></span> Test en curso (Var: <span id="ver-panel"></span>)</div>
   <div class="panelBtns">
     <button id="btnPause" class="btn btnWarn" style="width:100%;">⏸ Pausa</button>
     <button id="btnResume" class="btn btnPrimary" style="width:100%;display:none;">▶ Reanudar</button>
@@ -403,7 +401,6 @@
   </div>
 </div>
 
-<!-- ===== COMPLETADO ===== -->
 <div id="doneOverlay" style="position:fixed; inset:0; z-index:3000; display:none; background:rgba(0,0,0,.55); padding:16px;">
   <div class="card" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(620px,92vw); padding:20px; text-align:center;">
     <div id="doneTitle" style="font-weight:1000;font-size:20px;color:#0b1b3a;">✅ Resultado</div>
@@ -427,6 +424,18 @@
 </aside>
 
 <script>
+  // ==========================================
+  // ⚙️ CONFIGURACIÓN DEL TEST A/B
+  // CAMBIA 'A' POR 'B' PARA PROBAR LA OTRA VARIANTE
+  // A: Diseño Original (Especialidades, Ofertas, Todas las categorías > Click para ver categorías)
+  // B: Diseño Nuevo (Especialidades, Ofertas, LISTA DESPLEGADA DE CATEGORÍAS)
+  const TEST_VERSION = 'A';
+  // ==========================================
+
+  // UI Updates con la versión
+  document.getElementById('ver-display').textContent = TEST_VERSION;
+  document.getElementById('ver-panel').textContent = TEST_VERSION;
+
   // ====== Datos categorías + banners (CSV de Google Sheets) ======
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
@@ -463,7 +472,6 @@
   ];
 
   // ====== Tracking / Experimento ======
-  const VERSION = "FIN"; // Variante A/B/FIN...
   const SESSION_ID = (crypto?.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
 
   const TASKS = [
@@ -535,7 +543,7 @@
 
     const row = {
       ts_iso: nowISO(),
-      version: VERSION,
+      version: TEST_VERSION,
       session_id: SESSION_ID,
       task_id: TASK?.id || "",
       task_label: TASK?.label || "",
@@ -757,7 +765,7 @@
     const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
 
     rowsSummary.push([{v:"Sesión", style:"sHeader"},{v:SESSION_ID, style:"sCell"}]);
-    rowsSummary.push([{v:"Variante (version)", style:"sHeader"},{v:VERSION, style:"sCell"}]);
+    rowsSummary.push([{v:"Variante (version)", style:"sHeader"},{v:TEST_VERSION, style:"sCell"}]);
     rowsSummary.push([{v:"Tiempo total (s)", style:"sHeader"},{v:(totalMs/1000).toFixed(1), style:"sCell"}]);
     rowsSummary.push([{v:"", style:"sCell"},{v:"", style:"sCell"}]);
 
@@ -823,7 +831,7 @@
     const a = document.createElement("a");
     const ts = new Date().toISOString().replace(/[:.]/g,"-");
     a.href = URL.createObjectURL(blob);
-    a.download = `test_usabilidad_menu_${VERSION}_${SESSION_ID}_${ts}.xls`;
+    a.download = `test_usabilidad_menu_${TEST_VERSION}_${SESSION_ID}_${ts}.xls`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -907,28 +915,71 @@
     const col = document.createElement("div");
     col.className = "column";
 
-    col.innerHTML = `<ul>
-      <li class="item" onclick="renderSpecialties()">
-        <span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}
-      </li>
-      <li class="item" onclick="renderOffers()">
-        <span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}
-      </li>
-      <li class="item" onclick="renderAllCategories()">
-        <span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}
-      </li>
+    // Creamos el UL principal
+    const ul = document.createElement("ul");
+    
+    // --- 1. Especialidades (COMÚN) ---
+    const liSpec = document.createElement("li");
+    liSpec.className = "item";
+    liSpec.innerHTML = `<span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}`;
+    liSpec.onclick = () => renderSpecialties();
+    ul.appendChild(liSpec);
 
-      <li class="divider"></li>
+    // --- 2. Ofertas (COMÚN) ---
+    const liOff = document.createElement("li");
+    liOff.className = "item";
+    liOff.innerHTML = `<span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}`;
+    liOff.onclick = () => renderOffers();
+    ul.appendChild(liOff);
 
-      ${FEATURED_CATS.map(fc => `
-        <li class="item">
-          <span class="label">
-            <span class="text">${fc.name}</span>
-            ${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}
-          </span>
-        </li>
-      `).join('')}
-    </ul>`;
+    // Divider
+    const div = document.createElement("li");
+    div.className = "divider";
+    ul.appendChild(div);
+
+    if (TEST_VERSION === 'A') {
+        // --- VERSION A: DISEÑO ORIGINAL ---
+        // Muestra "Todas las categorías" -> Click -> Abre nivel 1
+        const liAll = document.createElement("li");
+        liAll.className = "item";
+        liAll.innerHTML = `<span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}`;
+        liAll.onclick = () => renderAllCategories();
+        ul.appendChild(liAll);
+
+        const div2 = document.createElement("li");
+        div2.className = "divider";
+        ul.appendChild(div2);
+
+        FEATURED_CATS.forEach(fc => {
+           const li = document.createElement("li");
+           li.className = "item";
+           li.innerHTML = `<span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}</span>`;
+           ul.appendChild(li);
+        });
+
+    } else {
+        // --- VERSION B: DISEÑO NUEVO (LISTA DESPLEGADA) ---
+        // Renderiza directamente las categorías del nivel raíz
+        // Y aseguramos que el click funcione como un "nivel 0"
+        
+        menuTree.forEach(item => {
+           const li = document.createElement("li");
+           li.className = "item";
+           // Iconos para el nivel raíz en Version B
+           const icon = ICON_MAP[norm(item.name)] || "";
+           
+           li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
+           
+           // CLIC IMPORTANTE:
+           // Pasamos 'level: 0' porque estamos en la primera columna visible de categorías.
+           // Pasamos 'container' y 'col' para que la función genérica sepa limpiar columnas a la derecha.
+           li.onclick = () => handleGenericItemClick(item, 0, li, container, col);
+           
+           ul.appendChild(li);
+        });
+    }
+
+    col.appendChild(ul);
 
     const b = bannersData.find(b => norm(b.scope) === "root");
     if (b) {
@@ -942,9 +993,13 @@
     container.appendChild(col);
   }
 
+  // --- Funciones auxiliares para el menú ---
+
   window.renderSpecialties = function renderSpecialties(){
     const container = document.getElementById("columns-container");
+    // Limpiamos todo porque "Especialidades" actúa como un submenú modal lateral
     container.innerHTML = "";
+    
     const col = document.createElement("div");
     col.className = "column";
     col.innerHTML = `
@@ -980,33 +1035,17 @@
     container.appendChild(col);
   };
 
-  window.renderAllCategories = function(){ render(menuTree, 0); };
+  window.renderAllCategories = function(){ 
+      // Esta función solo se llama en la Versión A
+      render(menuTree, 0); 
+  };
 
-  // ====== Render categorías + banners internos ======
-  function render(items, level, parent=null){
-    const container = document.getElementById("columns-container");
-    if(level === 0) container.innerHTML = "";
-    else Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
+  // --- LÓGICA DE CLIC UNIFICADA ---
+  // Extraemos la lógica del clic que estaba dentro de `render` para reutilizarla en el Root de la Versión B
+  function handleGenericItemClick(item, level, liElement, container, col) {
+        const wasActive = liElement.classList.contains("active");
 
-    const col = document.createElement("div");
-    col.className = "column";
-    col.innerHTML = `<div class="column-header">${
-      level===0
-        ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías`
-        : parent.name
-    }</div><ul></ul>`;
-    const ul = col.querySelector("ul");
-
-    items.forEach(item => {
-      const li = document.createElement("li");
-      li.className = "item";
-      const icon = level === 0 ? (ICON_MAP[norm(item.name)] || "") : "";
-      li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
-
-      li.onclick = () => {
-        const wasActive = li.classList.contains("active");
-
-        // ==== tracking click (mejorado) ====
+        // ==== tracking click ====
         if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
           const beforePathArr = [...NAV_PATH];
 
@@ -1064,7 +1103,7 @@
               path: afterPathArr.join(" > ")
             });
 
-            if (status === "success_with_detours") li.classList.add("found-warn");
+            if (status === "success_with_detours") liElement.classList.add("found-warn");
             drawer.classList.remove("struggling");
 
             showCompletedBanner(
@@ -1075,16 +1114,65 @@
         }
         // ===============================
 
+        // UI: Limpiar activos hermanos
+        const ul = liElement.parentNode;
         Array.from(ul.children).forEach(l => l.classList.remove("active"));
 
         if(item.children.length && wasActive) {
-          Array.from(container.querySelectorAll(".column")).slice(level+1).forEach(c => c.remove());
-          li.classList.remove("active");
+          // Si cerramos, borramos las columnas a la derecha
+          // Usamos el índice del DOM para saber qué columnas borrar
+          const myColIndex = Array.from(container.children).indexOf(col);
+          Array.from(container.querySelectorAll(".column")).slice(myColIndex + 1).forEach(c => c.remove());
+          liElement.classList.remove("active");
         } else {
-          li.classList.add("active");
+          // Si abrimos
+          liElement.classList.add("active");
+          // Si estamos en la columna X, abrimos hijos en columna X+1
+          // Pero la función recursiva espera 'level + 1'.
+          // En la Versión B root, level es 0. Hijos serán level 1. Correcto.
           if(item.children.length) render(item.children, level + 1, item);
         }
-      };
+  }
+
+  // ====== Render categorías + banners internos ======
+  function render(items, level, parent=null){
+    const container = document.getElementById("columns-container");
+    
+    // Gestión de limpieza de columnas
+    if(level === 0) {
+        // En Versión A, al pulsar "Todas", limpiamos todo y empezamos de 0.
+        container.innerHTML = "";
+    } else {
+        // En niveles profundos, o desde la versión B root, borramos desde el nivel actual en adelante
+        // OJO: Si venimos de la Versión B root (que es una columna fija), 'level' será 1.
+        // Queremos borrar la columna 1 anterior si existe.
+        // La lógica original 'slice(level)' funciona bien para estructuras recursivas estándar.
+        // Pero en la Versión B, la columna 0 es FIJA (el root).
+        // Si level=1, slice(1) borra la columna 1 existente y la reemplaza. Correcto.
+        Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
+    }
+
+    const col = document.createElement("div");
+    col.className = "column";
+    
+    // Header
+    const headerText = level===0 
+        ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías`
+        : parent.name;
+
+    col.innerHTML = `<div class="column-header">${headerText}</div><ul></ul>`;
+    const ul = col.querySelector("ul");
+
+    items.forEach(item => {
+      const li = document.createElement("li");
+      li.className = "item";
+      // Iconos solo en el nivel 0 real (que en la Versión A es esta función render, pero en B ya están en root)
+      const icon = (level === 0 && TEST_VERSION === 'A') ? (ICON_MAP[norm(item.name)] || "") : "";
+      
+      li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
+
+      // Usamos el handler genérico
+      li.onclick = () => handleGenericItemClick(item, level, li, container, col);
 
       ul.appendChild(li);
 
