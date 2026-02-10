@@ -728,7 +728,10 @@
 
     const b = bannersData.find(b => norm(b.scope) === "root");
     if (b) {
-      col.innerHTML += `<div class="promo-card"><img class="promo-img" src="${b.img}"><a class="promo-link" href="${b.href || '#'}" target="_blank" rel="noopener"></a></div>`;
+      const promo = document.createElement("div");
+      promo.className = "promo-card";
+      promo.innerHTML = `<img class="promo-img" src="${b.img}"><a class="promo-link" href="${b.href || '#'}" target="_blank" rel="noopener"></a>`;
+      col.appendChild(promo);
     }
 
     container.appendChild(col);
