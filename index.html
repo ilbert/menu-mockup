@@ -176,7 +176,7 @@
 <header>
   <button class="hamburger" id="openBtn">☰</button>
   <div style="margin-left:12px;font-weight:1000;color:var(--brand);letter-spacing:.2px;">
-    MENU MOCKUP <span style="font-weight:400; opacity:0.6; font-size:0.8em;">(VEER: <span id="ver-display"></span>)</span>
+    MENU MOCKUP <span style="font-weight:400; opacity:0.6; font-size:0.8em;">(VER: <span id="ver-display"></span>)</span>
   </div>
 </header>
 
@@ -294,8 +294,8 @@
 <script>
   // ==========================================
   // ⚙️ CONFIGURACIÓN DEL TEST A/B
-  // 'A' = Botón "Todas las categorías" (Ocultas)
-  // 'B' = Lista completa de categorías (Desplegadas)
+  // 'A' = Botón "Todas las categorías"
+  // 'B' = Lista completa de categorías (Como en tu captura)
   const TEST_VERSION = 'B';
   // ==========================================
 
@@ -428,7 +428,7 @@
     EVENTS.push(row);
   }
 
-  // ====== Confetti & UI ======
+  // ====== UI Utils ======
   function confettiBurstSlow(){
     const canvas = document.getElementById("confettiCanvas");
     const ctx = canvas.getContext("2d");
@@ -436,63 +436,35 @@
     canvas.style.display = "block";
     const N = 200, parts = [];
     for (let i=0;i<N;i++){
-      parts.push({
-        x:canvas.width/2+(Math.random()*140-70),
-        y:canvas.height/2+(Math.random()*70-35),
-        vx:(Math.random()*6-3),
-        vy:(Math.random()*-9-4),
-        g:0.16+Math.random()*0.12,
-        s:4+Math.random()*5,
-        r:Math.random()*Math.PI,
-        vr:(Math.random()*0.12-0.06),
-        life:150+Math.random()*70,
-        hue:Math.floor(Math.random()*360)
-      });
+      parts.push({x:canvas.width/2+(Math.random()*140-70),y:canvas.height/2+(Math.random()*70-35),vx:(Math.random()*6-3),vy:(Math.random()*-9-4),g:0.16+Math.random()*0.12,s:4+Math.random()*5,r:Math.random()*Math.PI,vr:(Math.random()*0.12-0.06),life:150+Math.random()*70,hue:Math.floor(Math.random()*360)});
     }
     let t=0;
     (function frame(){
       t++; ctx.clearRect(0,0,canvas.width,canvas.height);
-      parts.forEach(p=>{
-        p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.r+=p.vr; p.life--;
-        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
-        ctx.globalAlpha=Math.max(0,Math.min(1,p.life/190));
-        ctx.fillStyle=`hsl(${p.hue},90%,55%)`;
-        ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);
-        ctx.restore();
-      });
-      if (t<190) requestAnimationFrame(frame);
-      else canvas.style.display="none";
+      parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.r+=p.vr;p.life--;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.globalAlpha=Math.max(0,Math.min(1,p.life/190));ctx.fillStyle=`hsl(${p.hue},90%,55%)`;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);ctx.restore();});
+      if (t<190) requestAnimationFrame(frame); else canvas.style.display="none";
     })();
   }
 
   function hardPause(){ if (TASK_ACTIVE && !PAUSED) { PAUSED = true; PAUSE_TS = Date.now(); } }
 
   function showCompletedBanner(message, title){
-    hardPause();
-    confettiBurstSlow();
+    hardPause(); confettiBurstSlow();
     const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
-    const routeStr = NAV_PATH.join(" > ");
     document.getElementById("doneTitle").textContent = title;
-    document.getElementById("doneDetail").textContent = `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
+    document.getElementById("doneDetail").textContent = `${message}\nRuta: ${NAV_PATH.join(" > ")}`;
     document.getElementById("doneTime").textContent = seconds ? `Tiempo: ${seconds}s` : "";
     document.getElementById("doneOverlay").style.display = "block";
   }
 
   // ====== Flow tareas ======
   function fillIntroTaskList(){
-    const ul = document.getElementById("introTaskList");
-    ul.innerHTML = "";
-    TASKS.forEach((t, i) => {
-      const li = document.createElement("li");
-      li.textContent = `${i+1}. ${t.label} — ${t.goal}`;
-      ul.appendChild(li);
-    });
+    const ul = document.getElementById("introTaskList"); ul.innerHTML = "";
+    TASKS.forEach((t, i) => { const li = document.createElement("li"); li.textContent = `${i+1}. ${t.label} — ${t.goal}`; ul.appendChild(li); });
   }
 
   function showNextTaskScreen(){
-    TASK_ACTIVE = false;
-    hardPause();
-    TASK = TASKS[taskIndex];
+    TASK_ACTIVE = false; hardPause(); TASK = TASKS[taskIndex];
     document.getElementById("nextTitle").textContent = `${taskIndex+1}/${TASKS.length} · ${TASK.label}`;
     document.getElementById("nextGoal").innerHTML = `<b>Qué buscar:</b> ${TASK.goal}`;
     document.getElementById("nextInfo").innerHTML = `<b>Info:</b> ${TASK.info}`;
@@ -502,39 +474,20 @@
   function hideNextTaskScreen(){ document.getElementById("nextTaskOverlay").style.display = "none"; }
 
   function startThisTaskNow(){
-    EVENT_SEQ = 0; LAST_EVENT_TS = 0;
-    NAV_PATH = []; CLICK_COUNT = 0; DETOURS = 0;
-    TASK_DONE = false;
+    EVENT_SEQ = 0; LAST_EVENT_TS = 0; NAV_PATH = []; CLICK_COUNT = 0; DETOURS = 0; TASK_DONE = false;
     drawer.classList.remove("struggling");
-    START_TS = Date.now();
-    PAUSED = false; PAUSE_TS = 0; PAUSED_TOTAL_MS = 0;
-    TASK_ACTIVE = true;
+    START_TS = Date.now(); PAUSED = false; PAUSE_TS = 0; PAUSED_TOTAL_MS = 0; TASK_ACTIVE = true;
     track("task_start", { detours: DETOURS });
     if (TIMER_INT) clearInterval(TIMER_INT);
-    TIMER_INT = setInterval(() => { /* no UI */ }, 250);
-    hideNextTaskScreen();
-    toggleMenu(true);
+    TIMER_INT = setInterval(() => { }, 250);
+    hideNextTaskScreen(); toggleMenu(true);
   }
 
-  function pauseTask(){
-    if (!TASK_ACTIVE || !START_TS || PAUSED) return;
-    PAUSED = true; PAUSE_TS = Date.now();
-    track("task_pause");
-    document.getElementById("btnPause").style.display = "none";
-    document.getElementById("btnResume").style.display = "block";
-  }
-
-  function resumeTask(){
-    if (!TASK_ACTIVE || !START_TS || !PAUSED) return;
-    PAUSED = false; PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS); PAUSE_TS = 0;
-    track("task_resume");
-    document.getElementById("btnPause").style.display = "block";
-    document.getElementById("btnResume").style.display = "none";
-  }
+  function pauseTask(){ if (!TASK_ACTIVE || !START_TS || PAUSED) return; PAUSED = true; PAUSE_TS = Date.now(); track("task_pause"); document.getElementById("btnPause").style.display = "none"; document.getElementById("btnResume").style.display = "block"; }
+  function resumeTask(){ if (!TASK_ACTIVE || !START_TS || !PAUSED) return; PAUSED = false; PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS); PAUSE_TS = 0; track("task_resume"); document.getElementById("btnPause").style.display = "block"; document.getElementById("btnResume").style.display = "none"; }
 
   function isSuccessPath(){
-    const current = NAV_PATH.map(norm2);
-    const target  = TASK.route.map(norm2);
+    const current = NAV_PATH.map(norm2); const target  = TASK.route.map(norm2);
     if (current.length !== target.length) return false;
     for (let i=0;i<target.length;i++) if (current[i] !== target[i]) return false;
     return true;
@@ -542,40 +495,23 @@
 
   function nextTaskFlow(){
     document.getElementById("doneOverlay").style.display = "none";
-    if (TASK_ACTIVE) {
-      track("task_end", {
-        task_status: TASK_RESULTS[TASK?.id]?.status || (TASK_DONE ? "success" : ""),
-        final_path: NAV_PATH.join(" > "),
-        path: ""
-      });
-    }
-    TASK_ACTIVE = false;
-    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
-    taskIndex++;
-    if (taskIndex >= TASKS.length) finishAllTasks();
-    else showNextTaskScreen();
+    if (TASK_ACTIVE) track("task_end", { task_status: TASK_RESULTS[TASK?.id]?.status || (TASK_DONE ? "success" : ""), final_path: NAV_PATH.join(" > ") });
+    TASK_ACTIVE = false; if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
+    taskIndex++; if (taskIndex >= TASKS.length) finishAllTasks(); else showNextTaskScreen();
   }
 
   function finishAllTasks(){
-    TASK_ACTIVE = false;
-    if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
+    TASK_ACTIVE = false; if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
     track("tasks_finished", { path:"" });
     document.getElementById("finalOverlay").style.display = "block";
-    setTimeout(() => {
-      try { downloadExcelAuto(); }
-      finally {
-        document.getElementById("finalSubtitle").textContent = "✅ Descarga iniciada. Ya puedes cerrar esta ventana.";
-        document.getElementById("finalSpinner").style.display = "none";
-      }
-    }, 120);
+    setTimeout(() => { try { downloadExcelAuto(); } finally { document.getElementById("finalSubtitle").textContent = "✅ Descarga iniciada. Ya puedes cerrar esta ventana."; document.getElementById("finalSpinner").style.display = "none"; } }, 120);
   }
 
   function failTask(){
     if(!TASK_ACTIVE || TASK_DONE) return;
     TASK_DONE = true;
-    const tms = effectiveElapsedMs();
-    TASK_RESULTS[TASK.id] = { status:"fail", timeMs:tms, clicks: CLICK_COUNT, detours: DETOURS };
-    track("task_fail", { task_status:"fail", path:"" });
+    TASK_RESULTS[TASK.id] = { status:"fail", timeMs:effectiveElapsedMs(), clicks: CLICK_COUNT, detours: DETOURS };
+    track("task_fail", { task_status:"fail" });
     drawer.classList.remove("struggling");
     showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
   }
@@ -590,21 +526,17 @@
     const rowsSummary = [];
     const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
     rowsSummary.push([{v:"Sesión", style:"sHeader"},{v:SESSION_ID, style:"sCell"}]);
-    rowsSummary.push([{v:"Variante (version)", style:"sHeader"},{v:TEST_VERSION, style:"sCell"}]);
+    rowsSummary.push([{v:"Variante", style:"sHeader"},{v:TEST_VERSION, style:"sCell"}]);
     rowsSummary.push([{v:"Tiempo total (s)", style:"sHeader"},{v:(totalMs/1000).toFixed(1), style:"sCell"}]);
     rowsSummary.push([{v:"", style:"sCell"},{v:"", style:"sCell"}]);
     rowsSummary.push([{v:"Tarea", style:"sHeader"},{v:"Resultado", style:"sHeader"},{v:"Tiempo (s)", style:"sHeader"},{v:"Clicks", style:"sHeader"},{v:"Desvíos", style:"sHeader"},{v:"Ruta objetivo", style:"sHeader"}]);
     TASKS.forEach(t => {
       const r = TASK_RESULTS[t.id];
       const status = r?.status || "fail";
-      const det = (r?.detours ?? 0);
-      const isSuccess = status !== "fail" && det === 0;
-      const isWarn = status !== "fail" && det > 0;
-      const styleRow = isSuccess ? "sSuccess" : (isWarn ? "sWarn" : "sFail");
-      const labelRes = isSuccess ? "Encontrada" : (isWarn ? "Encontrada (con desvíos)" : "No encontrada");
-      rowsSummary.push([{v:t.label, style:styleRow},{v:labelRes, style:styleRow},{v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},{v: r ? String(r.clicks ?? "") : "", style:styleRow},{v: r ? String(r.detours ?? "") : "", style:styleRow},{v: t.route.join(" > "), style:styleRow}]);
+      const styleRow = (status !== "fail" && (r?.detours ?? 0) === 0) ? "sSuccess" : (status !== "fail" ? "sWarn" : "sFail");
+      rowsSummary.push([{v:t.label, style:styleRow},{v:status, style:styleRow},{v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},{v: r ? String(r.clicks) : "", style:styleRow},{v: r ? String(r.detours) : "", style:styleRow},{v: t.route.join(" > "), style:styleRow}]);
     });
-    const headers = EVENTS.length ? Object.keys(EVENTS[0]) : ["ts_iso","version","session_id","task_id","task_label","target_route","seq","ms_from_prev","event","label","level","expected_label","is_expected","deviation","deviation_reason","path_before","path_after","path","ms_from_start","detours","task_status","final_path"];
+    const headers = EVENTS.length ? Object.keys(EVENTS[0]) : ["ts_iso","version","event","task_id","label"];
     const rowsEvents = [];
     rowsEvents.push(headers.map(h => ({v:h, style:"sHeader"})));
     EVENTS.forEach(e => rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"}))));
@@ -616,11 +548,9 @@
     const a = document.createElement("a");
     const ts = new Date().toISOString().replace(/[:.]/g,"-");
     a.href = URL.createObjectURL(blob);
-    a.download = `test_usabilidad_menu_${TEST_VERSION}_${SESSION_ID}_${ts}.xls`;
+    a.download = `test_menu_${TEST_VERSION}_${SESSION_ID}_${ts}.xls`;
     document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
+    a.click(); a.remove(); URL.revokeObjectURL(a.href);
   }
 
   // ====== Data ======
@@ -639,13 +569,11 @@
     const header = rows[0].map(h => h.trim().toLowerCase());
     return rows.slice(1).map(row => { const obj = {}; header.forEach((h, i) => obj[h] = (row[i] || "").trim()); return obj; });
   }
-  function sortNodes(nodes, level) {
+  function sortNodes(nodes) {
     if (!nodes) return;
-    if (level === 0) {
-      const rank = new Map(TOP_ORDER.map((n, i) => [norm(n), i]));
-      nodes.sort((a, b) => (rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999) - (rank.has(norm(b.name)) ? rank.get(norm(b.name)) : 999) || a.name.localeCompare(b.name));
-    } else nodes.sort((a, b) => a.name.localeCompare(b.name));
-    nodes.forEach(n => sortNodes(n.children, level + 1));
+    const rank = new Map(TOP_ORDER.map((n, i) => [norm(n), i]));
+    nodes.sort((a, b) => (rank.has(norm(a.name)) ? rank.get(norm(a.name)) : 999) - (rank.has(norm(b.name)) ? rank.get(norm(b.name)) : 999) || a.name.localeCompare(b.name));
+    nodes.forEach(n => sortNodes(n.children));
   }
   function buildTree(csv){
     const root = [];
@@ -661,7 +589,7 @@
         current = node.children;
       });
     });
-    sortNodes(root, 0);
+    sortNodes(root);
     menuTree = root;
   }
 
@@ -677,55 +605,11 @@
     } catch(e) { statusEl.textContent="Error de carga"; }
   }
 
-
-  // ====== LÓGICA DE CLIC UNIFICADA (CORREGIDA) ======
+  // ====== CLICK LOGIC (SEPARADA Y SEGURA) ======
   function handleGenericItemClick(item, level, liElement, container, col) {
       const wasActive = liElement.classList.contains("active");
 
-      // ---- Tracking (SOLO si el test está activo y la tarea existe) ----
-      if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED && TASK) {
-        const beforePathArr = [...NAV_PATH];
-        NAV_PATH = NAV_PATH.slice(0, level);
-        NAV_PATH[level] = item.name;
-        const afterPathArr = [...NAV_PATH];
-        CLICK_COUNT++;
-
-        // Verificación de seguridad por si TASK no está definido
-        const expected = (TASK.route && TASK.route[level]) ? TASK.route[level] : "";
-        const isExpected = expected ? (norm2(item.name) === norm2(expected)) : 0;
-
-        let deviation = 0;
-        let reason = "";
-        if (!expected) { deviation = 1; reason = "extra_depth"; }
-        else if (!isExpected) { deviation = 1; reason = (level === 0) ? "wrong_top_category" : "wrong_choice_same_level"; }
-
-        if (deviation) { DETOURS++; drawer.classList.add("struggling"); }
-
-        track("click_item", {
-          label: item.name, level, expected_label: expected, is_expected: isExpected ? 1 : 0,
-          deviation, deviation_reason: reason,
-          path_before: beforePathArr.join(" > "), path_after: afterPathArr.join(" > "), path: afterPathArr.join(" > ")
-        });
-
-        if (isSuccessPath()) {
-          TASK_DONE = true;
-          const tms = effectiveElapsedMs();
-          const status = (DETOURS > 0) ? "success_with_detours" : "success";
-          TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks:CLICK_COUNT, detours:DETOURS };
-          track("task_success", {
-            label: item.name, level, task_status: status,
-            final_path: afterPathArr.join(" > "), path_before: beforePathArr.join(" > "), path_after: afterPathArr.join(" > "), path: afterPathArr.join(" > ")
-          });
-          if (status === "success_with_detours") liElement.classList.add("found-warn");
-          drawer.classList.remove("struggling");
-          showCompletedBanner(
-            status === "success_with_detours" ? "✅ Es la correcta (pero NO a la primera)" : "✅ Es la correcta",
-            status === "success_with_detours" ? "🟠 Correcta con desvíos" : "🟢 Tarea completada"
-          );
-        }
-      }
-
-      // ---- UI: Abrir/Cerrar (SIEMPRE SE EJECUTA) ----
+      // 1. LÓGICA VISUAL (SIEMPRE SE EJECUTA)
       const ul = liElement.parentNode;
       Array.from(ul.children).forEach(l => l.classList.remove("active"));
 
@@ -739,8 +623,53 @@
         liElement.classList.add("active");
         if(item.children.length) render(item.children, level + 1, item);
       }
-  }
 
+      // 2. LÓGICA TRACKING (SOLO SI EL TEST ESTÁ CORRIENDO)
+      if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED && TASK) {
+        try {
+            const beforePathArr = [...NAV_PATH];
+            NAV_PATH = NAV_PATH.slice(0, level);
+            NAV_PATH[level] = item.name;
+            const afterPathArr = [...NAV_PATH];
+            CLICK_COUNT++;
+
+            const expected = (TASK.route && TASK.route[level]) ? TASK.route[level] : "";
+            const isExpected = expected ? (norm2(item.name) === norm2(expected)) : 0;
+
+            let deviation = 0;
+            let reason = "";
+            if (!expected) { deviation = 1; reason = "extra_depth"; }
+            else if (!isExpected) { deviation = 1; reason = (level === 0) ? "wrong_top_category" : "wrong_choice_same_level"; }
+
+            if (deviation) { DETOURS++; drawer.classList.add("struggling"); }
+
+            track("click_item", {
+              label: item.name, level, expected_label: expected, is_expected: isExpected ? 1 : 0,
+              deviation, deviation_reason: reason,
+              path_before: beforePathArr.join(" > "), path_after: afterPathArr.join(" > "), path: afterPathArr.join(" > ")
+            });
+
+            if (isSuccessPath()) {
+              TASK_DONE = true;
+              const tms = effectiveElapsedMs();
+              const status = (DETOURS > 0) ? "success_with_detours" : "success";
+              TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks:CLICK_COUNT, detours:DETOURS };
+              track("task_success", {
+                label: item.name, level, task_status: status,
+                final_path: afterPathArr.join(" > "), path_before: beforePathArr.join(" > "), path_after: afterPathArr.join(" > "), path: afterPathArr.join(" > ")
+              });
+              if (status === "success_with_detours") liElement.classList.add("found-warn");
+              drawer.classList.remove("struggling");
+              showCompletedBanner(
+                status === "success_with_detours" ? "✅ Es la correcta (pero NO a la primera)" : "✅ Es la correcta",
+                status === "success_with_detours" ? "🟠 Correcta con desvíos" : "🟢 Tarea completada"
+              );
+            }
+        } catch(err) {
+            console.error("Error tracking click", err);
+        }
+      }
+  }
 
   // ====== MENU ROOT ======
   function renderRootMenu(){
@@ -749,7 +678,6 @@
     const col = document.createElement("div");
     col.className = "column";
 
-    // Header items comunes
     const ul = document.createElement("ul");
     const liSpec = document.createElement("li");
     liSpec.className = "item";
@@ -763,13 +691,11 @@
     liOff.onclick = () => renderOffers();
     ul.appendChild(liOff);
 
-    // Separador
     const div = document.createElement("li");
     div.className = "divider";
     ul.appendChild(div);
 
     if (TEST_VERSION === 'A') {
-        // --- VERSIÓN A: Botón "Todas" + Trending ---
         const liAll = document.createElement("li");
         liAll.className = "item";
         liAll.innerHTML = `<span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}`;
@@ -787,13 +713,12 @@
            ul.appendChild(li);
         });
     } else {
-        // --- VERSIÓN B: Categorías Desplegadas (Root Expandido) ---
+        // VERSION B: Categorías desplegadas
         menuTree.forEach(item => {
            const li = document.createElement("li");
            li.className = "item";
            const icon = ICON_MAP[norm(item.name)] || "";
            li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
-           // Clic llama a la lógica genérica.
            li.onclick = () => handleGenericItemClick(item, 0, li, container, col);
            ul.appendChild(li);
         });
@@ -801,7 +726,6 @@
 
     col.appendChild(ul);
 
-    // Banner Root
     const b = bannersData.find(b => norm(b.scope) === "root");
     if (b) {
       col.innerHTML += `<div class="promo-card"><img class="promo-img" src="${b.img}"><a class="promo-link" href="${b.href || '#'}" target="_blank" rel="noopener"></a></div>`;
@@ -829,16 +753,13 @@
   };
   window.renderAllCategories = function(){ render(menuTree, 0); };
 
-  // --- Render Genérico (para subniveles y Ver A) ---
+  // --- Render Genérico ---
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
     
-    // Gestión de borrado de columnas
     if(level === 0) {
-        // En Ver A, "Todas" resetea la vista
         container.innerHTML = "";
     } else {
-        // En niveles profundos o Ver B, borramos hermanos a la derecha
         Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
     }
 
@@ -851,15 +772,11 @@
     items.forEach(item => {
       const li = document.createElement("li");
       li.className = "item";
-      // Iconos solo si es nivel 0 y estamos en Ver A (en Ver B ya salieron en el root)
       const icon = (level === 0 && TEST_VERSION === 'A') ? (ICON_MAP[norm(item.name)] || "") : "";
       li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
-      
       li.onclick = () => handleGenericItemClick(item, level, li, container, col);
-      
       ul.appendChild(li);
 
-      // Banners
       if(parent){
         const bAfter = bannersData.find(b => norm(b.scope) === "after_item" && norm(b.parent) === norm(parent.name) && norm(b.after) === norm(item.name));
         if (bAfter) ul.insertAdjacentHTML("beforeend", `<li><div class="promo-card small"><img class="promo-img" src="${bAfter.img}"><a class="promo-link" href="${bAfter.href||'#'}" target="_blank" rel="noopener"></a></div></li>`);
@@ -899,4 +816,3 @@
 </script>
 </body>
 </html>
-
