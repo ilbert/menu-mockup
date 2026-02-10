@@ -76,7 +76,7 @@
 
 <header>
   <button class="hamburger" id="openBtn">☰</button>
-  <div style="margin-left:15px;font-weight:900;color:var(--brand);">MOCKUP TEST B <span style="font-weight:400;opacity:0.6;font-size:0.8em;">(VEER: <span id="ver-display"></span>)</span></div>
+  <div style="margin-left:15px;font-weight:900;color:var(--brand);">MOCKUP TEST B <span style="font-weight:400;opacity:0.6;font-size:0.8em;">(VER: <span id="ver-display"></span>)</span></div>
 </header>
 
 <div id="taskIntroOverlay" class="modalOverlay">
@@ -440,11 +440,12 @@
     col.className = "column";
 
     const ul = document.createElement("ul");
-    const liSpec = document.createElement("li");
-    liSpec.className = "item";
-    liSpec.innerHTML = `<span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}`;
-    liSpec.onclick = () => renderSpecialties();
-    ul.appendChild(liSpec);
+
+    const liAll = document.createElement("li");
+    liAll.className = "item";
+    liAll.innerHTML = `<span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}`;
+    liAll.onclick = () => renderAllCategories();
+    ul.appendChild(liAll);
 
     const liOff = document.createElement("li");
     liOff.className = "item";
@@ -456,12 +457,10 @@
     div.className = "divider";
     ul.appendChild(div);
 
-    menuTree.forEach(item => {
+    SPECIALTIES_ITEMS.forEach(it => {
       const li = document.createElement("li");
       li.className = "item";
-      const icon = ICON_MAP[norm(item.name)] || "";
-      li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
-      li.onclick = () => handleGenericItemClick(item, 0, li, container, col);
+      li.innerHTML = `<span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span>`;
       ul.appendChild(li);
     });
 
@@ -478,16 +477,6 @@
     container.appendChild(col);
     updateDrawerWidth();
   }
-
-  window.renderSpecialties = function(){
-    const container = document.getElementById("columns-container");
-    container.innerHTML = "";
-    const col = document.createElement("div");
-    col.className = "column";
-    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Especialidades</div><ul>${SPECIALTIES_ITEMS.map(it => `<li class="item"><span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span></li>`).join("")}</ul>`;
-    container.appendChild(col);
-    updateDrawerWidth();
-  };
 
   function renderOffers(){
     const container = document.getElementById("columns-container");
@@ -554,4 +543,3 @@
 </script>
 </body>
 </html>
-
