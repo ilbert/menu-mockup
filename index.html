@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - A/B Test</title>
+  <title>Menu Mockup - Test de usabilidad</title>
   <style>
     :root{
       --brand:#034ca8; --brand2:#0b5bd3;
@@ -295,8 +295,6 @@
   // ==========================================
   // ⚙️ CONFIGURACIÓN DEL TEST A/B
   // CAMBIA 'B' POR 'A' SI QUIERES VER LA VERSIÓN ORIGINAL
-  // 'A' = Botón "Todas las categorías" (Ocultas)
-  // 'B' = Lista completa de categorías (Desplegadas, como en tu captura)
   const TEST_VERSION = 'B';
   // ==========================================
 
@@ -683,7 +681,7 @@
   function handleGenericItemClick(item, level, liElement, container, col) {
       const wasActive = liElement.classList.contains("active");
 
-      // ---- Tracking ----
+      // ---- Tracking (Blindado contra nulls) ----
       if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
         const beforePathArr = [...NAV_PATH];
         NAV_PATH = NAV_PATH.slice(0, level);
@@ -691,7 +689,8 @@
         const afterPathArr = [...NAV_PATH];
         CLICK_COUNT++;
 
-        const expected = TASK.route[level] || "";
+        // Corrección importante: verificar si TASK existe antes de leer route
+        const expected = (TASK && TASK.route && TASK.route[level]) ? TASK.route[level] : "";
         const isExpected = expected ? (norm2(item.name) === norm2(expected)) : 0;
 
         let deviation = 0;
@@ -742,7 +741,7 @@
   }
 
 
-  // ====== MENU ROOT: AHORA SOPORTA A y B ======
+  // ====== MENU ROOT: SOPORTA A y B ======
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
@@ -769,7 +768,7 @@
     ul.appendChild(div);
 
     if (TEST_VERSION === 'A') {
-        // --- VERSIÓN A: Botón "Todas" ---
+        // --- VERSIÓN A: Botón "Todas" + Trending ---
         const liAll = document.createElement("li");
         liAll.className = "item";
         liAll.innerHTML = `<span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}`;
@@ -787,14 +786,13 @@
            ul.appendChild(li);
         });
     } else {
-        // --- VERSIÓN B: Categorías Desplegadas ---
-        // SIN enlaces extra (Trending/Nuevo), solo el árbol
+        // --- VERSIÓN B: Categorías Desplegadas (Root Expandido) ---
         menuTree.forEach(item => {
            const li = document.createElement("li");
            li.className = "item";
            const icon = ICON_MAP[norm(item.name)] || "";
            li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
-           // Clic llama a la lógica genérica. Level=0 (root), Columna=col actual
+           // Clic llama a la lógica genérica.
            li.onclick = () => handleGenericItemClick(item, 0, li, container, col);
            ul.appendChild(li);
         });
@@ -840,7 +838,6 @@
         container.innerHTML = "";
     } else {
         // En niveles profundos o Ver B, borramos hermanos a la derecha
-        // Slice desde level. Si level=1, borra col 1 existente antes de poner la nueva
         Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
     }
 
