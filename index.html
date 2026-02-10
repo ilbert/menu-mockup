@@ -420,8 +420,6 @@
   // ==========================================
   // ⚙️ CONFIGURACIÓN DEL TEST A/B
   // CAMBIA 'A' POR 'B' PARA PROBAR LA OTRA VARIANTE
-  // A: Menú desplegable directo (Categorías visibles en raíz)
-  // B: Menú estilo Dashboard (Botón "Todas las categorías")
   const TEST_VERSION = 'A';
   // ==========================================
 
@@ -485,25 +483,19 @@
   // ====== Estado ======
   let taskIndex = 0;
   let TASK = null;
-
   let START_TS = 0;
   let PAUSED = false;
   let PAUSE_TS = 0;
   let PAUSED_TOTAL_MS = 0;
-
   let NAV_PATH = [];
   let CLICK_COUNT = 0;
   let DETOURS = 0;
-
   let TIMER_INT = null;
   let TASK_DONE = false;
-
   const EVENTS = [];
   const TASK_RESULTS = {};
-
   let TEST_STARTED = false;
   let TASK_ACTIVE = false;
-
   let menuTree = [];
   let bannersData = [];
 
@@ -541,34 +533,27 @@
       task_id: TASK?.id || "",
       task_label: TASK?.label || "",
       target_route: TASK?.route ? TASK.route.join(" > ") : "",
-
       seq: EVENT_SEQ,
       ms_from_prev: msFromPrev,
-
       event: eventName,
-
       label: extra.label || "",
       level: (typeof extra.level === "number") ? extra.level : "",
       expected_label: extra.expected_label || "",
       is_expected: (typeof extra.is_expected === "number") ? extra.is_expected : "",
       deviation: (typeof extra.deviation === "number") ? extra.deviation : "",
       deviation_reason: extra.deviation_reason || "",
-
       path_before: extra.path_before || "",
       path_after: extra.path_after || "",
       path: (typeof extra.path === "string") ? extra.path : (NAV_PATH.join(" > ")),
-
       ms_from_start: (START_TS && TASK_ACTIVE) ? effectiveElapsedMs() : "",
       detours: (typeof extra.detours === "number") ? extra.detours : DETOURS,
-
       task_status: extra.task_status || "",
       final_path: extra.final_path || ""
     };
-
     EVENTS.push(row);
   }
 
-  // ====== Confetti ======
+  // ====== Confetti & UI Utils ======
   function confettiBurstSlow(){
     const canvas = document.getElementById("confettiCanvas");
     const ctx = canvas.getContext("2d");
@@ -610,13 +595,10 @@
   function showCompletedBanner(message, title){
     hardPause();
     confettiBurstSlow();
-
     const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
     const routeStr = NAV_PATH.join(" > ");
-
     document.getElementById("doneTitle").textContent = title;
-    document.getElementById("doneDetail").textContent =
-      `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
+    document.getElementById("doneDetail").textContent = `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
     document.getElementById("doneTime").textContent = seconds ? `Tiempo: ${seconds}s` : "";
     document.getElementById("doneOverlay").style.display = "block";
   }
@@ -636,7 +618,6 @@
     TASK_ACTIVE = false;
     hardPause();
     TASK = TASKS[taskIndex];
-
     document.getElementById("nextTitle").textContent = `${taskIndex+1}/${TASKS.length} · ${TASK.label}`;
     document.getElementById("nextGoal").innerHTML = `<b>Qué buscar:</b> ${TASK.goal}`;
     document.getElementById("nextInfo").innerHTML = `<b>Info:</b> ${TASK.info}`;
@@ -646,34 +627,23 @@
   function hideNextTaskScreen(){ document.getElementById("nextTaskOverlay").style.display = "none"; }
 
   function startThisTaskNow(){
-    EVENT_SEQ = 0;
-    LAST_EVENT_TS = 0;
-
-    NAV_PATH = [];
-    CLICK_COUNT = 0;
-    DETOURS = 0;
+    EVENT_SEQ = 0; LAST_EVENT_TS = 0;
+    NAV_PATH = []; CLICK_COUNT = 0; DETOURS = 0;
     TASK_DONE = false;
     drawer.classList.remove("struggling");
-
     START_TS = Date.now();
-    PAUSED = false;
-    PAUSE_TS = 0;
-    PAUSED_TOTAL_MS = 0;
-
+    PAUSED = false; PAUSE_TS = 0; PAUSED_TOTAL_MS = 0;
     TASK_ACTIVE = true;
     track("task_start", { detours: DETOURS });
-
     if (TIMER_INT) clearInterval(TIMER_INT);
     TIMER_INT = setInterval(() => { /* no UI */ }, 250);
-
     hideNextTaskScreen();
     toggleMenu(true);
   }
 
   function pauseTask(){
     if (!TASK_ACTIVE || !START_TS || PAUSED) return;
-    PAUSED = true;
-    PAUSE_TS = Date.now();
+    PAUSED = true; PAUSE_TS = Date.now();
     track("task_pause");
     document.getElementById("btnPause").style.display = "none";
     document.getElementById("btnResume").style.display = "block";
@@ -681,9 +651,7 @@
 
   function resumeTask(){
     if (!TASK_ACTIVE || !START_TS || !PAUSED) return;
-    PAUSED = false;
-    PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS);
-    PAUSE_TS = 0;
+    PAUSED = false; PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS); PAUSE_TS = 0;
     track("task_resume");
     document.getElementById("btnPause").style.display = "block";
     document.getElementById("btnResume").style.display = "none";
@@ -699,7 +667,6 @@
 
   function nextTaskFlow(){
     document.getElementById("doneOverlay").style.display = "none";
-
     if (TASK_ACTIVE) {
       track("task_end", {
         task_status: TASK_RESULTS[TASK?.id]?.status || (TASK_DONE ? "success" : ""),
@@ -707,10 +674,8 @@
         path: ""
       });
     }
-
     TASK_ACTIVE = false;
     if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
-
     taskIndex++;
     if (taskIndex >= TASKS.length) finishAllTasks();
     else showNextTaskScreen();
@@ -720,7 +685,6 @@
     TASK_ACTIVE = false;
     if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
     track("tasks_finished", { path:"" });
-
     document.getElementById("finalOverlay").style.display = "block";
     setTimeout(() => {
       try { downloadExcelAuto(); }
@@ -741,36 +705,20 @@
     showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
   }
 
-  // ====== Excel (XML Spreadsheet) ======
-  function xmlEscape(s){
-    return String(s ?? "")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;").replace(/'/g,"&apos;");
-  }
+  // ====== Excel ======
+  function xmlEscape(s){ return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;"); }
   function worksheetXml(name, rows){
-    const rowXml = rows.map(r => `<Row>${
-      r.map(c => `<Cell${c.style?` ss:StyleID="${c.style}"`:``}><Data ss:Type="String">${xmlEscape(c.v)}</Data></Cell>`).join("")
-    }</Row>`).join("");
+    const rowXml = rows.map(r => `<Row>${r.map(c => `<Cell${c.style?` ss:StyleID="${c.style}"`:``}><Data ss:Type="String">${xmlEscape(c.v)}</Data></Cell>`).join("")}</Row>`).join("");
     return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
   }
   function buildExcelXml(){
     const rowsSummary = [];
     const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
-
     rowsSummary.push([{v:"Sesión", style:"sHeader"},{v:SESSION_ID, style:"sCell"}]);
     rowsSummary.push([{v:"Variante (Version)", style:"sHeader"},{v:TEST_VERSION, style:"sCell"}]);
     rowsSummary.push([{v:"Tiempo total (s)", style:"sHeader"},{v:(totalMs/1000).toFixed(1), style:"sCell"}]);
     rowsSummary.push([{v:"", style:"sCell"},{v:"", style:"sCell"}]);
-
-    rowsSummary.push([
-      {v:"Tarea", style:"sHeader"},
-      {v:"Resultado", style:"sHeader"},
-      {v:"Tiempo (s)", style:"sHeader"},
-      {v:"Clicks", style:"sHeader"},
-      {v:"Desvíos", style:"sHeader"},
-      {v:"Ruta objetivo", style:"sHeader"}
-    ]);
-
+    rowsSummary.push([{v:"Tarea", style:"sHeader"},{v:"Resultado", style:"sHeader"},{v:"Tiempo (s)", style:"sHeader"},{v:"Clicks", style:"sHeader"},{v:"Desvíos", style:"sHeader"},{v:"Ruta objetivo", style:"sHeader"}]);
     TASKS.forEach(t => {
       const r = TASK_RESULTS[t.id];
       const status = r?.status || "fail";
@@ -779,44 +727,13 @@
       const isWarn = status !== "fail" && det > 0;
       const styleRow = isSuccess ? "sSuccess" : (isWarn ? "sWarn" : "sFail");
       const labelRes = isSuccess ? "Encontrada" : (isWarn ? "Encontrada (con desvíos)" : "No encontrada");
-
-      rowsSummary.push([
-        {v:t.label, style:styleRow},
-        {v:labelRes, style:styleRow},
-        {v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},
-        {v: r ? String(r.clicks ?? "") : "", style:styleRow},
-        {v: r ? String(r.detours ?? "") : "", style:styleRow},
-        {v: t.route.join(" > "), style:styleRow}
-      ]);
+      rowsSummary.push([{v:t.label, style:styleRow},{v:labelRes, style:styleRow},{v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},{v: r ? String(r.clicks ?? "") : "", style:styleRow},{v: r ? String(r.detours ?? "") : "", style:styleRow},{v: t.route.join(" > "), style:styleRow}]);
     });
-
-    const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
-      "ts_iso","version","session_id","task_id","task_label","target_route",
-      "seq","ms_from_prev","event","label","level","expected_label","is_expected",
-      "deviation","deviation_reason","path_before","path_after","path","ms_from_start",
-      "detours","task_status","final_path"
-    ];
-
+    const headers = EVENTS.length ? Object.keys(EVENTS[0]) : ["ts_iso","version","session_id","task_id","task_label","target_route","seq","ms_from_prev","event","label","level","expected_label","is_expected","deviation","deviation_reason","path_before","path_after","path","ms_from_start","detours","task_status","final_path"];
     const rowsEvents = [];
     rowsEvents.push(headers.map(h => ({v:h, style:"sHeader"})));
     EVENTS.forEach(e => rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"}))));
-
-    return `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:o="urn:schemas-microsoft-com:office:office"
- xmlns:x="urn:schemas-microsoft-com:office:excel"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
- <Styles>
-  <Style ss:ID="sHeader"><Font ss:Bold="1"/><Interior ss:Color="#E6F2FA" ss:Pattern="Solid"/></Style>
-  <Style ss:ID="sCell"></Style>
-  <Style ss:ID="sSuccess"><Interior ss:Color="#EAF7EE" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#0A7A3A"/></Style>
-  <Style ss:ID="sWarn"><Interior ss:Color="#FFF7E6" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#8A4B00"/></Style>
-  <Style ss:ID="sFail"><Interior ss:Color="#FDECEC" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#B42318"/></Style>
- </Styles>
- ${worksheetXml("Resumen", rowsSummary)}
- ${worksheetXml("Eventos", rowsEvents)}
-</Workbook>`;
+    return `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Styles><Style ss:ID="sHeader"><Font ss:Bold="1"/><Interior ss:Color="#E6F2FA" ss:Pattern="Solid"/></Style><Style ss:ID="sCell"></Style><Style ss:ID="sSuccess"><Interior ss:Color="#EAF7EE" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#0A7A3A"/></Style><Style ss:ID="sWarn"><Interior ss:Color="#FFF7E6" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#8A4B00"/></Style><Style ss:ID="sFail"><Interior ss:Color="#FDECEC" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#B42318"/></Style></Styles>${worksheetXml("Resumen", rowsSummary)}${worksheetXml("Eventos", rowsEvents)}</Workbook>`;
   }
   function downloadExcelAuto(){
     const xml = buildExcelXml();
@@ -831,19 +748,13 @@
     URL.revokeObjectURL(a.href);
   }
 
-  // ====== CSV parsing / árbol ======
+  // ====== Data Loading ======
   function parseCSV(text){
-    const rows = [];
-    let cur = "", row = [], inQ = false;
+    const rows = []; let cur = "", row = [], inQ = false;
     for (let i=0;i<text.length;i++){
       const ch = text[i];
-      if (ch === '"') inQ = !inQ;
-      else if (ch === ',' && !inQ){ row.push(cur); cur=""; }
-      else if ((ch === '\n' || ch === '\r') && !inQ){
-        row.push(cur); cur="";
-        if (row.join("").trim()) rows.push(row);
-        row=[];
-      } else cur += ch;
+      if (ch === '"') inQ = !inQ; else if (ch === ',' && !inQ){ row.push(cur); cur=""; }
+      else if ((ch === '\n' || ch === '\r') && !inQ){ row.push(cur); cur=""; if (row.join("").trim()) rows.push(row); row=[]; } else cur += ch;
     }
     row.push(cur); if(row.join("").trim()) rows.push(row);
     return rows;
@@ -851,11 +762,7 @@
   function rowsToObjects(rows){
     if(!rows.length) return [];
     const header = rows[0].map(h => h.trim().toLowerCase());
-    return rows.slice(1).map(row => {
-      const obj = {};
-      header.forEach((h, i) => obj[h] = (row[i] || "").trim());
-      return obj;
-    });
+    return rows.slice(1).map(row => { const obj = {}; header.forEach((h, i) => obj[h] = (row[i] || "").trim()); return obj; });
   }
   function sortNodes(nodes, level) {
     if (!nodes) return;
@@ -884,106 +791,58 @@
   }
 
   async function loadAllData(){
-    statusEl.style.display="block";
-    statusEl.textContent="Cargando...";
+    statusEl.style.display="block"; statusEl.textContent="Cargando...";
     try {
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
-      const catCsv = await catRes.text();
-      const banCsv = await banRes.text();
-
+      const catCsv = await catRes.text(); const banCsv = await banRes.text();
       buildTree(catCsv);
       bannersData = rowsToObjects(parseCSV(banCsv)).reverse();
-
       statusEl.style.display="none";
       renderRootMenu();
-    } catch(e) {
-      statusEl.textContent="Error de carga";
-    }
+    } catch(e) { statusEl.textContent="Error de carga"; }
   }
 
-  // ====== LÓGICA DE CLIC UNIFICADA (Para Root y Subniveles) ======
+  // ====== Click Handler Unificado ======
   function handleItemClick(item, level, liElement, container, col) {
      const wasActive = liElement.classList.contains("active");
 
-     // ==== tracking logic ====
+     // Tracking Logic
      if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
        const beforePathArr = [...NAV_PATH];
-
        NAV_PATH = NAV_PATH.slice(0, level);
        NAV_PATH[level] = item.name;
-
        const afterPathArr = [...NAV_PATH];
-
        CLICK_COUNT++;
-
        const expected = TASK.route[level] || "";
        const isExpected = expected ? (norm2(item.name) === norm2(expected)) : 0;
-
-       let deviation = 0;
-       let reason = "";
-
-       if (!expected) {
-         deviation = 1; reason = "extra_depth";
-       } else if (!isExpected) {
-         deviation = 1;
-         reason = (level === 0) ? "wrong_top_category" : "wrong_choice_same_level";
-       }
-
-       if (deviation) {
-         DETOURS++;
-         drawer.classList.add("struggling");
-       }
+       let deviation = 0; let reason = "";
+       if (!expected) { deviation = 1; reason = "extra_depth"; }
+       else if (!isExpected) { deviation = 1; reason = (level === 0) ? "wrong_top_category" : "wrong_choice_same_level"; }
+       if (deviation) { DETOURS++; drawer.classList.add("struggling"); }
 
        track("click_item", {
-         label: item.name,
-         level,
-         expected_label: expected,
-         is_expected: isExpected ? 1 : 0,
-         deviation,
-         deviation_reason: reason,
-         path_before: beforePathArr.join(" > "),
-         path_after: afterPathArr.join(" > "),
-         path: afterPathArr.join(" > ")
+         label: item.name, level, expected_label: expected, is_expected: isExpected ? 1 : 0,
+         deviation, deviation_reason: reason,
+         path_before: beforePathArr.join(" > "), path_after: afterPathArr.join(" > "), path: afterPathArr.join(" > ")
        });
 
        if (isSuccessPath()) {
          TASK_DONE = true;
-
          const tms = effectiveElapsedMs();
          const status = (DETOURS > 0) ? "success_with_detours" : "success";
          TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks:CLICK_COUNT, detours:DETOURS };
-
-         track("task_success", {
-           label: item.name,
-           level,
-           task_status: status,
-           final_path: afterPathArr.join(" > "),
-           path_before: beforePathArr.join(" > "),
-           path_after: afterPathArr.join(" > "),
-           path: afterPathArr.join(" > ")
-         });
-
+         track("task_success", { label: item.name, level, task_status: status, final_path: afterPathArr.join(" > "), path_before: beforePathArr.join(" > "), path_after: afterPathArr.join(" > "), path: afterPathArr.join(" > ") });
          if (status === "success_with_detours") liElement.classList.add("found-warn");
          drawer.classList.remove("struggling");
-
-         showCompletedBanner(
-           status === "success_with_detours" ? "✅ Es la correcta (pero NO a la primera)" : "✅ Es la correcta",
-           status === "success_with_detours" ? "🟠 Correcta con desvíos" : "🟢 Tarea completada"
-         );
+         showCompletedBanner(status === "success_with_detours" ? "✅ Es la correcta (pero NO a la primera)" : "✅ Es la correcta", status === "success_with_detours" ? "🟠 Correcta con desvíos" : "🟢 Tarea completada");
        }
      }
-     // ===============================
 
      // Visual Logic
-     // Limpiar activos en la misma lista
      const ul = liElement.parentNode;
      Array.from(ul.children).forEach(l => l.classList.remove("active"));
-
      if(item.children.length && wasActive) {
        // Cerrar
-       // Borramos columnas a la derecha.
-       // En Version A, Root es DOM Col 0. Sub es Col 1.
-       // Obtenemos índice DOM real para saber desde dónde borrar.
        const myColIndex = Array.from(container.children).indexOf(col);
        Array.from(container.querySelectorAll(".column")).slice(myColIndex + 1).forEach(c => c.remove());
        liElement.classList.remove("active");
@@ -991,77 +850,87 @@
        // Abrir
        liElement.classList.add("active");
        const myColIndex = Array.from(container.children).indexOf(col);
-       // Renderizar hijos en nivel siguiente (DOM index + 1)
        if(item.children.length) render(item.children, myColIndex + 1, item);
      }
      updateDrawerWidth();
   }
 
 
-  // ====== Menú: root logic A/B ======
+  // ====== Render Root Menu (CORREGIDO) ======
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
     const col = document.createElement("div");
     col.className = "column";
 
-    // 1. Cabeceras comunes
-    let html = '<ul>';
-    html += `<li class="item" onclick="renderSpecialties()"><span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}</li>`;
-    html += `<li class="item" onclick="renderOffers()"><span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}</li>`;
-    html += `<li class="divider"></li>`;
+    const ul = document.createElement("ul");
 
-    // 2. Lógica Diferenciada
+    // 1. Especialidades (Creado con DOM para asegurar onclick)
+    const liSpec = document.createElement("li");
+    liSpec.className = "item";
+    liSpec.innerHTML = `<span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}`;
+    liSpec.onclick = () => renderSpecialties();
+    ul.appendChild(liSpec);
+
+    // 2. Ofertas (Creado con DOM para asegurar onclick)
+    const liOff = document.createElement("li");
+    liOff.className = "item";
+    liOff.innerHTML = `<span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}`;
+    liOff.onclick = () => renderOffers();
+    ul.appendChild(liOff);
+
+    // 3. Divider
+    const div = document.createElement("li");
+    div.className = "divider";
+    ul.appendChild(div);
+
+    // 4. Lógica A/B
     if (TEST_VERSION === 'A') {
-        // --- VERSION A: Lista directa de categorías en el Root ---
-        // Generamos LIs vacíos primero y luego adjuntamos eventos, o usamos string literals?
-        // Usaremos JS para poder adjuntar el handleItemClick directamente.
-        col.innerHTML = html + "</ul>"; // Cerramos UL temporalmente
-        const ul = col.querySelector("ul");
-
+        // --- VERSION A: Categorías listadas directamente ---
         menuTree.forEach(item => {
            const li = document.createElement("li");
            li.className = "item";
            const icon = ICON_MAP[norm(item.name)] || "";
            li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
-
-           // Evento Click unificado
            li.onclick = () => handleItemClick(item, 0, li, container, col);
            ul.appendChild(li);
         });
     } else {
-        // --- VERSION B: Botón "Todas" + Featured (Original) ---
-        html += `<li class="item" onclick="renderAllCategories()"><span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}</li>`;
-        html += `<li class="divider"></li>`;
-        html += FEATURED_CATS.map(fc => `
-          <li class="item">
-            <span class="label">
-              <span class="text">${fc.name}</span>
-              ${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}
-            </span>
-          </li>
-        `).join('');
-        html += '</ul>';
-        col.innerHTML = html;
+        // --- VERSION B: Botón Todas + Featured ---
+        const liAll = document.createElement("li");
+        liAll.className = "item";
+        liAll.innerHTML = `<span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}`;
+        liAll.onclick = () => renderAllCategories();
+        ul.appendChild(liAll);
+
+        const div2 = document.createElement("li");
+        div2.className = "divider";
+        ul.appendChild(div2);
+
+        FEATURED_CATS.forEach(fc => {
+          const liF = document.createElement("li");
+          liF.className = "item";
+          liF.innerHTML = `<span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}</span>`;
+          ul.appendChild(liF);
+        });
     }
+
+    col.appendChild(ul);
 
     // Banner Root
     const b = bannersData.find(b => norm(b.scope) === "root");
     if (b) {
-      col.innerHTML += `
-        <div class="promo-card">
-          <img class="promo-img" src="${b.img}">
-          <a class="promo-link" href="${b.href || '#'}" target="_blank" rel="noopener"></a>
-        </div>`;
+      col.innerHTML += `<div class="promo-card"><img class="promo-img" src="${b.img}"><a class="promo-link" href="${b.href || '#'}" target="_blank" rel="noopener"></a></div>`;
     }
 
     container.appendChild(col);
     updateDrawerWidth();
   }
 
-  window.renderSpecialties = function renderSpecialties(){
+  // --- Funciones para Especialidades y Ofertas ---
+  function renderSpecialties(){
     const container = document.getElementById("columns-container");
-    container.innerHTML = ""; // Reemplaza todo como un modal lateral
+    container.innerHTML = ""; // Se comporta como "página nueva" en el móvil
     const col = document.createElement("div");
     col.className = "column";
     col.innerHTML = `
@@ -1070,17 +939,13 @@
         Especialidades
       </div>
       <ul>
-        ${SPECIALTIES_ITEMS.map(it => `
-          <li class="item">
-            <span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span>
-          </li>
-        `).join("")}
+        ${SPECIALTIES_ITEMS.map(it => `<li class="item"><span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span></li>`).join("")}
       </ul>`;
     container.appendChild(col);
     updateDrawerWidth();
-  };
+  }
 
-  window.renderOffers = function renderOffers(){
+  function renderOffers(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
     const col = document.createElement("div");
@@ -1091,86 +956,46 @@
         Ofertas
       </div>
       <ul>
-        ${OFFERS_ITEMS.map(it => `
-          <li class="item"><span class="label"><span class="text">${it.name}</span></span></li>
-        `).join("")}
+        ${OFFERS_ITEMS.map(it => `<li class="item"><span class="label"><span class="text">${it.name}</span></span></li>`).join("")}
       </ul>`;
     container.appendChild(col);
     updateDrawerWidth();
-  };
+  }
 
-  window.renderAllCategories = function(){
-    // Solo usado en versión B para reemplazar el root
+  function renderAllCategories(){
     render(menuTree, 0);
-  };
+  }
 
-  // ====== Render Genérico (para subniveles y "Todas" en ver B) ======
+  // ====== Render Genérico ======
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
 
-    // Gestión de borrado de columnas
-    // Si Version B y level 0 (clic en "Todas"), borra todo.
-    // Si es subnivel (A o B), borra desde la columna actual hacia la derecha.
-    if(TEST_VERSION === 'B' && level === 0) {
-        container.innerHTML = "";
-    } else {
-        // En un append normal, borramos los hermanos siguientes.
-        // Si level=1, queremos borrar col 1, 2... antes de añadir la nueva 1.
-        Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
-    }
+    if(TEST_VERSION === 'B' && level === 0) container.innerHTML = "";
+    else Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
 
     const col = document.createElement("div");
     col.className = "column";
-
-    // Header
     let headerHTML = parent ? parent.name : `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías`;
-
     col.innerHTML = `<div class="column-header">${headerHTML}</div><ul></ul>`;
     const ul = col.querySelector("ul");
 
     items.forEach(item => {
       const li = document.createElement("li");
       li.className = "item";
-      // Iconos en lista "Todas" (Ver B, nivel 0)
       const icon = (TEST_VERSION === 'B' && level === 0) ? (ICON_MAP[norm(item.name)] || "") : "";
       li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
-
       li.onclick = () => handleItemClick(item, level, li, container, col);
-
       ul.appendChild(li);
 
-      // Banner after_item
       if(parent){
-        const bAfter = bannersData.find(b =>
-          norm(b.scope) === "after_item" &&
-          norm(b.parent) === norm(parent.name) &&
-          norm(b.after) === norm(item.name)
-        );
-        if (bAfter) {
-          const bLi = document.createElement("li");
-          bLi.innerHTML = `
-            <div class="promo-card small">
-              <img class="promo-img" src="${bAfter.img}">
-              <a class="promo-link" href="${bAfter.href||'#'}" target="_blank" rel="noopener"></a>
-            </div>`;
-          ul.appendChild(bLi);
-        }
+        const bAfter = bannersData.find(b => norm(b.scope) === "after_item" && norm(b.parent) === norm(parent.name) && norm(b.after) === norm(item.name));
+        if (bAfter) ul.insertAdjacentHTML('beforeend', `<li><div class="promo-card small"><img class="promo-img" src="${bAfter.img}"><a class="promo-link" href="${bAfter.href||'#'}" target="_blank" rel="noopener"></a></div></li>`);
       }
     });
 
-    // Banner category_children
     if(parent){
-      const bChild = bannersData.find(b =>
-        norm(b.scope) === "category_children" &&
-        norm(b.parent) === norm(parent.name)
-      );
-      if (bChild) {
-        col.insertAdjacentHTML("beforeend", `
-          <div class="promo-card small">
-            <img class="promo-img" src="${bChild.img}">
-            <a class="promo-link" href="${bChild.href||'#'}" target="_blank" rel="noopener"></a>
-          </div>`);
-      }
+      const bChild = bannersData.find(b => norm(b.scope) === "category_children" && norm(b.parent) === norm(parent.name));
+      if (bChild) col.insertAdjacentHTML("beforeend", `<div class="promo-card small"><img class="promo-img" src="${bChild.img}"><a class="promo-link" href="${bChild.href||'#'}" target="_blank" rel="noopener"></a></div>`);
     }
 
     container.appendChild(col);
@@ -1186,30 +1011,21 @@
 
   function updateDrawerWidth(){
     const count = document.querySelectorAll(".column").length;
-    // Ajuste dinámico de ancho
     drawer.style.width = Math.min(count * 330, window.innerWidth * 0.96) + "px";
   }
 
-  // ====== Wiring ======
+  // ====== Init ======
   document.getElementById("openBtn").onclick = () => toggleMenu(true);
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
 
-  document.getElementById("btnIntroStart").onclick = () => {
-    TEST_STARTED = true;
-    document.getElementById("taskIntroOverlay").style.display = "none";
-    document.getElementById("abpanel").style.display = "block";
-    taskIndex = 0;
-    showNextTaskScreen();
-  };
-
+  document.getElementById("btnIntroStart").onclick = () => { TEST_STARTED = true; document.getElementById("taskIntroOverlay").style.display = "none"; document.getElementById("abpanel").style.display = "block"; taskIndex = 0; showNextTaskScreen(); };
   document.getElementById("btnStartThisTask").onclick = () => startThisTaskNow();
   document.getElementById("btnNextTask").onclick = () => nextTaskFlow();
   document.getElementById("btnFailTask").onclick = () => failTask();
   document.getElementById("btnPause").onclick = () => pauseTask();
   document.getElementById("btnResume").onclick = () => resumeTask();
 
-  // ====== Init ======
   fillIntroTaskList();
   document.getElementById("taskIntroOverlay").style.display = "block";
   loadAllData();
