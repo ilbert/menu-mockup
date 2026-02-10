@@ -3,295 +3,167 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Mockup - Test de usabilidad A/B</title>
+  <title>Menu Mockup - A/B Test</title>
   <style>
     :root{
-      --brand:#034ca8;
-      --brand2:#0b5bd3;
-      --border:#e6e8eb;
-      --bg:#f4f6f9;
-
-      --warnBg:#fff7e6;
-      --warnText:#8a4b00;
-      --warnBorder:#ffb020;
-
+      --brand:#034ca8; --brand2:#0b5bd3;
+      --border:#e6e8eb; --bg:#f4f6f9;
+      --warnBg:#fff7e6; --warnText:#8a4b00; --warnBorder:#ffb020;
       --shadow:0 24px 60px rgba(0,0,0,.18);
       --shadow2:0 14px 30px rgba(0,0,0,.16);
     }
 
     *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:var(--bg);
-      overflow:hidden;
-      color:#0f172a;
-      -webkit-text-size-adjust:100%;
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg); overflow:hidden; color:#0f172a; -webkit-text-size-adjust:100%;
     }
 
     header{
-      background:#fff;
-      height:60px;
-      display:flex;
-      align-items:center;
-      padding:0 16px;
-      border-bottom:1px solid var(--border)
+      background:#fff; height:60px; display:flex; align-items:center;
+      padding:0 16px; border-bottom:1px solid var(--border)
     }
 
     .hamburger{
-      width:44px;height:44px;
-      border:1px solid var(--border);
-      background:#fff;
-      cursor:pointer;
-      border-radius:12px;
-      font-size:20px;
-      color:var(--brand)
+      width:44px; height:44px; border:1px solid var(--border); background:#fff;
+      cursor:pointer; border-radius:12px; font-size:20px; color:var(--brand)
     }
 
-    #overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:1000}
+    #overlay{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:1000}
     #drawer{
-      position:fixed;inset:0 auto 0 0;background:#fff;z-index:1001;display:none;
-      flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.12);width:auto;max-width:96vw
+      position:fixed; inset:0 auto 0 0; background:#fff; z-index:1001; display:none;
+      flex-direction:column; box-shadow:10px 0 30px rgba(0,0,0,.12); width:auto; max-width:96vw
     }
     .drawer-header{
-      padding:14px 16px;border-bottom:1px solid var(--border);
-      display:flex;justify-content:space-between;align-items:center;font-weight:900;color:var(--brand)
+      padding:14px 16px; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center; font-weight:900; color:var(--brand)
     }
-    .close-x{border:none;background:none;cursor:pointer;font-size:18px;line-height:1}
+    .close-x{border:none; background:none; cursor:pointer; font-size:18px; line-height:1}
 
-    #status{padding:10px;text-align:center;font-size:12px;background:#fff3cd;display:none}
+    #status{padding:10px; text-align:center; font-size:12px; background:#fff3cd; display:none}
 
     #columns-container{
-      display:flex;flex:1;
-      overflow-x:auto;overflow-y:hidden;background:#fff;
-      scrollbar-width:none;-ms-overflow-style:none;
-      -webkit-overflow-scrolling:touch;
+      display:flex; flex:1; overflow-x:auto; overflow-y:hidden; background:#fff;
+      scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
     }
 
-    .column{flex:0 0 330px;border-right:1px solid #eee;overflow-y:auto;height:100%}
-    @media (max-width:520px){
-      .column{flex-basis:86vw}
-    }
+    .column{flex:0 0 330px; border-right:1px solid #eee; overflow-y:auto; height:100%}
+    @media (max-width:520px){ .column{flex-basis:86vw} }
 
-    ul{list-style:none;padding:0;margin:0}
+    ul{list-style:none; padding:0; margin:0}
     .item{
-      padding:14px 16px;
-      display:flex;justify-content:space-between;align-items:center;gap:10px;
-      cursor:pointer;font-size:14px;border-bottom:1px solid #f3f4f6;
-      transition:background .12s ease, color .12s ease;
-      -webkit-tap-highlight-color:transparent;
+      padding:14px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px;
+      cursor:pointer; font-size:14px; border-bottom:1px solid #f3f4f6;
+      transition:background .12s ease, color .12s ease; -webkit-tap-highlight-color:transparent;
     }
-    .item:hover{background:#f7f9fc;color:var(--brand)}
+    .item:hover{background:#f7f9fc; color:var(--brand)}
 
-    /* ✅ Selección normal en azul */
     .item.active{
-      background:#e6f2fa;
-      color:var(--brand);
-      font-weight:900;
-      border-left:5px solid var(--brand)
+      background:#e6f2fa; color:var(--brand); font-weight:900; border-left:5px solid var(--brand)
     }
 
-    .label{display:flex;align-items:center;gap:10px;min-width:0}
-    .text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .icon{width:22px;height:22px;display:inline-grid;place-items:center;font-size:18px;flex:0 0 auto}
-    .chevron{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
-    .chevron svg{width:18px;height:18px;stroke:var(--brand);stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .label{display:flex; align-items:center; gap:10px; min-width:0}
+    .text{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .icon{width:22px; height:22px; display:inline-grid; place-items:center; font-size:18px; flex:0 0 auto}
+    .chevron{width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto}
+    .chevron svg{width:18px; height:18px; stroke:var(--brand); stroke-width:2.6; fill:none; stroke-linecap:round; stroke-linejoin:round}
     .column-header{
-      padding:14px 14px 8px;font-weight:900;color:var(--brand);
-      font-size:18px;display:flex;align-items:center;gap:10px
+      padding:14px 14px 8px; font-weight:900; color:var(--brand); font-size:18px;
+      display:flex; align-items:center; gap:10px
     }
-    .back-only{border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex;align-items:center}
-    .divider{border-top:1px solid #e5e7eb;margin:8px 0;}
+    .back-only{border:none; background:transparent; padding:0; cursor:pointer; display:inline-flex; align-items:center}
+    .divider{border-top:1px solid #e5e7eb; margin:8px 0;}
 
-    code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    code{font-family:ui-monospace, SFMono-Regular, monospace;}
 
     .btn{
-      padding:14px 18px;border-radius:16px;border:1px solid var(--border);
-      font-weight:1000;cursor:pointer;font-size:14px;
-      transition:transform .06s ease, filter .12s ease;
-      user-select:none;
-      -webkit-tap-highlight-color:transparent;
+      padding:14px 18px; border-radius:16px; border:1px solid var(--border);
+      font-weight:1000; cursor:pointer; font-size:14px; transition:transform .06s ease;
+      user-select:none; -webkit-tap-highlight-color:transparent;
     }
     .btn:active{ transform:translateY(1px); }
-    .btnPrimary{background:linear-gradient(180deg, var(--brand2), var(--brand));color:#fff;border-color:transparent;}
-    .btnWarn{background:linear-gradient(180deg, #ffcf6b, #ffb020);border-color:transparent;color:#3a2400;}
-    .btnDanger{background:linear-gradient(180deg, #ff6b6b, #e11d48);border-color:transparent;color:#fff;}
+    .btnPrimary{background:linear-gradient(180deg, var(--brand2), var(--brand)); color:#fff; border-color:transparent;}
+    .btnWarn{background:linear-gradient(180deg, #ffcf6b, #ffb020); border-color:transparent; color:#3a2400;}
+    .btnDanger{background:linear-gradient(180deg, #ff6b6b, #e11d48); border-color:transparent; color:#fff;}
 
     .chip{
-      display:inline-flex;align-items:center;gap:8px;
-      background:#eef4ff;border:1px solid #d7e4ff;color:#123e8f;
-      padding:6px 12px;border-radius:999px;font-weight:1000;font-size:12px;
+      display:inline-flex; align-items:center; gap:8px; background:#eef4ff; border:1px solid #d7e4ff;
+      color:#123e8f; padding:6px 12px; border-radius:999px; font-weight:1000; font-size:12px;
     }
     .card{
-      border:1px solid var(--border);
-      border-radius:22px;
-      background:#fff;
-      box-shadow:var(--shadow);
+      border:1px solid var(--border); border-radius:22px; background:#fff; box-shadow:var(--shadow);
     }
 
     #confettiCanvas{ position:fixed; inset:0; z-index:9999; pointer-events:none; display:none; }
 
     .spinner{
-      width:34px;height:34px;border-radius:50%;
-      border:4px solid #dbe7ff;border-top-color: var(--brand);
-      animation:spin 1s linear infinite;
-      margin:0 auto;
+      width:34px; height:34px; border-radius:50%; border:4px solid #dbe7ff; border-top-color: var(--brand);
+      animation:spin 1s linear infinite; margin:0 auto;
     }
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* ✅ Si hay desvíos: naranja SOLO el activo */
     #drawer.struggling .item.active{
-      background:var(--warnBg) !important;
-      color:var(--warnText) !important;
-      border-left:5px solid var(--warnBorder) !important;
-      font-weight:1000 !important;
+      background:var(--warnBg) !important; color:var(--warnText) !important;
+      border-left:5px solid var(--warnBorder) !important; font-weight:1000 !important;
     }
     .item.found-warn{
-      background:var(--warnBg) !important;
-      color:var(--warnText) !important;
-      border-left:5px solid var(--warnBorder) !important;
-      font-weight:1000 !important;
+      background:var(--warnBg) !important; color:var(--warnText) !important;
+      border-left:5px solid var(--warnBorder) !important; font-weight:1000 !important;
     }
 
-    /* ===== TAGS ===== */
-    .tag{font-size:11px;font-weight:1000;padding:2px 8px;border-radius:999px;margin-left:8px;white-space:nowrap}
-    .tag.new{background:#e6f2fa;color:var(--brand)}
-    .tag.trending{background:#eafaf1;color:#0a8f4e}
+    .tag{font-size:11px; font-weight:1000; padding:2px 8px; border-radius:999px; margin-left:8px; white-space:nowrap}
+    .tag.new{background:#e6f2fa; color:var(--brand)}
+    .tag.trending{background:#eafaf1; color:#0a8f4e}
 
-    /* ===== BANNERS ===== */
     .promo-card{ margin:16px; border-radius:14px; overflow:hidden; position:relative; background:#f0f0f0; box-shadow:0 10px 25px rgba(0,0,0,.1); }
     .promo-img{ width:100%; height:160px; object-fit:cover; display:block; }
     .promo-link{ position:absolute; inset:0; display:block; }
     .promo-card.small{ margin:12px 16px 8px; }
     .promo-card.small .promo-img{ height:120px; }
 
-    /* ===== MODALES ===== */
     .modalOverlay{
-      position:fixed; inset:0;
-      background:linear-gradient(180deg, rgba(3,76,168,.55), rgba(0,0,0,.55));
-      display:none;
-      z-index:4000;
-      padding:16px;
+      position:fixed; inset:0; background:linear-gradient(180deg, rgba(3,76,168,.55), rgba(0,0,0,.55));
+      display:none; z-index:4000; padding:16px;
     }
     .modalCard{
-      position:absolute;
-      left:50%; top:50%;
-      transform:translate(-50%,-50%);
-      width:min(980px, 92vw);
-      padding:22px;
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(980px, 92vw); padding:22px;
     }
 
-    .introGrid{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:16px;
-      margin-top:18px;
-    }
-    .introCta{
-      display:flex;
-      justify-content:center;
-      margin-top:18px;
-    }
-    .introBtn{
-      min-width:min(560px,92vw);
-      font-size:18px;
-      padding:18px 24px;
-      border-radius:18px;
-    }
+    .introGrid{ display:grid; grid-template-columns:1.1fr .9fr; gap:16px; margin-top:18px; }
+    .introCta{ display:flex; justify-content:center; margin-top:18px; }
+    .introBtn{ min-width:min(560px,92vw); font-size:18px; padding:18px 24px; border-radius:18px; }
 
-    /* ===== PANEL EN CURSO — SOLO BOTONES ===== */
     #abpanel{
-      position:fixed;
-      top:12px; right:12px;
-      z-index:2000;
-      padding:12px;
-      width:340px; max-width:92vw;
-      display:none;
-      border-radius:18px;
-      box-shadow:var(--shadow2);
-      background:#fff;
-      border:1px solid var(--border);
+      position:fixed; top:12px; right:12px; z-index:2000; padding:12px; width:340px; max-width:92vw;
+      display:none; border-radius:18px; box-shadow:var(--shadow2); background:#fff; border:1px solid var(--border);
     }
     .panelTitle{
-      font-weight:1000;
-      color:#0b1b3a;
-      font-size:13px;
-      margin-bottom:10px;
-      display:flex;align-items:center;gap:8px;
+      font-weight:1000; color:#0b1b3a; font-size:13px; margin-bottom:10px; display:flex; align-items:center; gap:8px;
     }
-    .panelTitle .dot{
-      width:10px;height:10px;border-radius:999px;background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.15);
-    }
-    .panelBtns{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:10px;
-    }
+    .panelTitle .dot{ width:10px; height:10px; border-radius:999px; background:#16a34a; box-shadow:0 0 0 4px rgba(22,163,74,.15); }
+    .panelBtns{ display:grid; grid-template-columns:1fr; gap:10px; }
 
-    /* ===== MÓVIL ===== */
     @media (max-width:720px){
       body{ overflow:auto; }
-
       .modalOverlay{ padding:0; }
       .modalCard{
-        position:fixed;
-        left:0; top:0;
-        transform:none;
-        width:100vw;
-        height:100vh;
-        border-radius:0;
-        padding:16px 14px;
-        overflow:auto;
-        box-shadow:none;
-        border:none;
+        position:fixed; left:0; top:0; transform:none; width:100vw; height:100vh;
+        border-radius:0; padding:16px 14px; overflow:auto; box-shadow:none; border:none;
       }
-
-      .introModal{
-        display:flex;
-        flex-direction:column;
-        height:100vh;
-        overflow:hidden;
-      }
-      .introGrid{
-        grid-template-columns:1fr;
-        gap:12px;
-      }
-      .introModal .introGrid{
-        flex:1;
-        overflow:auto;
-        padding-bottom:110px;
-      }
-
+      .introModal{ display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+      .introGrid{ grid-template-columns:1fr; gap:12px; }
+      .introModal .introGrid{ flex:1; overflow:auto; padding-bottom:110px; }
       .introCta{
-        position:fixed;
-        left:0; right:0; bottom:0;
-        z-index:9999;
+        position:fixed; left:0; right:0; bottom:0; z-index:9999;
         padding:12px 14px calc(12px + env(safe-area-inset-bottom));
-        background:rgba(244,246,249,.92);
-        backdrop-filter: blur(10px);
-        border-top:1px solid var(--border);
+        background:rgba(244,246,249,.92); backdrop-filter: blur(10px); border-top:1px solid var(--border);
       }
-      .introBtn{
-        width:min(560px, 92vw);
-        padding:16px 22px;
-        font-size:18px;
-        border-radius:18px;
-      }
-
-      /* Panel abajo compacto */
+      .introBtn{ width:min(560px, 92vw); padding:16px 22px; font-size:18px; border-radius:18px; }
       #abpanel{
-        top:auto; right:0; left:0; bottom:0;
-        width:100vw; max-width:100vw;
-        border-radius:18px 18px 0 0;
-        padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-        box-shadow:0 -16px 40px rgba(0,0,0,.18);
+        top:auto; right:0; left:0; bottom:0; width:100vw; max-width:100vw; border-radius:18px 18px 0 0;
+        padding:10px 12px calc(10px + env(safe-area-inset-bottom)); box-shadow:0 -16px 40px rgba(0,0,0,.18);
       }
-      #abpanel .btn{
-        padding:12px 14px !important;
-        font-size:16px !important;
-        border-radius:16px !important;
-      }
-
+      #abpanel .btn{ padding:12px 14px !important; font-size:16px !important; border-radius:16px !important; }
       #drawer{ max-width:100vw; padding-bottom:132px; }
       #columns-container{ padding-bottom:132px; }
     }
@@ -304,7 +176,7 @@
 <header>
   <button class="hamburger" id="openBtn">☰</button>
   <div style="margin-left:12px;font-weight:1000;color:var(--brand);letter-spacing:.2px;">
-    MENU MOCKUP <span style="opacity:0.6;font-weight:400;font-size:0.8em">(Var: <span id="ver-display"></span>)</span>
+    MENU MOCKUP <span style="font-weight:400; opacity:0.6; font-size:0.8em;">(VER: <span id="ver-display"></span>)</span>
   </div>
 </header>
 
@@ -319,12 +191,12 @@
       </div>
 
       <div style="flex:1;">
-        <div class="chip">Test de usabilidad del menú web</div>
+        <div class="chip">Test de usabilidad A/B</div>
         <div style="margin-top:10px;font-weight:1000;font-size:clamp(28px, 4.2vw, 40px);color:#0b1b3a;line-height:1.06;">
           Test de usabilidad del menú web
         </div>
         <div style="margin-top:12px;color:#334155;line-height:1.7;font-size:clamp(15px, 2.4vw, 18px);max-width:90ch;">
-          Vas a realizar <b>3 tareas</b> de encontrabilidad: encontrar categorías dentro del menú.
+          Vas a realizar <b>3 tareas</b> de encontrabilidad.
           <b>El cronómetro empieza</b> cuando pulses “Comenzar tarea”.
         </div>
       </div>
@@ -340,9 +212,6 @@
           <li>Si te interrumpen, usa <b>Pausa</b> y luego <b>Reanudar</b>.</li>
           <li>Al finalizar, se descargará un <b>Excel</b> automáticamente.</li>
         </ol>
-        <div style="margin-top:10px;color:#64748b;font-size:13px;">
-          Consejo: navega como lo harías normalmente en una web real.
-        </div>
       </div>
 
       <div style="border:1px solid var(--border);border-radius:18px;padding:16px;background:#fff;">
@@ -376,7 +245,6 @@
         Comenzar tarea
       </button>
     </div>
-
     <div style="margin-top:10px;color:#94a3b8;font-size:13px;">
       El cronómetro empezará al pulsar “Comenzar tarea”.
     </div>
@@ -426,17 +294,16 @@
 <script>
   // ==========================================
   // ⚙️ CONFIGURACIÓN DEL TEST A/B
-  // CAMBIA 'A' POR 'B' PARA PROBAR LA OTRA VARIANTE
-  // A: Diseño Original (Especialidades, Ofertas, Todas las categorías > Click para ver categorías)
-  // B: Diseño Nuevo (Especialidades, Ofertas, LISTA DESPLEGADA DE CATEGORÍAS)
-  const TEST_VERSION = 'A';
+  // CAMBIA 'B' POR 'A' SI QUIERES VER LA VERSIÓN ORIGINAL
+  // 'A' = Botón "Todas las categorías" (Ocultas)
+  // 'B' = Lista completa de categorías (Desplegadas, como en tu captura)
+  const TEST_VERSION = 'B';
   // ==========================================
 
-  // UI Updates con la versión
   document.getElementById('ver-display').textContent = TEST_VERSION;
   document.getElementById('ver-panel').textContent = TEST_VERSION;
 
-  // ====== Datos categorías + banners (CSV de Google Sheets) ======
+  // ====== Datos categorías + banners ======
   const SHEET_ID = "1rG-kDB8Srrn-dIldsFuc7rwAc7q2EuNy4CHfz2kvDTY";
   const GID_CATEGORIES = "0";
   const GID_BANNERS = "1300813141";
@@ -492,25 +359,19 @@
   // ====== Estado ======
   let taskIndex = 0;
   let TASK = null;
-
   let START_TS = 0;
   let PAUSED = false;
   let PAUSE_TS = 0;
   let PAUSED_TOTAL_MS = 0;
-
   let NAV_PATH = [];
   let CLICK_COUNT = 0;
   let DETOURS = 0;
-
-  let TIMER_INT = null; // se mantiene interno para Excel, pero no se pinta en UI
+  let TIMER_INT = null;
   let TASK_DONE = false;
-
   const EVENTS = [];
   const TASK_RESULTS = {};
-
   let TEST_STARTED = false;
   let TASK_ACTIVE = false;
-
   let menuTree = [];
   let bannersData = [];
 
@@ -531,7 +392,7 @@
     return Math.max(0, (now - START_TS) - PAUSED_TOTAL_MS);
   }
 
-  // ====== LOG (para Excel) ======
+  // ====== LOG ======
   let EVENT_SEQ = 0;
   let LAST_EVENT_TS = 0;
 
@@ -548,34 +409,27 @@
       task_id: TASK?.id || "",
       task_label: TASK?.label || "",
       target_route: TASK?.route ? TASK.route.join(" > ") : "",
-
       seq: EVENT_SEQ,
       ms_from_prev: msFromPrev,
-
       event: eventName,
-
       label: extra.label || "",
       level: (typeof extra.level === "number") ? extra.level : "",
       expected_label: extra.expected_label || "",
       is_expected: (typeof extra.is_expected === "number") ? extra.is_expected : "",
       deviation: (typeof extra.deviation === "number") ? extra.deviation : "",
       deviation_reason: extra.deviation_reason || "",
-
       path_before: extra.path_before || "",
       path_after: extra.path_after || "",
       path: (typeof extra.path === "string") ? extra.path : (NAV_PATH.join(" > ")),
-
       ms_from_start: (START_TS && TASK_ACTIVE) ? effectiveElapsedMs() : "",
       detours: (typeof extra.detours === "number") ? extra.detours : DETOURS,
-
       task_status: extra.task_status || "",
       final_path: extra.final_path || ""
     };
-
     EVENTS.push(row);
   }
 
-  // ====== Confetti ======
+  // ====== Confetti & UI ======
   function confettiBurstSlow(){
     const canvas = document.getElementById("confettiCanvas");
     const ctx = canvas.getContext("2d");
@@ -617,13 +471,10 @@
   function showCompletedBanner(message, title){
     hardPause();
     confettiBurstSlow();
-
     const seconds = START_TS ? (effectiveElapsedMs()/1000).toFixed(1) : "";
     const routeStr = NAV_PATH.join(" > ");
-
     document.getElementById("doneTitle").textContent = title;
-    document.getElementById("doneDetail").textContent =
-      `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
+    document.getElementById("doneDetail").textContent = `${message}\nRuta: ${routeStr}\nClicks: ${CLICK_COUNT}\nDesvíos: ${DETOURS}`;
     document.getElementById("doneTime").textContent = seconds ? `Tiempo: ${seconds}s` : "";
     document.getElementById("doneOverlay").style.display = "block";
   }
@@ -643,7 +494,6 @@
     TASK_ACTIVE = false;
     hardPause();
     TASK = TASKS[taskIndex];
-
     document.getElementById("nextTitle").textContent = `${taskIndex+1}/${TASKS.length} · ${TASK.label}`;
     document.getElementById("nextGoal").innerHTML = `<b>Qué buscar:</b> ${TASK.goal}`;
     document.getElementById("nextInfo").innerHTML = `<b>Info:</b> ${TASK.info}`;
@@ -653,34 +503,23 @@
   function hideNextTaskScreen(){ document.getElementById("nextTaskOverlay").style.display = "none"; }
 
   function startThisTaskNow(){
-    EVENT_SEQ = 0;
-    LAST_EVENT_TS = 0;
-
-    NAV_PATH = [];
-    CLICK_COUNT = 0;
-    DETOURS = 0;
+    EVENT_SEQ = 0; LAST_EVENT_TS = 0;
+    NAV_PATH = []; CLICK_COUNT = 0; DETOURS = 0;
     TASK_DONE = false;
     drawer.classList.remove("struggling");
-
     START_TS = Date.now();
-    PAUSED = false;
-    PAUSE_TS = 0;
-    PAUSED_TOTAL_MS = 0;
-
+    PAUSED = false; PAUSE_TS = 0; PAUSED_TOTAL_MS = 0;
     TASK_ACTIVE = true;
     track("task_start", { detours: DETOURS });
-
     if (TIMER_INT) clearInterval(TIMER_INT);
     TIMER_INT = setInterval(() => { /* no UI */ }, 250);
-
     hideNextTaskScreen();
     toggleMenu(true);
   }
 
   function pauseTask(){
     if (!TASK_ACTIVE || !START_TS || PAUSED) return;
-    PAUSED = true;
-    PAUSE_TS = Date.now();
+    PAUSED = true; PAUSE_TS = Date.now();
     track("task_pause");
     document.getElementById("btnPause").style.display = "none";
     document.getElementById("btnResume").style.display = "block";
@@ -688,9 +527,7 @@
 
   function resumeTask(){
     if (!TASK_ACTIVE || !START_TS || !PAUSED) return;
-    PAUSED = false;
-    PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS);
-    PAUSE_TS = 0;
+    PAUSED = false; PAUSED_TOTAL_MS += (Date.now() - PAUSE_TS); PAUSE_TS = 0;
     track("task_resume");
     document.getElementById("btnPause").style.display = "block";
     document.getElementById("btnResume").style.display = "none";
@@ -706,7 +543,6 @@
 
   function nextTaskFlow(){
     document.getElementById("doneOverlay").style.display = "none";
-
     if (TASK_ACTIVE) {
       track("task_end", {
         task_status: TASK_RESULTS[TASK?.id]?.status || (TASK_DONE ? "success" : ""),
@@ -714,10 +550,8 @@
         path: ""
       });
     }
-
     TASK_ACTIVE = false;
     if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
-
     taskIndex++;
     if (taskIndex >= TASKS.length) finishAllTasks();
     else showNextTaskScreen();
@@ -727,7 +561,6 @@
     TASK_ACTIVE = false;
     if (TIMER_INT) { clearInterval(TIMER_INT); TIMER_INT = null; }
     track("tasks_finished", { path:"" });
-
     document.getElementById("finalOverlay").style.display = "block";
     setTimeout(() => {
       try { downloadExcelAuto(); }
@@ -748,36 +581,20 @@
     showCompletedBanner("❌ Marcada como 'No lo encuentro'", "❌ Tarea no encontrada");
   }
 
-  // ====== Excel (XML Spreadsheet) ======
-  function xmlEscape(s){
-    return String(s ?? "")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;").replace(/'/g,"&apos;");
-  }
+  // ====== Excel ======
+  function xmlEscape(s){ return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;"); }
   function worksheetXml(name, rows){
-    const rowXml = rows.map(r => `<Row>${
-      r.map(c => `<Cell${c.style?` ss:StyleID="${c.style}"`:``}><Data ss:Type="String">${xmlEscape(c.v)}</Data></Cell>`).join("")
-    }</Row>`).join("");
+    const rowXml = rows.map(r => `<Row>${r.map(c => `<Cell${c.style?` ss:StyleID="${c.style}"`:``}><Data ss:Type="String">${xmlEscape(c.v)}</Data></Cell>`).join("")}</Row>`).join("");
     return `<Worksheet ss:Name="${xmlEscape(name)}"><Table>${rowXml}</Table></Worksheet>`;
   }
   function buildExcelXml(){
     const rowsSummary = [];
     const totalMs = Object.values(TASK_RESULTS).reduce((acc, r) => acc + (r.timeMs || 0), 0);
-
     rowsSummary.push([{v:"Sesión", style:"sHeader"},{v:SESSION_ID, style:"sCell"}]);
     rowsSummary.push([{v:"Variante (version)", style:"sHeader"},{v:TEST_VERSION, style:"sCell"}]);
     rowsSummary.push([{v:"Tiempo total (s)", style:"sHeader"},{v:(totalMs/1000).toFixed(1), style:"sCell"}]);
     rowsSummary.push([{v:"", style:"sCell"},{v:"", style:"sCell"}]);
-
-    rowsSummary.push([
-      {v:"Tarea", style:"sHeader"},
-      {v:"Resultado", style:"sHeader"},
-      {v:"Tiempo (s)", style:"sHeader"},
-      {v:"Clicks", style:"sHeader"},
-      {v:"Desvíos", style:"sHeader"},
-      {v:"Ruta objetivo", style:"sHeader"}
-    ]);
-
+    rowsSummary.push([{v:"Tarea", style:"sHeader"},{v:"Resultado", style:"sHeader"},{v:"Tiempo (s)", style:"sHeader"},{v:"Clicks", style:"sHeader"},{v:"Desvíos", style:"sHeader"},{v:"Ruta objetivo", style:"sHeader"}]);
     TASKS.forEach(t => {
       const r = TASK_RESULTS[t.id];
       const status = r?.status || "fail";
@@ -786,44 +603,13 @@
       const isWarn = status !== "fail" && det > 0;
       const styleRow = isSuccess ? "sSuccess" : (isWarn ? "sWarn" : "sFail");
       const labelRes = isSuccess ? "Encontrada" : (isWarn ? "Encontrada (con desvíos)" : "No encontrada");
-
-      rowsSummary.push([
-        {v:t.label, style:styleRow},
-        {v:labelRes, style:styleRow},
-        {v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},
-        {v: r ? String(r.clicks ?? "") : "", style:styleRow},
-        {v: r ? String(r.detours ?? "") : "", style:styleRow},
-        {v: t.route.join(" > "), style:styleRow}
-      ]);
+      rowsSummary.push([{v:t.label, style:styleRow},{v:labelRes, style:styleRow},{v: r ? (r.timeMs/1000).toFixed(1) : "", style:styleRow},{v: r ? String(r.clicks ?? "") : "", style:styleRow},{v: r ? String(r.detours ?? "") : "", style:styleRow},{v: t.route.join(" > "), style:styleRow}]);
     });
-
-    const headers = EVENTS.length ? Object.keys(EVENTS[0]) : [
-      "ts_iso","version","session_id","task_id","task_label","target_route",
-      "seq","ms_from_prev","event","label","level","expected_label","is_expected",
-      "deviation","deviation_reason","path_before","path_after","path","ms_from_start",
-      "detours","task_status","final_path"
-    ];
-
+    const headers = EVENTS.length ? Object.keys(EVENTS[0]) : ["ts_iso","version","session_id","task_id","task_label","target_route","seq","ms_from_prev","event","label","level","expected_label","is_expected","deviation","deviation_reason","path_before","path_after","path","ms_from_start","detours","task_status","final_path"];
     const rowsEvents = [];
     rowsEvents.push(headers.map(h => ({v:h, style:"sHeader"})));
     EVENTS.forEach(e => rowsEvents.push(headers.map(h => ({v:e[h] ?? "", style:"sCell"}))));
-
-    return `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:o="urn:schemas-microsoft-com:office:office"
- xmlns:x="urn:schemas-microsoft-com:office:excel"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
- <Styles>
-  <Style ss:ID="sHeader"><Font ss:Bold="1"/><Interior ss:Color="#E6F2FA" ss:Pattern="Solid"/></Style>
-  <Style ss:ID="sCell"></Style>
-  <Style ss:ID="sSuccess"><Interior ss:Color="#EAF7EE" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#0A7A3A"/></Style>
-  <Style ss:ID="sWarn"><Interior ss:Color="#FFF7E6" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#8A4B00"/></Style>
-  <Style ss:ID="sFail"><Interior ss:Color="#FDECEC" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#B42318"/></Style>
- </Styles>
- ${worksheetXml("Resumen", rowsSummary)}
- ${worksheetXml("Eventos", rowsEvents)}
-</Workbook>`;
+    return `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Styles><Style ss:ID="sHeader"><Font ss:Bold="1"/><Interior ss:Color="#E6F2FA" ss:Pattern="Solid"/></Style><Style ss:ID="sCell"></Style><Style ss:ID="sSuccess"><Interior ss:Color="#EAF7EE" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#0A7A3A"/></Style><Style ss:ID="sWarn"><Interior ss:Color="#FFF7E6" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#8A4B00"/></Style><Style ss:ID="sFail"><Interior ss:Color="#FDECEC" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#B42318"/></Style></Styles>${worksheetXml("Resumen", rowsSummary)}${worksheetXml("Eventos", rowsEvents)}</Workbook>`;
   }
   function downloadExcelAuto(){
     const xml = buildExcelXml();
@@ -838,19 +624,13 @@
     URL.revokeObjectURL(a.href);
   }
 
-  // ====== CSV parsing / árbol ======
+  // ====== Data ======
   function parseCSV(text){
-    const rows = [];
-    let cur = "", row = [], inQ = false;
+    const rows = []; let cur = "", row = [], inQ = false;
     for (let i=0;i<text.length;i++){
       const ch = text[i];
-      if (ch === '"') inQ = !inQ;
-      else if (ch === ',' && !inQ){ row.push(cur); cur=""; }
-      else if ((ch === '\n' || ch === '\r') && !inQ){
-        row.push(cur); cur="";
-        if (row.join("").trim()) rows.push(row);
-        row=[];
-      } else cur += ch;
+      if (ch === '"') inQ = !inQ; else if (ch === ',' && !inQ){ row.push(cur); cur=""; }
+      else if ((ch === '\n' || ch === '\r') && !inQ){ row.push(cur); cur=""; if (row.join("").trim()) rows.push(row); row=[]; } else cur += ch;
     }
     row.push(cur); if(row.join("").trim()) rows.push(row);
     return rows;
@@ -858,11 +638,7 @@
   function rowsToObjects(rows){
     if(!rows.length) return [];
     const header = rows[0].map(h => h.trim().toLowerCase());
-    return rows.slice(1).map(row => {
-      const obj = {};
-      header.forEach((h, i) => obj[h] = (row[i] || "").trim());
-      return obj;
-    });
+    return rows.slice(1).map(row => { const obj = {}; header.forEach((h, i) => obj[h] = (row[i] || "").trim()); return obj; });
   }
   function sortNodes(nodes, level) {
     if (!nodes) return;
@@ -891,55 +667,109 @@
   }
 
   async function loadAllData(){
-    statusEl.style.display="block";
-    statusEl.textContent="Cargando...";
+    statusEl.style.display="block"; statusEl.textContent="Cargando...";
     try {
       const [catRes, banRes] = await Promise.all([fetch(DATA_URL), fetch(BANNERS_URL)]);
-      const catCsv = await catRes.text();
-      const banCsv = await banRes.text();
-
+      const catCsv = await catRes.text(); const banCsv = await banRes.text();
       buildTree(catCsv);
       bannersData = rowsToObjects(parseCSV(banCsv)).reverse();
-
       statusEl.style.display="none";
       renderRootMenu();
-    } catch(e) {
-      statusEl.textContent="Error de carga";
-    }
+    } catch(e) { statusEl.textContent="Error de carga"; }
   }
 
-  // ====== Menú: root + especialidades/ofertas + banners ======
+
+  // ====== LÓGICA DE CLIC UNIFICADA (CLAVE PARA EL ARREGLO) ======
+  function handleGenericItemClick(item, level, liElement, container, col) {
+      const wasActive = liElement.classList.contains("active");
+
+      // ---- Tracking ----
+      if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
+        const beforePathArr = [...NAV_PATH];
+        NAV_PATH = NAV_PATH.slice(0, level);
+        NAV_PATH[level] = item.name;
+        const afterPathArr = [...NAV_PATH];
+        CLICK_COUNT++;
+
+        const expected = TASK.route[level] || "";
+        const isExpected = expected ? (norm2(item.name) === norm2(expected)) : 0;
+
+        let deviation = 0;
+        let reason = "";
+        if (!expected) { deviation = 1; reason = "extra_depth"; }
+        else if (!isExpected) { deviation = 1; reason = (level === 0) ? "wrong_top_category" : "wrong_choice_same_level"; }
+
+        if (deviation) { DETOURS++; drawer.classList.add("struggling"); }
+
+        track("click_item", {
+          label: item.name, level, expected_label: expected, is_expected: isExpected ? 1 : 0,
+          deviation, deviation_reason: reason,
+          path_before: beforePathArr.join(" > "), path_after: afterPathArr.join(" > "), path: afterPathArr.join(" > ")
+        });
+
+        if (isSuccessPath()) {
+          TASK_DONE = true;
+          const tms = effectiveElapsedMs();
+          const status = (DETOURS > 0) ? "success_with_detours" : "success";
+          TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks:CLICK_COUNT, detours:DETOURS };
+          track("task_success", {
+            label: item.name, level, task_status: status,
+            final_path: afterPathArr.join(" > "), path_before: beforePathArr.join(" > "), path_after: afterPathArr.join(" > "), path: afterPathArr.join(" > ")
+          });
+          if (status === "success_with_detours") liElement.classList.add("found-warn");
+          drawer.classList.remove("struggling");
+          showCompletedBanner(
+            status === "success_with_detours" ? "✅ Es la correcta (pero NO a la primera)" : "✅ Es la correcta",
+            status === "success_with_detours" ? "🟠 Correcta con desvíos" : "🟢 Tarea completada"
+          );
+        }
+      }
+
+      // ---- UI: Abrir/Cerrar ----
+      const ul = liElement.parentNode;
+      Array.from(ul.children).forEach(l => l.classList.remove("active"));
+
+      if(item.children.length && wasActive) {
+        // Cerrar
+        const myColIndex = Array.from(container.children).indexOf(col);
+        Array.from(container.querySelectorAll(".column")).slice(myColIndex + 1).forEach(c => c.remove());
+        liElement.classList.remove("active");
+      } else {
+        // Abrir
+        liElement.classList.add("active");
+        if(item.children.length) render(item.children, level + 1, item);
+      }
+  }
+
+
+  // ====== MENU ROOT: AHORA SOPORTA A y B ======
   function renderRootMenu(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
     const col = document.createElement("div");
     col.className = "column";
 
-    // Creamos el UL principal
+    // Header items comunes
     const ul = document.createElement("ul");
-    
-    // --- 1. Especialidades (COMÚN) ---
     const liSpec = document.createElement("li");
     liSpec.className = "item";
     liSpec.innerHTML = `<span class="label"><span class="icon">⭐</span><span class="text">Especialidades</span></span>${CHEVRON_SVG}`;
     liSpec.onclick = () => renderSpecialties();
     ul.appendChild(liSpec);
 
-    // --- 2. Ofertas (COMÚN) ---
     const liOff = document.createElement("li");
     liOff.className = "item";
     liOff.innerHTML = `<span class="label"><span class="icon">🏷️</span><span class="text">Ofertas</span></span>${CHEVRON_SVG}`;
     liOff.onclick = () => renderOffers();
     ul.appendChild(liOff);
 
-    // Divider
+    // Separador
     const div = document.createElement("li");
     div.className = "divider";
     ul.appendChild(div);
 
     if (TEST_VERSION === 'A') {
-        // --- VERSION A: DISEÑO ORIGINAL ---
-        // Muestra "Todas las categorías" -> Click -> Abre nivel 1
+        // --- VERSIÓN A: Botón "Todas" ---
         const liAll = document.createElement("li");
         liAll.className = "item";
         liAll.innerHTML = `<span class="label"><span class="icon">📁</span><span class="text">Todas las categorías</span></span>${CHEVRON_SVG}`;
@@ -956,258 +786,91 @@
            li.innerHTML = `<span class="label"><span class="text">${fc.name}</span>${fc.tag ? `<span class="tag ${fc.tag}">${fc.tag==='new'?'Nuevo':'Trending'}</span>` : ''}</span>`;
            ul.appendChild(li);
         });
-
     } else {
-        // --- VERSION B: DISEÑO NUEVO (LISTA DESPLEGADA) ---
-        // Renderiza directamente las categorías del nivel raíz
-        // Y aseguramos que el click funcione como un "nivel 0"
-        
+        // --- VERSIÓN B: Categorías Desplegadas ---
+        // SIN enlaces extra (Trending/Nuevo), solo el árbol
         menuTree.forEach(item => {
            const li = document.createElement("li");
            li.className = "item";
-           // Iconos para el nivel raíz en Version B
            const icon = ICON_MAP[norm(item.name)] || "";
-           
            li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
-           
-           // CLIC IMPORTANTE:
-           // Pasamos 'level: 0' porque estamos en la primera columna visible de categorías.
-           // Pasamos 'container' y 'col' para que la función genérica sepa limpiar columnas a la derecha.
+           // Clic llama a la lógica genérica. Level=0 (root), Columna=col actual
            li.onclick = () => handleGenericItemClick(item, 0, li, container, col);
-           
            ul.appendChild(li);
         });
     }
 
     col.appendChild(ul);
 
+    // Banner Root
     const b = bannersData.find(b => norm(b.scope) === "root");
     if (b) {
-      col.innerHTML += `
-        <div class="promo-card">
-          <img class="promo-img" src="${b.img}">
-          <a class="promo-link" href="${b.href || '#'}" target="_blank" rel="noopener"></a>
-        </div>`;
+      col.innerHTML += `<div class="promo-card"><img class="promo-img" src="${b.img}"><a class="promo-link" href="${b.href || '#'}" target="_blank" rel="noopener"></a></div>`;
     }
 
     container.appendChild(col);
   }
 
-  // --- Funciones auxiliares para el menú ---
-
-  window.renderSpecialties = function renderSpecialties(){
-    const container = document.getElementById("columns-container");
-    // Limpiamos todo porque "Especialidades" actúa como un submenú modal lateral
-    container.innerHTML = "";
-    
-    const col = document.createElement("div");
-    col.className = "column";
-    col.innerHTML = `
-      <div class="column-header">
-        <button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button>
-        Especialidades
-      </div>
-      <ul>
-        ${SPECIALTIES_ITEMS.map(it => `
-          <li class="item">
-            <span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span>
-          </li>
-        `).join("")}
-      </ul>`;
-    container.appendChild(col);
-  };
-
-  window.renderOffers = function renderOffers(){
+  // --- Helpers render ---
+  window.renderSpecialties = function(){
     const container = document.getElementById("columns-container");
     container.innerHTML = "";
     const col = document.createElement("div");
     col.className = "column";
-    col.innerHTML = `
-      <div class="column-header">
-        <button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button>
-        Ofertas
-      </div>
-      <ul>
-        ${OFFERS_ITEMS.map(it => `
-          <li class="item"><span class="label"><span class="text">${it.name}</span></span></li>
-        `).join("")}
-      </ul>`;
+    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Especialidades</div><ul>${SPECIALTIES_ITEMS.map(it => `<li class="item"><span class="label"><span class="icon">${it.icon}</span><span class="text">${it.name}</span></span></li>`).join("")}</ul>`;
     container.appendChild(col);
   };
-
-  window.renderAllCategories = function(){ 
-      // Esta función solo se llama en la Versión A
-      render(menuTree, 0); 
+  window.renderOffers = function(){
+    const container = document.getElementById("columns-container");
+    container.innerHTML = "";
+    const col = document.createElement("div");
+    col.className = "column";
+    col.innerHTML = `<div class="column-header"><button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Ofertas</div><ul>${OFFERS_ITEMS.map(it => `<li class="item"><span class="label"><span class="text">${it.name}</span></span></li>`).join("")}</ul>`;
+    container.appendChild(col);
   };
+  window.renderAllCategories = function(){ render(menuTree, 0); };
 
-  // --- LÓGICA DE CLIC UNIFICADA ---
-  // Extraemos la lógica del clic que estaba dentro de `render` para reutilizarla en el Root de la Versión B
-  function handleGenericItemClick(item, level, liElement, container, col) {
-        const wasActive = liElement.classList.contains("active");
-
-        // ==== tracking click ====
-        if (TEST_STARTED && TASK_ACTIVE && !TASK_DONE && !PAUSED) {
-          const beforePathArr = [...NAV_PATH];
-
-          NAV_PATH = NAV_PATH.slice(0, level);
-          NAV_PATH[level] = item.name;
-
-          const afterPathArr = [...NAV_PATH];
-
-          CLICK_COUNT++;
-
-          const expected = TASK.route[level] || "";
-          const isExpected = expected ? (norm2(item.name) === norm2(expected)) : 0;
-
-          let deviation = 0;
-          let reason = "";
-
-          if (!expected) {
-            deviation = 1; reason = "extra_depth";
-          } else if (!isExpected) {
-            deviation = 1;
-            reason = (level === 0) ? "wrong_top_category" : "wrong_choice_same_level";
-          }
-
-          if (deviation) {
-            DETOURS++;
-            drawer.classList.add("struggling");
-          }
-
-          track("click_item", {
-            label: item.name,
-            level,
-            expected_label: expected,
-            is_expected: isExpected ? 1 : 0,
-            deviation,
-            deviation_reason: reason,
-            path_before: beforePathArr.join(" > "),
-            path_after: afterPathArr.join(" > "),
-            path: afterPathArr.join(" > ")
-          });
-
-          if (isSuccessPath()) {
-            TASK_DONE = true;
-
-            const tms = effectiveElapsedMs();
-            const status = (DETOURS > 0) ? "success_with_detours" : "success";
-            TASK_RESULTS[TASK.id] = { status, timeMs:tms, clicks:CLICK_COUNT, detours:DETOURS };
-
-            track("task_success", {
-              label: item.name,
-              level,
-              task_status: status,
-              final_path: afterPathArr.join(" > "),
-              path_before: beforePathArr.join(" > "),
-              path_after: afterPathArr.join(" > "),
-              path: afterPathArr.join(" > ")
-            });
-
-            if (status === "success_with_detours") liElement.classList.add("found-warn");
-            drawer.classList.remove("struggling");
-
-            showCompletedBanner(
-              status === "success_with_detours" ? "✅ Es la correcta (pero NO a la primera)" : "✅ Es la correcta",
-              status === "success_with_detours" ? "🟠 Correcta con desvíos" : "🟢 Tarea completada"
-            );
-          }
-        }
-        // ===============================
-
-        // UI: Limpiar activos hermanos
-        const ul = liElement.parentNode;
-        Array.from(ul.children).forEach(l => l.classList.remove("active"));
-
-        if(item.children.length && wasActive) {
-          // Si cerramos, borramos las columnas a la derecha
-          // Usamos el índice del DOM para saber qué columnas borrar
-          const myColIndex = Array.from(container.children).indexOf(col);
-          Array.from(container.querySelectorAll(".column")).slice(myColIndex + 1).forEach(c => c.remove());
-          liElement.classList.remove("active");
-        } else {
-          // Si abrimos
-          liElement.classList.add("active");
-          // Si estamos en la columna X, abrimos hijos en columna X+1
-          // Pero la función recursiva espera 'level + 1'.
-          // En la Versión B root, level es 0. Hijos serán level 1. Correcto.
-          if(item.children.length) render(item.children, level + 1, item);
-        }
-  }
-
-  // ====== Render categorías + banners internos ======
+  // --- Render Genérico (para subniveles y Ver A) ---
   function render(items, level, parent=null){
     const container = document.getElementById("columns-container");
     
-    // Gestión de limpieza de columnas
+    // Gestión de borrado de columnas
     if(level === 0) {
-        // En Versión A, al pulsar "Todas", limpiamos todo y empezamos de 0.
+        // En Ver A, "Todas" resetea la vista
         container.innerHTML = "";
     } else {
-        // En niveles profundos, o desde la versión B root, borramos desde el nivel actual en adelante
-        // OJO: Si venimos de la Versión B root (que es una columna fija), 'level' será 1.
-        // Queremos borrar la columna 1 anterior si existe.
-        // La lógica original 'slice(level)' funciona bien para estructuras recursivas estándar.
-        // Pero en la Versión B, la columna 0 es FIJA (el root).
-        // Si level=1, slice(1) borra la columna 1 existente y la reemplaza. Correcto.
+        // En niveles profundos o Ver B, borramos hermanos a la derecha
+        // Slice desde level. Si level=1, borra col 1 existente antes de poner la nueva
         Array.from(container.querySelectorAll(".column")).slice(level).forEach(c => c.remove());
     }
 
     const col = document.createElement("div");
     col.className = "column";
-    
-    // Header
-    const headerText = level===0 
-        ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías`
-        : parent.name;
-
+    const headerText = level===0 ? `<button class="back-only" onclick="renderRootMenu()">${BACK_CHEVRON_SVG}</button> Todas las categorías` : parent.name;
     col.innerHTML = `<div class="column-header">${headerText}</div><ul></ul>`;
     const ul = col.querySelector("ul");
 
     items.forEach(item => {
       const li = document.createElement("li");
       li.className = "item";
-      // Iconos solo en el nivel 0 real (que en la Versión A es esta función render, pero en B ya están en root)
+      // Iconos solo si es nivel 0 y estamos en Ver A (en Ver B ya salieron en el root)
       const icon = (level === 0 && TEST_VERSION === 'A') ? (ICON_MAP[norm(item.name)] || "") : "";
-      
       li.innerHTML = `<span class="label">${icon?`<span class="icon">${icon}</span>`:""}<span class="text">${item.name}</span></span>${item.children.length?CHEVRON_SVG:''}`;
-
-      // Usamos el handler genérico
+      
       li.onclick = () => handleGenericItemClick(item, level, li, container, col);
-
+      
       ul.appendChild(li);
 
-      // Banner after_item
+      // Banners
       if(parent){
-        const bAfter = bannersData.find(b =>
-          norm(b.scope) === "after_item" &&
-          norm(b.parent) === norm(parent.name) &&
-          norm(b.after) === norm(item.name)
-        );
-        if (bAfter) {
-          const bLi = document.createElement("li");
-          bLi.innerHTML = `
-            <div class="promo-card small">
-              <img class="promo-img" src="${bAfter.img}">
-              <a class="promo-link" href="${bAfter.href||'#'}" target="_blank" rel="noopener"></a>
-            </div>`;
-          ul.appendChild(bLi);
-        }
+        const bAfter = bannersData.find(b => norm(b.scope) === "after_item" && norm(b.parent) === norm(parent.name) && norm(b.after) === norm(item.name));
+        if (bAfter) ul.insertAdjacentHTML("beforeend", `<li><div class="promo-card small"><img class="promo-img" src="${bAfter.img}"><a class="promo-link" href="${bAfter.href||'#'}" target="_blank" rel="noopener"></a></div></li>`);
       }
     });
 
-    // Banner category_children (al final de la columna)
     if(parent){
-      const bChild = bannersData.find(b =>
-        norm(b.scope) === "category_children" &&
-        norm(b.parent) === norm(parent.name)
-      );
-      if (bChild) {
-        col.insertAdjacentHTML("beforeend", `
-          <div class="promo-card small">
-            <img class="promo-img" src="${bChild.img}">
-            <a class="promo-link" href="${bChild.href||'#'}" target="_blank" rel="noopener"></a>
-          </div>`);
-      }
+      const bChild = bannersData.find(b => norm(b.scope) === "category_children" && norm(b.parent) === norm(parent.name));
+      if (bChild) col.insertAdjacentHTML("beforeend", `<div class="promo-card small"><img class="promo-img" src="${bChild.img}"><a class="promo-link" href="${bChild.href||'#'}" target="_blank" rel="noopener"></a></div>`);
     }
 
     container.appendChild(col);
@@ -1220,26 +883,18 @@
     else if(open) renderRootMenu();
   }
 
-  // ====== Wiring ======
+  // ====== Init ======
   document.getElementById("openBtn").onclick = () => toggleMenu(true);
   document.getElementById("closeBtn").onclick = () => toggleMenu(false);
   overlay.onclick = () => toggleMenu(false);
 
-  document.getElementById("btnIntroStart").onclick = () => {
-    TEST_STARTED = true;
-    document.getElementById("taskIntroOverlay").style.display = "none";
-    document.getElementById("abpanel").style.display = "block";
-    taskIndex = 0;
-    showNextTaskScreen();
-  };
-
+  document.getElementById("btnIntroStart").onclick = () => { TEST_STARTED = true; document.getElementById("taskIntroOverlay").style.display = "none"; document.getElementById("abpanel").style.display = "block"; taskIndex = 0; showNextTaskScreen(); };
   document.getElementById("btnStartThisTask").onclick = () => startThisTaskNow();
   document.getElementById("btnNextTask").onclick = () => nextTaskFlow();
   document.getElementById("btnFailTask").onclick = () => failTask();
   document.getElementById("btnPause").onclick = () => pauseTask();
   document.getElementById("btnResume").onclick = () => resumeTask();
 
-  // ====== Init ======
   fillIntroTaskList();
   document.getElementById("taskIntroOverlay").style.display = "block";
   loadAllData();
